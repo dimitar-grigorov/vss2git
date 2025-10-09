@@ -583,6 +583,12 @@ namespace Hpdi.Vss2Git
 
         private VssProjectInfo ResolveProjectSpec(string projectSpec)
         {
+            // Add missing slash if project spec starts with $ but not $/
+            if (projectSpec.StartsWith("$") && !projectSpec.StartsWith("$/"))
+            {
+                projectSpec = projectSpec.Insert(1, "/");
+            }
+
             if (!projectSpec.StartsWith("$/"))
             {
                 throw new ArgumentException("Project spec must start with $/ but was \"" + projectSpec + "\"", "projectSpec");
