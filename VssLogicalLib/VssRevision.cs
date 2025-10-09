@@ -155,6 +155,15 @@ namespace Hpdi.VssLogicalLib
                         return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
                             archive.ArchivePath);
                     }
+                case Hpdi.VssPhysicalLib.Action.ArchiveFile:
+                case Hpdi.VssPhysicalLib.Action.ArchiveVersions:
+                case Hpdi.VssPhysicalLib.Action.ArchiveAll:
+                    {
+                        var archive = (ArchiveRevisionRecord)revision;
+                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath);
+                    }
+                case Hpdi.VssPhysicalLib.Action.RestoreVersions:
                 case Hpdi.VssPhysicalLib.Action.RestoreProject:
                 case Hpdi.VssPhysicalLib.Action.RestoreFile:
                     {

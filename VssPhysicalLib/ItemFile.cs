@@ -220,7 +220,11 @@ namespace Hpdi.VssPhysicalLib
                 case Action.EditFile:
                     record = new EditRevisionRecord();
                     break;
+                case Action.ArchiveFile:
+                case Action.ArchiveVersions:
+                case Action.ArchiveAll:
                 case Action.ArchiveProject:
+                case Action.RestoreVersions:
                 case Action.RestoreProject:
                 case Action.RestoreFile:
                     record = new ArchiveRevisionRecord();

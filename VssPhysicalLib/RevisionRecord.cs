@@ -45,7 +45,11 @@ namespace Hpdi.VssPhysicalLib
         // file actions
         CreateFile = 16,
         EditFile = 17,
+        ArchiveFile = 18,
         CreateBranch = 19,
+        ArchiveVersions = 20,  // Archive versions of file/project
+        ArchiveAll = 21,       // Archive all versions of file/project  
+        RestoreVersions = 22,  // Restore specific versions
 
         // archive actions
         ArchiveProject = 23,
