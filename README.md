@@ -12,6 +12,17 @@ The Vss2Git project contains several components:
 
 All components are written in C# using the Microsoft [.NET Framework](https://www.microsoft.com/net).
 
+## Building ##
+
+**Prerequisites:** Visual Studio 2015+ or MSBuild with .NET Framework 4.5.2+
+
+**Quick Start:**
+- **With Visual Studio:** Open `Vss2Git.sln` and build (Ctrl+Shift+B)
+- **With VS Code:** Press `Ctrl+Shift+B` (requires MSBuild path in `.vscode/settings.json`)
+- **Command Line:** `msbuild Vss2Git.sln /p:Configuration=Debug`
+
+**If MSBuild is missing:** Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) or full Visual Studio with .NET desktop development workload.
+
 ## How is it licensed? ##
 
 Vss2Git is open-source software, licensed under the [Apache License, Version 2.0](License.md). Accordingly, **any use of the software is at your own risk**. Always back up your VSS database regularly, and especially before attempting to use this software with it.

@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Vss2Git",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Vss2Git/bin/Debug/Vss2Git.exe",
+      "preLaunchTask": "build-vss2git",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Launch VssDump",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}/VssDump/bin/Debug/VssDump.exe",
+      "args": [],
+      "preLaunchTask": "build-vssdump",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Launch HashTest",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}/HashTest/bin/Debug/HashTest.exe",
+      "preLaunchTask": "build-hashtest",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ]
+}
