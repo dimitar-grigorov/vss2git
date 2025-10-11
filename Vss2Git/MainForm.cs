@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -256,6 +257,44 @@ namespace Hpdi.Vss2Git
             settings.AnyCommentSeconds = (int)anyCommentUpDown.Value;
             settings.SameCommentSeconds = (int)sameCommentUpDown.Value;
             settings.Save();
+        }
+
+        private void BrowseForFolder(TextBox textBox, string description)
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = description;
+                openFileDialog.ValidateNames = false;
+                openFileDialog.CheckFileExists = false;
+                openFileDialog.CheckPathExists = true;                            
+
+                // Set the initial directory if the textbox has a valid existing directory
+                if (!string.IsNullOrEmpty(textBox.Text) && Directory.Exists(textBox.Text))
+                {
+                    openFileDialog.InitialDirectory = textBox.Text;
+                    openFileDialog.FileName = Path.Combine(textBox.Text, "Folder Selection");
+                }
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Extract the directory from the selected path
+                    string selectedPath = Path.GetDirectoryName(openFileDialog.FileName);
+                    if (!string.IsNullOrEmpty(selectedPath))
+                    {
+                        textBox.Text = selectedPath;
+                    }
+                }
+            }
+        }
+
+        private void vssDirBrowseButton_Click(object sender, EventArgs e)
+        {
+            BrowseForFolder(vssDirTextBox, "Select VSS Database Directory");
+        }
+
+        private void outDirBrowseButton_Click(object sender, EventArgs e)
+        {
+            BrowseForFolder(outDirTextBox, "Select Git Output Directory");
         }
     }
 }
