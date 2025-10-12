@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -73,7 +74,7 @@ namespace Hpdi.Vss2Git
                 df.Encoding = encoding;
                 var db = df.Open();
 
-                var path = vssProjectTextBox.Text;
+                var path = vssProjectTextBox.Text.Trim();
                 VssItem item;
                 try
                 {
@@ -108,6 +109,18 @@ namespace Hpdi.Vss2Git
 
                 if (!string.IsNullOrEmpty(outDirTextBox.Text))
                 {
+                    var outDir = outDirTextBox.Text.Trim();
+                    if (Directory.Exists(outDir) && Directory.EnumerateFileSystemEntries(outDir).Any())
+                    {
+                        var dlgRes = MessageBox.Show(
+                            "The output directory is not empty. Do you want to continue?",
+                            "Output directory not empty",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Warning);
+                        if (dlgRes != DialogResult.Yes)
+                            return;
+                    }
+
                     var gitExporter = new GitExporter(workQueue, logger,
                         revisionAnalyzer, changesetBuilder);
                     if (!string.IsNullOrEmpty(domainTextBox.Text))
@@ -123,7 +136,7 @@ namespace Hpdi.Vss2Git
                         gitExporter.CommitEncoding = encoding;
                     }
                     gitExporter.IgnoreErrors = ignoreErrorsCheckBox.Checked;
-                    gitExporter.ExportToGit(outDirTextBox.Text);
+                    gitExporter.ExportToGit(outDir);
                 }
 
                 workQueue.Idle += delegate
@@ -261,28 +274,19 @@ namespace Hpdi.Vss2Git
 
         private void BrowseForFolder(TextBox textBox, string description)
         {
-            using (var openFileDialog = new OpenFileDialog())
+            using (var folderDialog = new FolderBrowserDialog())
             {
-                openFileDialog.Title = description;
-                openFileDialog.ValidateNames = false;
-                openFileDialog.CheckFileExists = false;
-                openFileDialog.CheckPathExists = true;                            
-
-                // Set the initial directory if the textbox has a valid existing directory
-                if (!string.IsNullOrEmpty(textBox.Text) && Directory.Exists(textBox.Text))
+                folderDialog.Description = description;
+                folderDialog.ShowNewFolderButton = true;
+                string existingPath = textBox.Text.Trim();
+                if (!string.IsNullOrEmpty(existingPath) && Directory.Exists(existingPath))
                 {
-                    openFileDialog.InitialDirectory = textBox.Text;
-                    openFileDialog.FileName = Path.Combine(textBox.Text, "Folder Selection");
+                    folderDialog.SelectedPath = Path.GetDirectoryName(existingPath.TrimEnd(Path.DirectorySeparatorChar));
                 }
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // Extract the directory from the selected path
-                    string selectedPath = Path.GetDirectoryName(openFileDialog.FileName);
-                    if (!string.IsNullOrEmpty(selectedPath))
-                    {
-                        textBox.Text = selectedPath;
-                    }
+                    textBox.Text = folderDialog.SelectedPath;
                 }
             }
         }
