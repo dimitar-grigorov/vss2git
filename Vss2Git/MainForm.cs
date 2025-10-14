@@ -281,7 +281,7 @@ namespace Hpdi.Vss2Git
                 string existingPath = textBox.Text.Trim();
                 if (!string.IsNullOrEmpty(existingPath) && Directory.Exists(existingPath))
                 {
-                    folderDialog.SelectedPath = Path.GetDirectoryName(existingPath.TrimEnd(Path.DirectorySeparatorChar));
+                    folderDialog.SelectedPath = existingPath;
                 }
 
                 if (folderDialog.ShowDialog() == DialogResult.OK)
