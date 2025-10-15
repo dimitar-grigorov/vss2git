@@ -241,6 +241,18 @@ namespace Hpdi.Vss2Git
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Prevent closing if migration is running
+            if (!workQueue.IsIdle)
+            {
+                MessageBox.Show(
+                    "VSS to Git migration is currently running. Please cancel the migration before exiting.",
+                    "Migration in Progress",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                e.Cancel = true;
+                return;
+            }
+
             WriteSettings();
 
             workQueue.Abort();
