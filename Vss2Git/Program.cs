@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Hpdi.Vss2Git
@@ -27,6 +28,8 @@ namespace Hpdi.Vss2Git
         [STAThread]
         static void Main()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

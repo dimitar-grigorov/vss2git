@@ -30,10 +30,14 @@ namespace Hpdi.VssDump
     class Program
     {
         private const string Separator = "------------------------------------------------------------";
+        private static Encoding vssEncoding;
 
         static void Main(string[] args)
         {
-            Console.OutputEncoding = Encoding.Default;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            vssEncoding = GetSystemDefaultEncoding();
+            Console.OutputEncoding = vssEncoding;
 
             var invalidArg = false;
             var argIndex = 0;
@@ -80,6 +84,7 @@ namespace Hpdi.VssDump
                             }
 
                             Console.OutputEncoding = encoding;
+                            vssEncoding = encoding;
                             break;
                         }
 
@@ -157,6 +162,12 @@ namespace Hpdi.VssDump
         private static HashSet<Hpdi.VssPhysicalLib.Action> projectActions = new HashSet<Hpdi.VssPhysicalLib.Action>();
         private static HashSet<Hpdi.VssPhysicalLib.Action> fileActions = new HashSet<Hpdi.VssPhysicalLib.Action>();
 
+        private static Encoding GetSystemDefaultEncoding()
+        {
+            int ansiCodePage = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
+            return Encoding.GetEncoding(ansiCodePage);
+        }
+
         private static string FormatCollection(IEnumerable collection)
         {
             StringBuilder buf = new StringBuilder();
@@ -175,7 +186,7 @@ namespace Hpdi.VssDump
         {
             try
             {
-                var itemFile = new ItemFile(filename, Encoding.Default);
+                var itemFile = new ItemFile(filename, vssEncoding);
                 itemFile.Header.Header.Dump(Console.Out);
                 itemFile.Header.Dump(Console.Out);
                 var record = itemFile.GetNextRecord(true);
@@ -208,7 +219,7 @@ namespace Hpdi.VssDump
         {
             try
             {
-                var nameFile = new NameFile(filename, Encoding.Default);
+                var nameFile = new NameFile(filename, vssEncoding);
                 nameFile.Header.Header.Dump(Console.Out);
                 nameFile.Header.Dump(Console.Out);
                 var name = nameFile.GetNextName();

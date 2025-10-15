@@ -25,7 +25,7 @@ namespace Hpdi.VssLogicalLib
     {
         private readonly string path;
 
-        private Encoding encoding = Encoding.Default;
+        private Encoding encoding;
         public Encoding Encoding
         {
             get { return encoding; }
@@ -35,11 +35,20 @@ namespace Hpdi.VssLogicalLib
         public VssDatabaseFactory(string path)
         {
             this.path = path;
+            this.encoding = GetSystemDefaultEncoding();
         }
 
         public VssDatabase Open()
         {
             return new VssDatabase(path, encoding);
+        }
+
+        // In .NET Framework, Encoding.Default returned the system code page.
+        // In .NET 8, it returns UTF-8, breaking VSS filename reading.
+        private static Encoding GetSystemDefaultEncoding()
+        {
+            int ansiCodePage = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
+            return Encoding.GetEncoding(ansiCodePage);
         }
     }
 }

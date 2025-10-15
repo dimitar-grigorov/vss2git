@@ -5,7 +5,7 @@
       "name": "Launch Vss2Git",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/Vss2Git/bin/Debug/Vss2Git.exe",
+      "program": "${workspaceFolder}/Vss2Git/bin/Debug/net8.0-windows/Vss2Git.exe",
       "preLaunchTask": "build-vss2git",
       "console": "internalConsole",
       "stopAtEntry": false
@@ -14,7 +14,7 @@
       "name": "Launch VssDump",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/VssDump/bin/Debug/VssDump.exe",
+      "program": "${workspaceFolder}/VssDump/bin/Debug/net8.0/VssDump.exe",
       "args": [],
       "preLaunchTask": "build-vssdump",
       "console": "internalConsole",
@@ -24,7 +24,7 @@
       "name": "Launch HashTest",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/HashTest/bin/Debug/HashTest.exe",
+      "program": "${workspaceFolder}/HashTest/bin/Debug/net8.0/HashTest.exe",
       "preLaunchTask": "build-hashtest",
       "console": "internalConsole",
       "stopAtEntry": false

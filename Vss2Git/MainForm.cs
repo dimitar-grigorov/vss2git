@@ -211,8 +211,9 @@ namespace Hpdi.Vss2Git
         {
             this.Text += " " + Assembly.GetExecutingAssembly().GetName().Version;
 
-            var defaultCodePage = Encoding.Default.CodePage;
-            var description = string.Format("System default - {0}", Encoding.Default.EncodingName);
+            Encoding systemEncoding = GetSystemDefaultEncoding();
+            var defaultCodePage = systemEncoding.CodePage;
+            var description = string.Format("System default - {0}", systemEncoding.EncodingName);
             var defaultIndex = encodingComboBox.Items.Add(description);
             encodingComboBox.SelectedIndex = defaultIndex;
 
@@ -230,6 +231,12 @@ namespace Hpdi.Vss2Git
             }
 
             ReadSettings();
+        }
+
+        private static Encoding GetSystemDefaultEncoding()
+        {
+            int ansiCodePage = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
+            return Encoding.GetEncoding(ansiCodePage);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
