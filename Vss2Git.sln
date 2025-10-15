@@ -8,20 +8,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Vss2Git.nsi = Vss2Git.nsi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vss2Git", "Vss2Git\Vss2Git.csproj", "{381B9665-A55F-4139-9B69-928A08529C6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vss2Git", "Vss2Git\Vss2Git.csproj", "{381B9665-A55F-4139-9B69-928A08529C6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VssDump", "VssDump\VssDump.csproj", "{81940BA2-E5D1-4EA5-B183-557579B888E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VssDump", "VssDump\VssDump.csproj", "{81940BA2-E5D1-4EA5-B183-557579B888E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VssPhysicalLib", "VssPhysicalLib\VssPhysicalLib.csproj", "{16812A7C-32C1-457E-8E2B-5F7DCC6C38F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VssPhysicalLib", "VssPhysicalLib\VssPhysicalLib.csproj", "{16812A7C-32C1-457E-8E2B-5F7DCC6C38F8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5BCD4B23-FFE4-454E-A8E2-03C4791350BE} = {5BCD4B23-FFE4-454E-A8E2-03C4791350BE}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VssLogicalLib", "VssLogicalLib\VssLogicalLib.csproj", "{0D191E03-15DA-4DDE-8CD5-B3031898FAF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VssLogicalLib", "VssLogicalLib\VssLogicalLib.csproj", "{0D191E03-15DA-4DDE-8CD5-B3031898FAF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLib", "HashLib\HashLib.csproj", "{5BCD4B23-FFE4-454E-A8E2-03C4791350BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLib", "HashLib\HashLib.csproj", "{5BCD4B23-FFE4-454E-A8E2-03C4791350BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashTest", "HashTest\HashTest.csproj", "{917988FD-71D7-4091-9187-E310C0A6DF27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashTest", "HashTest\HashTest.csproj", "{917988FD-71D7-4091-9187-E310C0A6DF27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
