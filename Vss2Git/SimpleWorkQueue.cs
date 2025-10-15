@@ -26,6 +26,7 @@ namespace Hpdi.Vss2Git
     public class SimpleWorkQueue
     {
         private readonly LinkedList<WaitCallback> workQueue = new LinkedList<WaitCallback>();
+        private readonly ManualResetEvent resumeEvent = new ManualResetEvent(true);
         private readonly int maxThreads;
         private int activeThreads = 0;
         private bool suspended = false;
@@ -97,6 +98,7 @@ namespace Hpdi.Vss2Git
             lock (workQueue)
             {
                 suspended = true;
+                resumeEvent.Reset(); // Signal workers to wait
             }
         }
 
@@ -106,11 +108,22 @@ namespace Hpdi.Vss2Git
             lock (workQueue)
             {
                 suspended = false;
+                resumeEvent.Set(); // Signal workers to continue
                 while (activeThreads < workQueue.Count)
                 {
                     StartWorker();
                 }
             }
+        }
+
+        // Waits if suspended. Returns true if should continue, false if aborting.
+        public bool WaitIfSuspended()
+        {
+            while (suspended && !aborting)
+            {
+                resumeEvent.WaitOne();
+            }
+            return !aborting;
         }
 
         // Signals active workers to abort and clears pending work.
@@ -126,6 +139,12 @@ namespace Hpdi.Vss2Git
 
                 // to avoid non-determinism, always clear the queue
                 workQueue.Clear();
+
+                // If suspended, signal resume to unblock waiting workers so they can see abort flag
+                if (suspended)
+                {
+                    resumeEvent.Set();
+                }
             }
         }
 

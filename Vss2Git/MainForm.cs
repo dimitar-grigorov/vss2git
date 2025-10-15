@@ -48,6 +48,21 @@ namespace Hpdi.Vss2Git
 
         private void goButton_Click(object sender, EventArgs e)
         {
+            // If migration is running, toggle pause/resume
+            if (!workQueue.IsIdle)
+            {
+                if (workQueue.IsSuspended)
+                {
+                    workQueue.Resume();
+                }
+                else
+                {
+                    workQueue.Suspend();
+                }
+                return;
+            }
+
+            // Start new migration
             try
             {
                 OpenLog(logTextBox.Text);
@@ -146,7 +161,6 @@ namespace Hpdi.Vss2Git
                 };
 
                 statusTimer.Enabled = true;
-                goButton.Enabled = false;
             }
             catch (Exception ex)
             {
@@ -178,13 +192,42 @@ namespace Hpdi.Vss2Git
                 changeLabel.Text = "Changesets: " + changesetBuilder.Changesets.Count;
             }
 
+            // Update button states based on work queue status
             if (workQueue.IsIdle)
             {
                 revisionAnalyzer = null;
                 changesetBuilder = null;
 
                 statusTimer.Enabled = false;
+                goButton.Text = "Go";
                 goButton.Enabled = true;
+                cancelButton.Enabled = false;
+            }
+            else if (workQueue.IsSuspended)
+            {
+                goButton.Text = "Resume";
+                goButton.Enabled = true;
+                cancelButton.Enabled = true;
+            }
+            else
+            {
+                // Check if we're in Git export phase (pausable) or analysis/changeset phase (not pausable)
+                // TODO: Add status as type
+                var status = workQueue.LastStatus ?? "";
+                bool isGitExportPhase = status.Contains("Replaying") || status.Contains("Committing") ||
+                                        status.Contains("tag") || status.Contains("Initializing Git");
+
+                if (isGitExportPhase)
+                {
+                    goButton.Text = "Pause";
+                    goButton.Enabled = true;
+                }
+                else
+                {
+                    goButton.Text = "Running...";
+                    goButton.Enabled = false;
+                }
+                cancelButton.Enabled = true;
             }
 
             var exceptions = workQueue.FetchExceptions();
@@ -231,6 +274,9 @@ namespace Hpdi.Vss2Git
             }
 
             ReadSettings();
+
+            // Initialize button states
+            cancelButton.Enabled = false;
         }
 
         private static Encoding GetSystemDefaultEncoding()

@@ -167,6 +167,12 @@ namespace Hpdi.Vss2Git
                         return;
                     }
 
+                    // Wait if suspended
+                    if (!workQueue.WaitIfSuspended())
+                    {
+                        return; // Aborting
+                    }
+
                     // commit changes
                     if (needCommit)
                     {
@@ -180,6 +186,12 @@ namespace Hpdi.Vss2Git
                     if (workQueue.IsAborting)
                     {
                         return;
+                    }
+
+                    // Wait if suspended
+                    if (!workQueue.WaitIfSuspended())
+                    {
+                        return; // Aborting
                     }
 
                     // create tags for any labels in the changeset
