@@ -97,21 +97,8 @@ namespace Hpdi.Vss2Git
                     Directory.CreateDirectory(repoPath);
                 }
 
-                var git = new GitWrapper(repoPath, logger);
+                IGitRepository git = new GitWrapper(repoPath, logger);
                 git.CommitEncoding = commitEncoding;
-
-                while (!git.FindExecutable())
-                {
-                    var button = MessageBox.Show("Git not found in PATH. " +
-                        "If you need to modify your PATH variable, please " +
-                        "restart the program for the changes to take effect.",
-                        "Error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                    if (button == DialogResult.Cancel)
-                    {
-                        workQueue.Abort();
-                        return;
-                    }
-                }
 
                 if (!RetryCancel(delegate { git.Init(); }))
                 {
@@ -256,7 +243,7 @@ namespace Hpdi.Vss2Git
         }
 
         private bool ReplayChangeset(VssPathMapper pathMapper, Changeset changeset,
-            GitWrapper git, LinkedList<Revision> labels)
+            IGitRepository git, LinkedList<Revision> labels)
         {
             var needCommit = false;
             foreach (Revision revision in changeset.Revisions)
@@ -275,7 +262,7 @@ namespace Hpdi.Vss2Git
         }
 
         private bool ReplayRevision(VssPathMapper pathMapper, Revision revision,
-            GitWrapper git, LinkedList<Revision> labels)
+            IGitRepository git, LinkedList<Revision> labels)
         {
             var needCommit = false;
             var actionType = revision.Action.Type;
@@ -585,7 +572,7 @@ namespace Hpdi.Vss2Git
             return needCommit;
         }
 
-        private bool CommitChangeset(GitWrapper git, Changeset changeset)
+        private bool CommitChangeset(IGitRepository git, Changeset changeset)
         {
             var result = false;
             AbortRetryIgnore(delegate
@@ -673,7 +660,7 @@ namespace Hpdi.Vss2Git
         }
 
         private bool WriteRevision(VssPathMapper pathMapper, VssActionType actionType,
-            string physicalName, int version, string underProject, GitWrapper git)
+            string physicalName, int version, string underProject, IGitRepository git)
         {
             var needCommit = false;
             var paths = pathMapper.GetFilePaths(physicalName, underProject);

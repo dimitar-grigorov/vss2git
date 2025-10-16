@@ -27,7 +27,7 @@ namespace Hpdi.Vss2Git
     /// Wraps execution of Git and implements the common Git commands.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class GitWrapper
+    class GitWrapper : IGitRepository
     {
         private readonly string repoPath;
         private readonly Logger logger;
@@ -72,10 +72,10 @@ namespace Hpdi.Vss2Git
             this.logger = logger;
         }
 
-        public bool FindExecutable()
+        private bool FindExecutable()
         {
             string foundPath;
-            if (FindInPathVar("git.exe", out foundPath))
+            if (FindInPathVar(GitExecutable, out foundPath))
             {
                 gitExecutable = foundPath;
                 gitInitialArguments = null;
@@ -94,6 +94,10 @@ namespace Hpdi.Vss2Git
 
         public void Init()
         {
+            if (!FindExecutable())
+            {
+                throw new FileNotFoundException("Git executable not found in PATH. Please ensure git.exe or git.cmd is available.");
+            }
             GitExec("init");
         }
 
