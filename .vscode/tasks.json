@@ -2,74 +2,27 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build-solution",
+      "label": "build",
       "type": "shell",
       "command": "${config:msbuildPath}",
       "args": [
-        "Vss2Git.sln",
-        "/p:Configuration=Debug"
+        "${input:buildTarget}",
+        "/p:Configuration=${input:buildConfiguration}"
       ],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
-      },
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-vss2git",
+      "label": "build-${input:project}-${input:configuration}",
       "type": "shell",
       "command": "${config:msbuildPath}",
       "args": [
-        "Vss2Git/Vss2Git.csproj",
-        "/p:Configuration=Debug"
+        "${input:projectPath}",
+        "/p:Configuration=${input:configuration}"
       ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-vssdump",
-      "type": "shell",
-      "command": "${config:msbuildPath}",
-      "args": [
-        "VssDump/VssDump.csproj",
-        "/p:Configuration=Debug"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-hashtest",
-      "type": "shell",
-      "command": "${config:msbuildPath}",
-      "args": [
-        "HashTest/HashTest.csproj",
-        "/p:Configuration=Debug"
-      ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
-      },
       "problemMatcher": "$msCompile"
     },
     {
@@ -79,16 +32,55 @@
       "args": [
         "Vss2Git.sln",
         "/t:Clean",
-        "/p:Configuration=Debug"
+        "/p:Configuration=${input:buildConfiguration}"
       ],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
       "problemMatcher": "$msCompile"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "buildConfiguration",
+      "type": "pickString",
+      "description": "Configuration",
+      "options": ["Debug", "Release"],
+      "default": "Debug"
+    },
+    {
+      "id": "buildTarget",
+      "type": "pickString",
+      "description": "Target",
+      "options": [
+        "Vss2Git.sln",
+        "Vss2Git/Vss2Git.csproj",
+        "VssDump/VssDump.csproj",
+        "HashTest/HashTest.csproj"
+      ],
+      "default": "Vss2Git.sln"
+    },
+    {
+      "id": "project",
+      "type": "pickString",
+      "description": "Project",
+      "options": ["Vss2Git", "VssDump", "HashTest"],
+      "default": "Vss2Git"
+    },
+    {
+      "id": "configuration",
+      "type": "pickString",
+      "description": "Configuration",
+      "options": ["Debug", "Release"],
+      "default": "Debug"
+    },
+    {
+      "id": "projectPath",
+      "type": "pickString",
+      "description": "Project path",
+      "options": [
+        "Vss2Git/Vss2Git.csproj",
+        "VssDump/VssDump.csproj",
+        "HashTest/HashTest.csproj"
+      ],
+      "default": "Vss2Git/Vss2Git.csproj"
     }
   ]
 }

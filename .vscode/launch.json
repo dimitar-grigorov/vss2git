@@ -2,32 +2,37 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Vss2Git",
+      "name": "Vss2Git",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/Vss2Git/bin/Debug/net8.0-windows/Vss2Git.exe",
-      "preLaunchTask": "build-vss2git",
-      "console": "internalConsole",
-      "stopAtEntry": false
+      "program": "${workspaceFolder}/Vss2Git/bin/${input:configuration}/net8.0-windows/Vss2Git.exe",
+      "preLaunchTask": "build",
+      "console": "internalConsole"
     },
     {
-      "name": "Launch VssDump",
+      "name": "VssDump",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/VssDump/bin/Debug/net8.0/VssDump.exe",
-      "args": [],
-      "preLaunchTask": "build-vssdump",
-      "console": "internalConsole",
-      "stopAtEntry": false
+      "program": "${workspaceFolder}/VssDump/bin/${input:configuration}/net8.0/VssDump.exe",
+      "preLaunchTask": "build",
+      "console": "internalConsole"
     },
     {
-      "name": "Launch HashTest",
+      "name": "HashTest",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/HashTest/bin/Debug/net8.0/HashTest.exe",
-      "preLaunchTask": "build-hashtest",
-      "console": "internalConsole",
-      "stopAtEntry": false
+      "program": "${workspaceFolder}/HashTest/bin/${input:configuration}/net8.0/HashTest.exe",
+      "preLaunchTask": "build",
+      "console": "internalConsole"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "configuration",
+      "type": "pickString",
+      "description": "Configuration",
+      "options": ["Debug", "Release"],
+      "default": "Debug"
     }
   ]
 }
