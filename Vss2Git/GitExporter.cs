@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -231,6 +232,10 @@ namespace Hpdi.Vss2Git
                     ++changesetId;
                 }
 
+                // Clean up empty directories
+                LogStatus(work, "Cleaning up empty directories");
+                var emptyDirsRemoved = RemoveEmptyDirectories(repoPath);
+
                 stopwatch.Stop();
 
                 logger.WriteSectionSeparator();
@@ -239,6 +244,7 @@ namespace Hpdi.Vss2Git
                 logger.WriteLine("Git time: {0:HH:mm:ss}", new DateTime(git.ElapsedTime.Ticks));
                 logger.WriteLine("Git commits: {0}", commitCount);
                 logger.WriteLine("Git tags: {0}", tagCount);
+                logger.WriteLine("Empty directories removed: {0}", emptyDirsRemoved);
             });
         }
 
@@ -766,6 +772,37 @@ namespace Hpdi.Vss2Git
             {
                 renamer(sourcePath, destPath);
             }
+        }
+
+        private int RemoveEmptyDirectories(string rootPath)
+        {
+            int removedCount = 0;
+            var gitDir = Path.Combine(rootPath, ".git");
+
+            // Process from deepest to shallowest directories
+            var allDirs = Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories)
+                .Where(d => !d.StartsWith(gitDir))
+                .OrderByDescending(d => d.Length);
+
+            foreach (var dir in allDirs)
+            {
+                try
+                {
+                    if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                    {
+                        logger.WriteLine("Removing empty directory: {0}",
+                            dir.Substring(rootPath.Length).TrimStart(Path.DirectorySeparatorChar));
+                        Directory.Delete(dir, false);
+                        removedCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("WARNING: Could not remove directory {0}: {1}", dir, ex.Message);
+                }
+            }
+
+            return removedCount;
         }
     }
 }
