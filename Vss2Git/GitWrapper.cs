@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -192,9 +193,11 @@ namespace Hpdi.Vss2Git
             }
             else
             {
-                // need to use a temporary file to specify the comment when not
-                // using the system default code page or it contains newlines
-                if (commitEncoding.CodePage != Encoding.Default.CodePage || comment.IndexOf('\n') >= 0)
+                // Need to use a temporary file to specify the comment when
+                // not using default code page or contains newlines or contains non-ASCII characters.
+                if (commitEncoding.CodePage != Encoding.Default.CodePage || 
+                    comment.Contains('\n') || 
+                    comment.Any(c => c > 127))
                 {
                     logger.WriteLine("Generating temp file for comment: {0}", comment);
                     tempFile = new TempFile();
