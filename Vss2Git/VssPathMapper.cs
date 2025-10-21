@@ -632,20 +632,29 @@ namespace Hpdi.Vss2Git
             return null;
         }
 
-        public static string GetWorkingPath(string workingRoot, string vssPath)
+        public static string GetWorkingPath(string workingRoot, string vssPath, bool exportProjectToGitRoot = false)
         {
-            if (vssPath == "$")
+            if (exportProjectToGitRoot)
             {
+                // Map the root VSS project directly to the working root
                 return workingRoot;
             }
-
-            if (vssPath.StartsWith("$/"))
+            else
             {
-                vssPath = vssPath.Substring(2);
-            }
+                // Preserve the full VSS path structure
+                if (vssPath == "$")
+                {
+                    return workingRoot;
+                }
 
-            var relPath = vssPath.Replace(VssDatabase.ProjectSeparatorChar, Path.DirectorySeparatorChar);
-            return Path.Combine(workingRoot, relPath);
+                if (vssPath.StartsWith("$/"))
+                {
+                    vssPath = vssPath.Substring(2);
+                }
+
+                var relPath = vssPath.Replace(VssDatabase.ProjectSeparatorChar, Path.DirectorySeparatorChar);
+                return Path.Combine(workingRoot, relPath);
+            }
         }
     }
 }

@@ -28,481 +28,511 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.vssGroupBox = new System.Windows.Forms.GroupBox();
-            this.vssDirBrowseButton = new System.Windows.Forms.Button();
-            this.encodingLabel = new System.Windows.Forms.Label();
-            this.encodingComboBox = new System.Windows.Forms.ComboBox();
-            this.excludeTextBox = new System.Windows.Forms.TextBox();
-            this.excludeLabel = new System.Windows.Forms.Label();
-            this.vssProjectTextBox = new System.Windows.Forms.TextBox();
-            this.vssDirTextBox = new System.Windows.Forms.TextBox();
-            this.vssProjectLabel = new System.Windows.Forms.Label();
-            this.vssDirLabel = new System.Windows.Forms.Label();
-            this.goButton = new System.Windows.Forms.Button();
-            this.statusTimer = new System.Windows.Forms.Timer(this.components);
-            this.statusStrip = new System.Windows.Forms.StatusStrip();
-            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.fileLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.revisionLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.changeLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.timeLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.outputGroupBox = new System.Windows.Forms.GroupBox();
-            this.outDirBrowseButton = new System.Windows.Forms.Button();
-            this.ignoreErrorsCheckBox = new System.Windows.Forms.CheckBox();
-            this.commentTextBox = new System.Windows.Forms.TextBox();
-            this.commentLabel = new System.Windows.Forms.Label();
-            this.forceAnnotatedCheckBox = new System.Windows.Forms.CheckBox();
-            this.transcodeCheckBox = new System.Windows.Forms.CheckBox();
-            this.domainTextBox = new System.Windows.Forms.TextBox();
-            this.domainLabel = new System.Windows.Forms.Label();
-            this.outDirTextBox = new System.Windows.Forms.TextBox();
-            this.outDirLabel = new System.Windows.Forms.Label();
-            this.logTextBox = new System.Windows.Forms.TextBox();
-            this.logLabel = new System.Windows.Forms.Label();
-            this.cancelButton = new System.Windows.Forms.Button();
-            this.changesetGroupBox = new System.Windows.Forms.GroupBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.sameCommentUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.anyCommentUpDown = new System.Windows.Forms.NumericUpDown();
-            this.vssGroupBox.SuspendLayout();
-            this.statusStrip.SuspendLayout();
-            this.outputGroupBox.SuspendLayout();
-            this.changesetGroupBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sameCommentUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.anyCommentUpDown)).BeginInit();
-            this.SuspendLayout();
+            vssGroupBox = new System.Windows.Forms.GroupBox();
+            vssDirBrowseButton = new System.Windows.Forms.Button();
+            encodingLabel = new System.Windows.Forms.Label();
+            encodingComboBox = new System.Windows.Forms.ComboBox();
+            excludeTextBox = new System.Windows.Forms.TextBox();
+            excludeLabel = new System.Windows.Forms.Label();
+            vssProjectTextBox = new System.Windows.Forms.TextBox();
+            vssDirTextBox = new System.Windows.Forms.TextBox();
+            vssProjectLabel = new System.Windows.Forms.Label();
+            vssDirLabel = new System.Windows.Forms.Label();
+            goButton = new System.Windows.Forms.Button();
+            statusTimer = new System.Windows.Forms.Timer(components);
+            statusStrip = new System.Windows.Forms.StatusStrip();
+            statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            fileLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            revisionLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            changeLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            timeLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            outputGroupBox = new System.Windows.Forms.GroupBox();
+            outDirBrowseButton = new System.Windows.Forms.Button();
+            ignoreErrorsCheckBox = new System.Windows.Forms.CheckBox();
+            commentTextBox = new System.Windows.Forms.TextBox();
+            commentLabel = new System.Windows.Forms.Label();
+            forceAnnotatedCheckBox = new System.Windows.Forms.CheckBox();
+            transcodeCheckBox = new System.Windows.Forms.CheckBox();
+            domainTextBox = new System.Windows.Forms.TextBox();
+            domainLabel = new System.Windows.Forms.Label();
+            outDirTextBox = new System.Windows.Forms.TextBox();
+            outDirLabel = new System.Windows.Forms.Label();
+            logTextBox = new System.Windows.Forms.TextBox();
+            logLabel = new System.Windows.Forms.Label();
+            cancelButton = new System.Windows.Forms.Button();
+            changesetGroupBox = new System.Windows.Forms.GroupBox();
+            label4 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            sameCommentUpDown = new System.Windows.Forms.NumericUpDown();
+            label2 = new System.Windows.Forms.Label();
+            label1 = new System.Windows.Forms.Label();
+            anyCommentUpDown = new System.Windows.Forms.NumericUpDown();
+            exportProjectToGitRootCheckBox = new System.Windows.Forms.CheckBox();
+            vssGroupBox.SuspendLayout();
+            statusStrip.SuspendLayout();
+            outputGroupBox.SuspendLayout();
+            changesetGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)sameCommentUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)anyCommentUpDown).BeginInit();
+            SuspendLayout();
             // 
             // vssGroupBox
             // 
-            this.vssGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.vssGroupBox.Controls.Add(this.vssDirBrowseButton);
-            this.vssGroupBox.Controls.Add(this.encodingLabel);
-            this.vssGroupBox.Controls.Add(this.encodingComboBox);
-            this.vssGroupBox.Controls.Add(this.excludeTextBox);
-            this.vssGroupBox.Controls.Add(this.excludeLabel);
-            this.vssGroupBox.Controls.Add(this.vssProjectTextBox);
-            this.vssGroupBox.Controls.Add(this.vssDirTextBox);
-            this.vssGroupBox.Controls.Add(this.vssProjectLabel);
-            this.vssGroupBox.Controls.Add(this.vssDirLabel);
-            this.vssGroupBox.Location = new System.Drawing.Point(12, 12);
-            this.vssGroupBox.Name = "vssGroupBox";
-            this.vssGroupBox.Size = new System.Drawing.Size(560, 126);
-            this.vssGroupBox.TabIndex = 0;
-            this.vssGroupBox.TabStop = false;
-            this.vssGroupBox.Text = "VSS Settings";
+            vssGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            vssGroupBox.Controls.Add(vssDirBrowseButton);
+            vssGroupBox.Controls.Add(encodingLabel);
+            vssGroupBox.Controls.Add(encodingComboBox);
+            vssGroupBox.Controls.Add(excludeTextBox);
+            vssGroupBox.Controls.Add(excludeLabel);
+            vssGroupBox.Controls.Add(vssProjectTextBox);
+            vssGroupBox.Controls.Add(vssDirTextBox);
+            vssGroupBox.Controls.Add(vssProjectLabel);
+            vssGroupBox.Controls.Add(vssDirLabel);
+            vssGroupBox.Location = new System.Drawing.Point(14, 14);
+            vssGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            vssGroupBox.Name = "vssGroupBox";
+            vssGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            vssGroupBox.Size = new System.Drawing.Size(701, 145);
+            vssGroupBox.TabIndex = 0;
+            vssGroupBox.TabStop = false;
+            vssGroupBox.Text = "VSS Settings";
             // 
             // vssDirBrowseButton
             // 
-            this.vssDirBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.vssDirBrowseButton.Location = new System.Drawing.Point(526, 19);
-            this.vssDirBrowseButton.Name = "vssDirBrowseButton";
-            this.vssDirBrowseButton.Size = new System.Drawing.Size(28, 22);
-            this.vssDirBrowseButton.TabIndex = 8;
-            this.vssDirBrowseButton.Text = "...";
-            this.vssDirBrowseButton.UseVisualStyleBackColor = true;
-            this.vssDirBrowseButton.Click += new System.EventHandler(this.vssDirBrowseButton_Click);
+            vssDirBrowseButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            vssDirBrowseButton.Location = new System.Drawing.Point(662, 22);
+            vssDirBrowseButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            vssDirBrowseButton.Name = "vssDirBrowseButton";
+            vssDirBrowseButton.Size = new System.Drawing.Size(33, 25);
+            vssDirBrowseButton.TabIndex = 8;
+            vssDirBrowseButton.Text = "...";
+            vssDirBrowseButton.UseVisualStyleBackColor = true;
+            vssDirBrowseButton.Click += vssDirBrowseButton_Click;
             // 
             // encodingLabel
             // 
-            this.encodingLabel.AutoSize = true;
-            this.encodingLabel.Location = new System.Drawing.Point(6, 100);
-            this.encodingLabel.Name = "encodingLabel";
-            this.encodingLabel.Size = new System.Drawing.Size(52, 13);
-            this.encodingLabel.TabIndex = 6;
-            this.encodingLabel.Text = "Encoding";
+            encodingLabel.AutoSize = true;
+            encodingLabel.Location = new System.Drawing.Point(7, 115);
+            encodingLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            encodingLabel.Name = "encodingLabel";
+            encodingLabel.Size = new System.Drawing.Size(57, 15);
+            encodingLabel.TabIndex = 6;
+            encodingLabel.Text = "Encoding";
             // 
             // encodingComboBox
             // 
-            this.encodingComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.encodingComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.encodingComboBox.FormattingEnabled = true;
-            this.encodingComboBox.Location = new System.Drawing.Point(94, 97);
-            this.encodingComboBox.Name = "encodingComboBox";
-            this.encodingComboBox.Size = new System.Drawing.Size(460, 21);
-            this.encodingComboBox.TabIndex = 7;
+            encodingComboBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            encodingComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            encodingComboBox.FormattingEnabled = true;
+            encodingComboBox.Location = new System.Drawing.Point(110, 112);
+            encodingComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            encodingComboBox.Name = "encodingComboBox";
+            encodingComboBox.Size = new System.Drawing.Size(584, 23);
+            encodingComboBox.TabIndex = 7;
             // 
             // excludeTextBox
             // 
-            this.excludeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.excludeTextBox.Location = new System.Drawing.Point(94, 71);
-            this.excludeTextBox.Name = "excludeTextBox";
-            this.excludeTextBox.Size = new System.Drawing.Size(460, 20);
-            this.excludeTextBox.TabIndex = 5;
+            excludeTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            excludeTextBox.Location = new System.Drawing.Point(110, 82);
+            excludeTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            excludeTextBox.Name = "excludeTextBox";
+            excludeTextBox.Size = new System.Drawing.Size(584, 23);
+            excludeTextBox.TabIndex = 5;
             // 
             // excludeLabel
             // 
-            this.excludeLabel.AutoSize = true;
-            this.excludeLabel.Location = new System.Drawing.Point(6, 74);
-            this.excludeLabel.Name = "excludeLabel";
-            this.excludeLabel.Size = new System.Drawing.Size(66, 13);
-            this.excludeLabel.TabIndex = 4;
-            this.excludeLabel.Text = "Exclude files";
+            excludeLabel.AutoSize = true;
+            excludeLabel.Location = new System.Drawing.Point(7, 85);
+            excludeLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            excludeLabel.Name = "excludeLabel";
+            excludeLabel.Size = new System.Drawing.Size(71, 15);
+            excludeLabel.TabIndex = 4;
+            excludeLabel.Text = "Exclude files";
             // 
             // vssProjectTextBox
             // 
-            this.vssProjectTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.vssProjectTextBox.Location = new System.Drawing.Point(94, 45);
-            this.vssProjectTextBox.Name = "vssProjectTextBox";
-            this.vssProjectTextBox.Size = new System.Drawing.Size(460, 20);
-            this.vssProjectTextBox.TabIndex = 3;
+            vssProjectTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            vssProjectTextBox.Location = new System.Drawing.Point(110, 52);
+            vssProjectTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            vssProjectTextBox.Name = "vssProjectTextBox";
+            vssProjectTextBox.Size = new System.Drawing.Size(584, 23);
+            vssProjectTextBox.TabIndex = 3;
             // 
             // vssDirTextBox
             // 
-            this.vssDirTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.vssDirTextBox.Location = new System.Drawing.Point(94, 19);
-            this.vssDirTextBox.Name = "vssDirTextBox";
-            this.vssDirTextBox.Size = new System.Drawing.Size(429, 20);
-            this.vssDirTextBox.TabIndex = 1;
+            vssDirTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            vssDirTextBox.Location = new System.Drawing.Point(110, 22);
+            vssDirTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            vssDirTextBox.Name = "vssDirTextBox";
+            vssDirTextBox.Size = new System.Drawing.Size(548, 23);
+            vssDirTextBox.TabIndex = 1;
             // 
             // vssProjectLabel
             // 
-            this.vssProjectLabel.AutoSize = true;
-            this.vssProjectLabel.Location = new System.Drawing.Point(6, 48);
-            this.vssProjectLabel.Name = "vssProjectLabel";
-            this.vssProjectLabel.Size = new System.Drawing.Size(40, 13);
-            this.vssProjectLabel.TabIndex = 2;
-            this.vssProjectLabel.Text = "Project";
+            vssProjectLabel.AutoSize = true;
+            vssProjectLabel.Location = new System.Drawing.Point(7, 55);
+            vssProjectLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            vssProjectLabel.Name = "vssProjectLabel";
+            vssProjectLabel.Size = new System.Drawing.Size(44, 15);
+            vssProjectLabel.TabIndex = 2;
+            vssProjectLabel.Text = "Project";
             // 
             // vssDirLabel
             // 
-            this.vssDirLabel.AutoSize = true;
-            this.vssDirLabel.Location = new System.Drawing.Point(6, 22);
-            this.vssDirLabel.Name = "vssDirLabel";
-            this.vssDirLabel.Size = new System.Drawing.Size(49, 13);
-            this.vssDirLabel.TabIndex = 0;
-            this.vssDirLabel.Text = "Directory";
+            vssDirLabel.AutoSize = true;
+            vssDirLabel.Location = new System.Drawing.Point(7, 25);
+            vssDirLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            vssDirLabel.Name = "vssDirLabel";
+            vssDirLabel.Size = new System.Drawing.Size(55, 15);
+            vssDirLabel.TabIndex = 0;
+            vssDirLabel.Text = "Directory";
             // 
             // goButton
             // 
-            this.goButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.goButton.Location = new System.Drawing.Point(416, 381);
-            this.goButton.Name = "goButton";
-            this.goButton.Size = new System.Drawing.Size(75, 23);
-            this.goButton.TabIndex = 3;
-            this.goButton.Text = "Go!";
-            this.goButton.UseVisualStyleBackColor = true;
-            this.goButton.Click += new System.EventHandler(this.goButton_Click);
+            goButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            goButton.Location = new System.Drawing.Point(533, 408);
+            goButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            goButton.Name = "goButton";
+            goButton.Size = new System.Drawing.Size(88, 27);
+            goButton.TabIndex = 3;
+            goButton.Text = "Go!";
+            goButton.UseVisualStyleBackColor = true;
+            goButton.Click += goButton_Click;
             // 
             // statusTimer
             // 
-            this.statusTimer.Tick += new System.EventHandler(this.statusTimer_Tick);
+            statusTimer.Tick += statusTimer_Tick;
             // 
             // statusStrip
             // 
-            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statusLabel,
-            this.fileLabel,
-            this.revisionLabel,
-            this.changeLabel,
-            this.timeLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 407);
-            this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(584, 22);
-            this.statusStrip.TabIndex = 5;
-            this.statusStrip.Text = "statusStrip1";
+            statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusLabel, fileLabel, revisionLabel, changeLabel, timeLabel });
+            statusStrip.Location = new System.Drawing.Point(0, 442);
+            statusStrip.Name = "statusStrip";
+            statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
+            statusStrip.Size = new System.Drawing.Size(729, 22);
+            statusStrip.TabIndex = 5;
+            statusStrip.Text = "statusStrip1";
             // 
             // statusLabel
             // 
-            this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(284, 17);
-            this.statusLabel.Spring = true;
-            this.statusLabel.Text = "Idle";
-            this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            statusLabel.Name = "statusLabel";
+            statusLabel.Size = new System.Drawing.Size(427, 17);
+            statusLabel.Spring = true;
+            statusLabel.Text = "Idle";
+            statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // fileLabel
             // 
-            this.fileLabel.Name = "fileLabel";
-            this.fileLabel.Size = new System.Drawing.Size(42, 17);
-            this.fileLabel.Text = "Files: 0";
+            fileLabel.Name = "fileLabel";
+            fileLabel.Size = new System.Drawing.Size(42, 17);
+            fileLabel.Text = "Files: 0";
             // 
             // revisionLabel
             // 
-            this.revisionLabel.Name = "revisionLabel";
-            this.revisionLabel.Size = new System.Drawing.Size(68, 17);
-            this.revisionLabel.Text = "Revisions: 0";
+            revisionLabel.Name = "revisionLabel";
+            revisionLabel.Size = new System.Drawing.Size(68, 17);
+            revisionLabel.Text = "Revisions: 0";
             // 
             // changeLabel
             // 
-            this.changeLabel.Name = "changeLabel";
-            this.changeLabel.Size = new System.Drawing.Size(80, 17);
-            this.changeLabel.Text = "Changesets: 0";
+            changeLabel.Name = "changeLabel";
+            changeLabel.Size = new System.Drawing.Size(80, 17);
+            changeLabel.Text = "Changesets: 0";
             // 
             // timeLabel
             // 
-            this.timeLabel.Name = "timeLabel";
-            this.timeLabel.Size = new System.Drawing.Size(95, 17);
-            this.timeLabel.Text = "Elapsed: 00:00:00";
+            timeLabel.Name = "timeLabel";
+            timeLabel.Size = new System.Drawing.Size(95, 17);
+            timeLabel.Text = "Elapsed: 00:00:00";
             // 
             // outputGroupBox
             // 
-            this.outputGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.outputGroupBox.Controls.Add(this.outDirBrowseButton);
-            this.outputGroupBox.Controls.Add(this.ignoreErrorsCheckBox);
-            this.outputGroupBox.Controls.Add(this.commentTextBox);
-            this.outputGroupBox.Controls.Add(this.commentLabel);
-            this.outputGroupBox.Controls.Add(this.forceAnnotatedCheckBox);
-            this.outputGroupBox.Controls.Add(this.transcodeCheckBox);
-            this.outputGroupBox.Controls.Add(this.domainTextBox);
-            this.outputGroupBox.Controls.Add(this.domainLabel);
-            this.outputGroupBox.Controls.Add(this.outDirTextBox);
-            this.outputGroupBox.Controls.Add(this.outDirLabel);
-            this.outputGroupBox.Controls.Add(this.logTextBox);
-            this.outputGroupBox.Controls.Add(this.logLabel);
-            this.outputGroupBox.Location = new System.Drawing.Point(12, 144);
-            this.outputGroupBox.Name = "outputGroupBox";
-            this.outputGroupBox.Size = new System.Drawing.Size(560, 150);
-            this.outputGroupBox.TabIndex = 1;
-            this.outputGroupBox.TabStop = false;
-            this.outputGroupBox.Text = "Output Settings";
+            outputGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            outputGroupBox.Controls.Add(exportProjectToGitRootCheckBox);
+            outputGroupBox.Controls.Add(outDirBrowseButton);
+            outputGroupBox.Controls.Add(ignoreErrorsCheckBox);
+            outputGroupBox.Controls.Add(commentTextBox);
+            outputGroupBox.Controls.Add(commentLabel);
+            outputGroupBox.Controls.Add(forceAnnotatedCheckBox);
+            outputGroupBox.Controls.Add(transcodeCheckBox);
+            outputGroupBox.Controls.Add(domainTextBox);
+            outputGroupBox.Controls.Add(domainLabel);
+            outputGroupBox.Controls.Add(outDirTextBox);
+            outputGroupBox.Controls.Add(outDirLabel);
+            outputGroupBox.Controls.Add(logTextBox);
+            outputGroupBox.Controls.Add(logLabel);
+            outputGroupBox.Location = new System.Drawing.Point(14, 166);
+            outputGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            outputGroupBox.Name = "outputGroupBox";
+            outputGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            outputGroupBox.Size = new System.Drawing.Size(701, 142);
+            outputGroupBox.TabIndex = 1;
+            outputGroupBox.TabStop = false;
+            outputGroupBox.Text = "Output Settings";
             // 
             // outDirBrowseButton
             // 
-            this.outDirBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.outDirBrowseButton.Location = new System.Drawing.Point(526, 19);
-            this.outDirBrowseButton.Name = "outDirBrowseButton";
-            this.outDirBrowseButton.Size = new System.Drawing.Size(28, 22);
-            this.outDirBrowseButton.TabIndex = 9;
-            this.outDirBrowseButton.Text = "...";
-            this.outDirBrowseButton.UseVisualStyleBackColor = true;
-            this.outDirBrowseButton.Click += new System.EventHandler(this.outDirBrowseButton_Click);
+            outDirBrowseButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            outDirBrowseButton.Location = new System.Drawing.Point(662, 22);
+            outDirBrowseButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            outDirBrowseButton.Name = "outDirBrowseButton";
+            outDirBrowseButton.Size = new System.Drawing.Size(33, 25);
+            outDirBrowseButton.TabIndex = 9;
+            outDirBrowseButton.Text = "...";
+            outDirBrowseButton.UseVisualStyleBackColor = true;
+            outDirBrowseButton.Click += outDirBrowseButton_Click;
             // 
             // ignoreErrorsCheckBox
             // 
-            this.ignoreErrorsCheckBox.AutoSize = true;
-            this.ignoreErrorsCheckBox.Location = new System.Drawing.Point(422, 123);
-            this.ignoreErrorsCheckBox.Name = "ignoreErrorsCheckBox";
-            this.ignoreErrorsCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.ignoreErrorsCheckBox.Size = new System.Drawing.Size(101, 17);
-            this.ignoreErrorsCheckBox.TabIndex = 8;
-            this.ignoreErrorsCheckBox.Text = "Ignore Git errors";
-            this.ignoreErrorsCheckBox.UseVisualStyleBackColor = true;
+            ignoreErrorsCheckBox.AutoSize = true;
+            ignoreErrorsCheckBox.Location = new System.Drawing.Point(421, 114);
+            ignoreErrorsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ignoreErrorsCheckBox.Name = "ignoreErrorsCheckBox";
+            ignoreErrorsCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            ignoreErrorsCheckBox.Size = new System.Drawing.Size(111, 19);
+            ignoreErrorsCheckBox.TabIndex = 8;
+            ignoreErrorsCheckBox.Text = "Ignore Git errors";
+            ignoreErrorsCheckBox.UseVisualStyleBackColor = true;
             // 
             // commentTextBox
             // 
-            this.commentTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.commentTextBox.Location = new System.Drawing.Point(94, 97);
-            this.commentTextBox.Name = "commentTextBox";
-            this.commentTextBox.Size = new System.Drawing.Size(460, 20);
-            this.commentTextBox.TabIndex = 6;
+            commentTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            commentTextBox.Location = new System.Drawing.Point(110, 82);
+            commentTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            commentTextBox.Name = "commentTextBox";
+            commentTextBox.Size = new System.Drawing.Size(584, 23);
+            commentTextBox.TabIndex = 6;
             // 
             // commentLabel
             // 
-            this.commentLabel.AutoSize = true;
-            this.commentLabel.Location = new System.Drawing.Point(6, 100);
-            this.commentLabel.Name = "commentLabel";
-            this.commentLabel.Size = new System.Drawing.Size(87, 13);
-            this.commentLabel.TabIndex = 8;
-            this.commentLabel.Text = "Default comment";
+            commentLabel.AutoSize = true;
+            commentLabel.Location = new System.Drawing.Point(5, 85);
+            commentLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            commentLabel.Name = "commentLabel";
+            commentLabel.Size = new System.Drawing.Size(100, 15);
+            commentLabel.TabIndex = 8;
+            commentLabel.Text = "Default comment";
             // 
             // forceAnnotatedCheckBox
             // 
-            this.forceAnnotatedCheckBox.AutoSize = true;
-            this.forceAnnotatedCheckBox.Checked = true;
-            this.forceAnnotatedCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.forceAnnotatedCheckBox.Location = new System.Drawing.Point(224, 123);
-            this.forceAnnotatedCheckBox.Name = "forceAnnotatedCheckBox";
-            this.forceAnnotatedCheckBox.Size = new System.Drawing.Size(191, 17);
-            this.forceAnnotatedCheckBox.TabIndex = 7;
-            this.forceAnnotatedCheckBox.Text = "Force use of annotated tag objects";
-            this.forceAnnotatedCheckBox.UseVisualStyleBackColor = true;
+            forceAnnotatedCheckBox.AutoSize = true;
+            forceAnnotatedCheckBox.Checked = true;
+            forceAnnotatedCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            forceAnnotatedCheckBox.Location = new System.Drawing.Point(205, 114);
+            forceAnnotatedCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            forceAnnotatedCheckBox.Name = "forceAnnotatedCheckBox";
+            forceAnnotatedCheckBox.Size = new System.Drawing.Size(208, 19);
+            forceAnnotatedCheckBox.TabIndex = 7;
+            forceAnnotatedCheckBox.Text = "Force use of annotated tag objects";
+            forceAnnotatedCheckBox.UseVisualStyleBackColor = true;
             // 
             // transcodeCheckBox
             // 
-            this.transcodeCheckBox.AutoSize = true;
-            this.transcodeCheckBox.Checked = true;
-            this.transcodeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.transcodeCheckBox.Location = new System.Drawing.Point(9, 123);
-            this.transcodeCheckBox.Name = "transcodeCheckBox";
-            this.transcodeCheckBox.Size = new System.Drawing.Size(209, 17);
-            this.transcodeCheckBox.TabIndex = 6;
-            this.transcodeCheckBox.Text = "Transcode commit comments to UTF-8";
-            this.transcodeCheckBox.UseVisualStyleBackColor = true;
+            transcodeCheckBox.AutoSize = true;
+            transcodeCheckBox.Checked = true;
+            transcodeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            transcodeCheckBox.Location = new System.Drawing.Point(8, 114);
+            transcodeCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            transcodeCheckBox.Name = "transcodeCheckBox";
+            transcodeCheckBox.Size = new System.Drawing.Size(189, 19);
+            transcodeCheckBox.TabIndex = 6;
+            transcodeCheckBox.Text = "Transcode comments to UTF-8";
+            transcodeCheckBox.UseVisualStyleBackColor = true;
             // 
             // domainTextBox
             // 
-            this.domainTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.domainTextBox.Location = new System.Drawing.Point(94, 45);
-            this.domainTextBox.Name = "domainTextBox";
-            this.domainTextBox.Size = new System.Drawing.Size(460, 20);
-            this.domainTextBox.TabIndex = 3;
+            domainTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            domainTextBox.Location = new System.Drawing.Point(110, 52);
+            domainTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            domainTextBox.Name = "domainTextBox";
+            domainTextBox.Size = new System.Drawing.Size(250, 23);
+            domainTextBox.TabIndex = 3;
             // 
             // domainLabel
             // 
-            this.domainLabel.AutoSize = true;
-            this.domainLabel.Location = new System.Drawing.Point(6, 48);
-            this.domainLabel.Name = "domainLabel";
-            this.domainLabel.Size = new System.Drawing.Size(69, 13);
-            this.domainLabel.TabIndex = 2;
-            this.domainLabel.Text = "Email domain";
+            domainLabel.AutoSize = true;
+            domainLabel.Location = new System.Drawing.Point(7, 55);
+            domainLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            domainLabel.Name = "domainLabel";
+            domainLabel.Size = new System.Drawing.Size(80, 15);
+            domainLabel.TabIndex = 2;
+            domainLabel.Text = "Email domain";
             // 
             // outDirTextBox
             // 
-            this.outDirTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.outDirTextBox.Location = new System.Drawing.Point(94, 19);
-            this.outDirTextBox.Name = "outDirTextBox";
-            this.outDirTextBox.Size = new System.Drawing.Size(429, 20);
-            this.outDirTextBox.TabIndex = 1;
+            outDirTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            outDirTextBox.Location = new System.Drawing.Point(110, 22);
+            outDirTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            outDirTextBox.Name = "outDirTextBox";
+            outDirTextBox.Size = new System.Drawing.Size(548, 23);
+            outDirTextBox.TabIndex = 1;
             // 
             // outDirLabel
             // 
-            this.outDirLabel.AutoSize = true;
-            this.outDirLabel.Location = new System.Drawing.Point(6, 22);
-            this.outDirLabel.Name = "outDirLabel";
-            this.outDirLabel.Size = new System.Drawing.Size(49, 13);
-            this.outDirLabel.TabIndex = 0;
-            this.outDirLabel.Text = "Directory";
+            outDirLabel.AutoSize = true;
+            outDirLabel.Location = new System.Drawing.Point(7, 25);
+            outDirLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            outDirLabel.Name = "outDirLabel";
+            outDirLabel.Size = new System.Drawing.Size(55, 15);
+            outDirLabel.TabIndex = 0;
+            outDirLabel.Text = "Directory";
             // 
             // logTextBox
             // 
-            this.logTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.logTextBox.Location = new System.Drawing.Point(94, 71);
-            this.logTextBox.Name = "logTextBox";
-            this.logTextBox.Size = new System.Drawing.Size(460, 20);
-            this.logTextBox.TabIndex = 5;
+            logTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            logTextBox.Location = new System.Drawing.Point(444, 52);
+            logTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            logTextBox.Name = "logTextBox";
+            logTextBox.Size = new System.Drawing.Size(250, 23);
+            logTextBox.TabIndex = 5;
             // 
             // logLabel
             // 
-            this.logLabel.AutoSize = true;
-            this.logLabel.Location = new System.Drawing.Point(6, 74);
-            this.logLabel.Name = "logLabel";
-            this.logLabel.Size = new System.Drawing.Size(41, 13);
-            this.logLabel.TabIndex = 4;
-            this.logLabel.Text = "Log file";
+            logLabel.AutoSize = true;
+            logLabel.Location = new System.Drawing.Point(368, 55);
+            logLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            logLabel.Name = "logLabel";
+            logLabel.Size = new System.Drawing.Size(46, 15);
+            logLabel.TabIndex = 4;
+            logLabel.Text = "Log file";
             // 
             // cancelButton
             // 
-            this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(497, 381);
-            this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(75, 23);
-            this.cancelButton.TabIndex = 4;
-            this.cancelButton.Text = "Cancel";
-            this.cancelButton.UseVisualStyleBackColor = true;
-            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            cancelButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            cancelButton.Location = new System.Drawing.Point(628, 408);
+            cancelButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new System.Drawing.Size(88, 27);
+            cancelButton.TabIndex = 4;
+            cancelButton.Text = "Cancel";
+            cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Click += cancelButton_Click;
             // 
             // changesetGroupBox
             // 
-            this.changesetGroupBox.Controls.Add(this.label4);
-            this.changesetGroupBox.Controls.Add(this.label3);
-            this.changesetGroupBox.Controls.Add(this.sameCommentUpDown);
-            this.changesetGroupBox.Controls.Add(this.label2);
-            this.changesetGroupBox.Controls.Add(this.label1);
-            this.changesetGroupBox.Controls.Add(this.anyCommentUpDown);
-            this.changesetGroupBox.Location = new System.Drawing.Point(12, 300);
-            this.changesetGroupBox.Name = "changesetGroupBox";
-            this.changesetGroupBox.Size = new System.Drawing.Size(560, 75);
-            this.changesetGroupBox.TabIndex = 2;
-            this.changesetGroupBox.TabStop = false;
-            this.changesetGroupBox.Text = "Changeset Building";
+            changesetGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            changesetGroupBox.Controls.Add(label4);
+            changesetGroupBox.Controls.Add(label3);
+            changesetGroupBox.Controls.Add(sameCommentUpDown);
+            changesetGroupBox.Controls.Add(label2);
+            changesetGroupBox.Controls.Add(label1);
+            changesetGroupBox.Controls.Add(anyCommentUpDown);
+            changesetGroupBox.Location = new System.Drawing.Point(14, 314);
+            changesetGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            changesetGroupBox.Name = "changesetGroupBox";
+            changesetGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            changesetGroupBox.Size = new System.Drawing.Size(701, 87);
+            changesetGroupBox.TabIndex = 2;
+            changesetGroupBox.TabStop = false;
+            changesetGroupBox.Text = "Changeset Building";
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(194, 47);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(191, 13);
-            this.label4.TabIndex = 5;
-            this.label4.Text = "seconds, if the comments are the same";
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(226, 54);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(213, 15);
+            label4.TabIndex = 5;
+            label4.Text = "seconds, if the comments are the same";
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(6, 47);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(122, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "or within";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            label3.Location = new System.Drawing.Point(7, 54);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(142, 15);
+            label3.TabIndex = 3;
+            label3.Text = "or within";
+            label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // sameCommentUpDown
             // 
-            this.sameCommentUpDown.Location = new System.Drawing.Point(134, 45);
-            this.sameCommentUpDown.Maximum = new decimal(new int[] {
-            86400,
-            0,
-            0,
-            0});
-            this.sameCommentUpDown.Name = "sameCommentUpDown";
-            this.sameCommentUpDown.Size = new System.Drawing.Size(54, 20);
-            this.sameCommentUpDown.TabIndex = 4;
+            sameCommentUpDown.Location = new System.Drawing.Point(156, 52);
+            sameCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            sameCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
+            sameCommentUpDown.Name = "sameCommentUpDown";
+            sameCommentUpDown.Size = new System.Drawing.Size(63, 23);
+            sameCommentUpDown.TabIndex = 4;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(194, 21);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(180, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "seconds, regardless of the comment,";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(226, 24);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(201, 15);
+            label2.TabIndex = 2;
+            label2.Text = "seconds, regardless of the comment,";
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 21);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(122, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Combine revisions within";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(7, 24);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(141, 15);
+            label1.TabIndex = 0;
+            label1.Text = "Combine revisions within";
             // 
             // anyCommentUpDown
             // 
-            this.anyCommentUpDown.Location = new System.Drawing.Point(134, 19);
-            this.anyCommentUpDown.Maximum = new decimal(new int[] {
-            86400,
-            0,
-            0,
-            0});
-            this.anyCommentUpDown.Name = "anyCommentUpDown";
-            this.anyCommentUpDown.Size = new System.Drawing.Size(54, 20);
-            this.anyCommentUpDown.TabIndex = 1;
+            anyCommentUpDown.Location = new System.Drawing.Point(156, 22);
+            anyCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            anyCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
+            anyCommentUpDown.Name = "anyCommentUpDown";
+            anyCommentUpDown.Size = new System.Drawing.Size(63, 23);
+            anyCommentUpDown.TabIndex = 1;
+            // 
+            // exportProjectToGitRootCheckBox
+            // 
+            exportProjectToGitRootCheckBox.AutoSize = true;
+            exportProjectToGitRootCheckBox.Location = new System.Drawing.Point(536, 114);
+            exportProjectToGitRootCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            exportProjectToGitRootCheckBox.Name = "exportProjectToGitRootCheckBox";
+            exportProjectToGitRootCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            exportProjectToGitRootCheckBox.Size = new System.Drawing.Size(156, 19);
+            exportProjectToGitRootCheckBox.TabIndex = 10;
+            exportProjectToGitRootCheckBox.Text = "Export project to Git root";
+            exportProjectToGitRootCheckBox.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
-            this.AcceptButton = this.goButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(584, 429);
-            this.Controls.Add(this.changesetGroupBox);
-            this.Controls.Add(this.cancelButton);
-            this.Controls.Add(this.outputGroupBox);
-            this.Controls.Add(this.goButton);
-            this.Controls.Add(this.vssGroupBox);
-            this.Controls.Add(this.statusStrip);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MinimumSize = new System.Drawing.Size(458, 419);
-            this.Name = "MainForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "VSS2Git";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(this.MainForm_Load);
-            this.vssGroupBox.ResumeLayout(false);
-            this.vssGroupBox.PerformLayout();
-            this.statusStrip.ResumeLayout(false);
-            this.statusStrip.PerformLayout();
-            this.outputGroupBox.ResumeLayout(false);
-            this.outputGroupBox.PerformLayout();
-            this.changesetGroupBox.ResumeLayout(false);
-            this.changesetGroupBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sameCommentUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.anyCommentUpDown)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AcceptButton = goButton;
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            CancelButton = cancelButton;
+            ClientSize = new System.Drawing.Size(729, 464);
+            Controls.Add(changesetGroupBox);
+            Controls.Add(cancelButton);
+            Controls.Add(outputGroupBox);
+            Controls.Add(goButton);
+            Controls.Add(vssGroupBox);
+            Controls.Add(statusStrip);
+            Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MinimumSize = new System.Drawing.Size(532, 477);
+            Name = "MainForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "VSS2Git";
+            FormClosing += MainForm_FormClosing;
+            Load += MainForm_Load;
+            vssGroupBox.ResumeLayout(false);
+            vssGroupBox.PerformLayout();
+            statusStrip.ResumeLayout(false);
+            statusStrip.PerformLayout();
+            outputGroupBox.ResumeLayout(false);
+            outputGroupBox.PerformLayout();
+            changesetGroupBox.ResumeLayout(false);
+            changesetGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)sameCommentUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)anyCommentUpDown).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -547,6 +577,7 @@
         private System.Windows.Forms.Label commentLabel;
         private System.Windows.Forms.Button vssDirBrowseButton;
         private System.Windows.Forms.Button outDirBrowseButton;
+        private System.Windows.Forms.CheckBox exportProjectToGitRootCheckBox;
     }
 }
 

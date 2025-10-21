@@ -23,6 +23,12 @@
     <Setting Name="TranscodeComments" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="ExportProjectToGitRoot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+	<Setting Name="RemoveEmptyDirectories" Type="System.Boolean" Scope="User">
+	  <Value Profile="(Default)">True</Value>
+	</Setting>	  
     <Setting Name="AnyCommentSeconds" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">30</Value>
     </Setting>
@@ -33,7 +39,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="DefaultComment" Type="System.String" Scope="User">
-      <Value Profile="(Default)"></Value>
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

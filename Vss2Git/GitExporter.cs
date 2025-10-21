@@ -74,6 +74,13 @@ namespace Hpdi.Vss2Git
             set { defaultComment = value; }
         }
 
+        private bool exportProjectToGitRoot = false;
+        public bool ExportProjectToGitRoot
+        {
+            get { return exportProjectToGitRoot; }
+            set { exportProjectToGitRoot = value; }
+        }
+
         public GitExporter(WorkQueue workQueue, Logger logger,
             RevisionAnalyzer revisionAnalyzer, ChangesetBuilder changesetBuilder)
             : base(workQueue, logger)
@@ -119,7 +126,7 @@ namespace Hpdi.Vss2Git
                 // create mappings for root projects
                 foreach (var rootProject in revisionAnalyzer.RootProjects)
                 {
-                    var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path);
+                    var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, exportProjectToGitRoot);
                     pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
                 }
 

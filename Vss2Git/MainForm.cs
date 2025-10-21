@@ -151,6 +151,7 @@ namespace Hpdi.Vss2Git
                         gitExporter.CommitEncoding = encoding;
                     }
                     gitExporter.IgnoreErrors = ignoreErrorsCheckBox.Checked;
+                    gitExporter.ExportProjectToGitRoot = exportProjectToGitRootCheckBox.Checked;
                     gitExporter.ExportToGit(outDir);
                 }
 
@@ -317,6 +318,7 @@ namespace Hpdi.Vss2Git
             logTextBox.Text = settings.LogFile;
             transcodeCheckBox.Checked = settings.TranscodeComments;
             forceAnnotatedCheckBox.Checked = settings.ForceAnnotatedTags;
+            exportProjectToGitRootCheckBox.Checked = settings.ExportProjectToGitRoot;
             anyCommentUpDown.Value = settings.AnyCommentSeconds;
             sameCommentUpDown.Value = settings.SameCommentSeconds;
         }
@@ -332,6 +334,7 @@ namespace Hpdi.Vss2Git
             settings.LogFile = logTextBox.Text;
             settings.TranscodeComments = transcodeCheckBox.Checked;
             settings.ForceAnnotatedTags = forceAnnotatedCheckBox.Checked;
+            settings.ExportProjectToGitRoot = exportProjectToGitRootCheckBox.Checked;
             settings.AnyCommentSeconds = (int)anyCommentUpDown.Value;
             settings.SameCommentSeconds = (int)sameCommentUpDown.Value;
             settings.Save();
