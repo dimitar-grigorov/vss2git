@@ -22,7 +22,7 @@ namespace Hpdi.Vss2Git
     /// <summary>
     /// Interface for Git repository operations.
     /// </summary>
-    interface IGitRepository
+    interface IGitRepository : IDisposable
     {
         TimeSpan ElapsedTime { get; }
 

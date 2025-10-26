@@ -28,7 +28,7 @@ namespace Hpdi.Vss2Git
     /// Wraps execution of Git and implements the common Git commands.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class GitWrapper : IGitRepository
+    class GitWrapper : IGitRepository, IDisposable
     {
         private readonly string repoPath;
         private readonly Logger logger;
@@ -486,6 +486,12 @@ namespace Hpdi.Vss2Git
         {
             return char.IsWhiteSpace(c) || c == QuoteChar ||
                 (shellQuoting && (c == '&' || c == '|' || c == '<' || c == '>' || c == '^' || c == '%'));
+        }
+
+        public void Dispose()
+        {
+            // GitWrapper doesn't hold any resources that need disposal
+            // This method is implemented to satisfy the IGitRepository interface
         }
     }
 }
