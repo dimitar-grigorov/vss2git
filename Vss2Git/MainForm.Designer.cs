@@ -49,6 +49,8 @@
             changeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             timeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             outputGroupBox = new System.Windows.Forms.GroupBox();
+            useFastImportCheckBox = new System.Windows.Forms.CheckBox();
+            exportProjectToGitRootCheckBox = new System.Windows.Forms.CheckBox();
             outDirBrowseButton = new System.Windows.Forms.Button();
             ignoreErrorsCheckBox = new System.Windows.Forms.CheckBox();
             commentTextBox = new System.Windows.Forms.TextBox();
@@ -69,7 +71,6 @@
             label2 = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             anyCommentUpDown = new System.Windows.Forms.NumericUpDown();
-            exportProjectToGitRootCheckBox = new System.Windows.Forms.CheckBox();
             vssGroupBox.SuspendLayout();
             statusStrip.SuspendLayout();
             outputGroupBox.SuspendLayout();
@@ -192,7 +193,7 @@
             // goButton
             // 
             goButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            goButton.Location = new System.Drawing.Point(533, 408);
+            goButton.Location = new System.Drawing.Point(533, 425);
             goButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             goButton.Name = "goButton";
             goButton.Size = new System.Drawing.Size(88, 27);
@@ -208,7 +209,7 @@
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusLabel, fileLabel, revisionLabel, changeLabel, timeLabel });
-            statusStrip.Location = new System.Drawing.Point(0, 442);
+            statusStrip.Location = new System.Drawing.Point(0, 459);
             statusStrip.Name = "statusStrip";
             statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
             statusStrip.Size = new System.Drawing.Size(729, 22);
@@ -250,6 +251,7 @@
             // outputGroupBox
             // 
             outputGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            outputGroupBox.Controls.Add(useFastImportCheckBox);
             outputGroupBox.Controls.Add(exportProjectToGitRootCheckBox);
             outputGroupBox.Controls.Add(outDirBrowseButton);
             outputGroupBox.Controls.Add(ignoreErrorsCheckBox);
@@ -267,10 +269,35 @@
             outputGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             outputGroupBox.Name = "outputGroupBox";
             outputGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            outputGroupBox.Size = new System.Drawing.Size(701, 142);
+            outputGroupBox.Size = new System.Drawing.Size(701, 167);
             outputGroupBox.TabIndex = 1;
             outputGroupBox.TabStop = false;
             outputGroupBox.Text = "Output Settings";
+            // 
+            // useFastImportCheckBox
+            // 
+            useFastImportCheckBox.AutoSize = true;
+            useFastImportCheckBox.Checked = true;
+            useFastImportCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            useFastImportCheckBox.Location = new System.Drawing.Point(8, 139);
+            useFastImportCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            useFastImportCheckBox.Name = "useFastImportCheckBox";
+            useFastImportCheckBox.Size = new System.Drawing.Size(286, 19);
+            useFastImportCheckBox.TabIndex = 11;
+            useFastImportCheckBox.Text = "Use fast-import";
+            useFastImportCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // exportProjectToGitRootCheckBox
+            // 
+            exportProjectToGitRootCheckBox.AutoSize = true;
+            exportProjectToGitRootCheckBox.Location = new System.Drawing.Point(536, 114);
+            exportProjectToGitRootCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            exportProjectToGitRootCheckBox.Name = "exportProjectToGitRootCheckBox";
+            exportProjectToGitRootCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            exportProjectToGitRootCheckBox.Size = new System.Drawing.Size(156, 19);
+            exportProjectToGitRootCheckBox.TabIndex = 10;
+            exportProjectToGitRootCheckBox.Text = "Export project to Git root";
+            exportProjectToGitRootCheckBox.UseVisualStyleBackColor = true;
             // 
             // outDirBrowseButton
             // 
@@ -402,7 +429,7 @@
             // 
             cancelButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            cancelButton.Location = new System.Drawing.Point(628, 408);
+            cancelButton.Location = new System.Drawing.Point(628, 425);
             cancelButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new System.Drawing.Size(88, 27);
@@ -420,7 +447,7 @@
             changesetGroupBox.Controls.Add(label2);
             changesetGroupBox.Controls.Add(label1);
             changesetGroupBox.Controls.Add(anyCommentUpDown);
-            changesetGroupBox.Location = new System.Drawing.Point(14, 314);
+            changesetGroupBox.Location = new System.Drawing.Point(14, 339);
             changesetGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             changesetGroupBox.Name = "changesetGroupBox";
             changesetGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -487,25 +514,13 @@
             anyCommentUpDown.Size = new System.Drawing.Size(63, 23);
             anyCommentUpDown.TabIndex = 1;
             // 
-            // exportProjectToGitRootCheckBox
-            // 
-            exportProjectToGitRootCheckBox.AutoSize = true;
-            exportProjectToGitRootCheckBox.Location = new System.Drawing.Point(536, 114);
-            exportProjectToGitRootCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            exportProjectToGitRootCheckBox.Name = "exportProjectToGitRootCheckBox";
-            exportProjectToGitRootCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            exportProjectToGitRootCheckBox.Size = new System.Drawing.Size(156, 19);
-            exportProjectToGitRootCheckBox.TabIndex = 10;
-            exportProjectToGitRootCheckBox.Text = "Export project to Git root";
-            exportProjectToGitRootCheckBox.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             AcceptButton = goButton;
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             CancelButton = cancelButton;
-            ClientSize = new System.Drawing.Size(729, 464);
+            ClientSize = new System.Drawing.Size(729, 481);
             Controls.Add(changesetGroupBox);
             Controls.Add(cancelButton);
             Controls.Add(outputGroupBox);
@@ -578,6 +593,7 @@
         private System.Windows.Forms.Button vssDirBrowseButton;
         private System.Windows.Forms.Button outDirBrowseButton;
         private System.Windows.Forms.CheckBox exportProjectToGitRootCheckBox;
+        private System.Windows.Forms.CheckBox useFastImportCheckBox;
     }
 }
 

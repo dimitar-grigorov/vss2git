@@ -74,6 +74,13 @@ namespace Hpdi.Vss2Git
             set { defaultComment = value; }
         }
 
+        private bool useFastImport = true;
+        public bool UseFastImport
+        {
+            get { return useFastImport; }
+            set { useFastImport = value; }
+        }
+
         private bool exportProjectToGitRoot = false;
         public bool ExportProjectToGitRoot
         {
@@ -105,153 +112,162 @@ namespace Hpdi.Vss2Git
                     Directory.CreateDirectory(repoPath);
                 }
 
-                IGitRepository git = new GitWrapper(repoPath, logger);
-                git.CommitEncoding = commitEncoding;
-
-                if (!RetryCancel(delegate { git.Init(); }))
+                // Create Git repository using either fast-import or legacy wrapper
+                // IMPORTANT: Use 'using' statement to ensure Dispose() is called
+                using (IGitRepository git = useFastImport
+                    ? (IGitRepository)new GitFastImporter(repoPath, logger)
+                    : (IGitRepository)new GitWrapper(repoPath, logger))
                 {
-                    return;
-                }
+                    git.CommitEncoding = commitEncoding;
 
-                if (commitEncoding.WebName != "utf-8")
-                {
-                    AbortRetryIgnore(delegate
-                    {
-                        git.SetConfig("i18n.commitencoding", commitEncoding.WebName);
-                    });
-                }
+                    logger.WriteLine("Using {0} for Git operations",
+                        useFastImport ? "fast-import" : "legacy git commands");
 
-                var pathMapper = new VssPathMapper();
-
-                // create mappings for root projects
-                foreach (var rootProject in revisionAnalyzer.RootProjects)
-                {
-                    var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, exportProjectToGitRoot);
-                    pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
-                }
-
-                // replay each changeset
-                var changesetId = 1;
-                var changesets = changesetBuilder.Changesets;
-                var commitCount = 0;
-                var tagCount = 0;
-                var replayStopwatch = new Stopwatch();
-                var labels = new LinkedList<Revision>();
-                tagsUsed.Clear();
-                foreach (var changeset in changesets)
-                {
-                    var changesetDesc = string.Format(CultureInfo.InvariantCulture,
-                        "changeset {0} from {1}", changesetId, changeset.DateTime);
-
-                    // replay each revision in changeset
-                    LogStatus(work, "Replaying " + changesetDesc);
-                    labels.Clear();
-                    replayStopwatch.Start();
-                    bool needCommit;
-                    try
-                    {
-                        needCommit = ReplayChangeset(pathMapper, changeset, git, labels);
-                    }
-                    finally
-                    {
-                        replayStopwatch.Stop();
-                    }
-
-                    if (workQueue.IsAborting)
+                    if (!RetryCancel(delegate { git.Init(); }))
                     {
                         return;
                     }
 
-                    // Wait if suspended
-                    if (!workQueue.WaitIfSuspended())
+                    if (commitEncoding.WebName != "utf-8")
                     {
-                        return; // Aborting
+                        AbortRetryIgnore(delegate
+                        {
+                            git.SetConfig("i18n.commitencoding", commitEncoding.WebName);
+                        });
                     }
 
-                    // commit changes
-                    if (needCommit)
+                    var pathMapper = new VssPathMapper();
+
+                    // create mappings for root projects
+                    foreach (var rootProject in revisionAnalyzer.RootProjects)
                     {
-                        LogStatus(work, "Committing " + changesetDesc);
-                        if (CommitChangeset(git, changeset))
+                        var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, exportProjectToGitRoot);
+                        pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
+                    }
+
+                    // replay each changeset
+                    var changesetId = 1;
+                    var changesets = changesetBuilder.Changesets;
+                    var commitCount = 0;
+                    var tagCount = 0;
+                    var replayStopwatch = new Stopwatch();
+                    var labels = new LinkedList<Revision>();
+                    tagsUsed.Clear();
+                    foreach (var changeset in changesets)
+                    {
+                        var changesetDesc = string.Format(CultureInfo.InvariantCulture,
+                            "changeset {0} from {1}", changesetId, changeset.DateTime);
+
+                        // replay each revision in changeset
+                        LogStatus(work, "Replaying " + changesetDesc);
+                        labels.Clear();
+                        replayStopwatch.Start();
+                        bool needCommit;
+                        try
                         {
-                            ++commitCount;
+                            needCommit = ReplayChangeset(pathMapper, changeset, git, labels);
                         }
-                    }
-
-                    if (workQueue.IsAborting)
-                    {
-                        return;
-                    }
-
-                    // Wait if suspended
-                    if (!workQueue.WaitIfSuspended())
-                    {
-                        return; // Aborting
-                    }
-
-                    // create tags for any labels in the changeset
-                    if (labels.Count > 0)
-                    {
-                        foreach (Revision label in labels)
+                        finally
                         {
-                            var labelName = ((VssLabelAction)label.Action).Label;
-                            if (string.IsNullOrEmpty(labelName))
+                            replayStopwatch.Stop();
+                        }
+
+                        if (workQueue.IsAborting)
+                        {
+                            return;
+                        }
+
+                        // Wait if suspended
+                        if (!workQueue.WaitIfSuspended())
+                        {
+                            return; // Aborting
+                        }
+
+                        // commit changes
+                        if (needCommit)
+                        {
+                            LogStatus(work, "Committing " + changesetDesc);
+                            if (CommitChangeset(git, changeset))
                             {
-                                logger.WriteLine("NOTE: Ignoring empty label");
+                                ++commitCount;
                             }
-                            else if (commitCount == 0)
+                        }
+
+                        if (workQueue.IsAborting)
+                        {
+                            return;
+                        }
+
+                        // Wait if suspended
+                        if (!workQueue.WaitIfSuspended())
+                        {
+                            return; // Aborting
+                        }
+
+                        // create tags for any labels in the changeset
+                        if (labels.Count > 0)
+                        {
+                            foreach (Revision label in labels)
                             {
-                                logger.WriteLine("NOTE: Ignoring label '{0}' before initial commit", labelName);
-                            }
-                            else
-                            {
-                                var tagName = GetTagFromLabel(labelName);
-
-                                var tagMessage = "Creating tag " + tagName;
-                                if (tagName != labelName)
+                                var labelName = ((VssLabelAction)label.Action).Label;
+                                if (string.IsNullOrEmpty(labelName))
                                 {
-                                    tagMessage += " for label '" + labelName + "'";
+                                    logger.WriteLine("NOTE: Ignoring empty label");
                                 }
-                                LogStatus(work, tagMessage);
-
-                                // annotated tags require (and are implied by) a tag message;
-                                // tools like Mercurial's git converter only import annotated tags
-                                var tagComment = label.Comment;
-                                if (string.IsNullOrEmpty(tagComment) && forceAnnotatedTags)
+                                else if (commitCount == 0)
                                 {
-                                    // use the original VSS label as the tag message if none was provided
-                                    tagComment = labelName;
+                                    logger.WriteLine("NOTE: Ignoring label '{0}' before initial commit", labelName);
                                 }
+                                else
+                                {
+                                    var tagName = GetTagFromLabel(labelName);
 
-                                if (AbortRetryIgnore(
-                                    delegate
+                                    var tagMessage = "Creating tag " + tagName;
+                                    if (tagName != labelName)
                                     {
-                                        git.Tag(tagName, label.User, GetEmail(label.User),
-                                            tagComment, label.DateTime);
-                                    }))
-                                {
-                                    ++tagCount;
+                                        tagMessage += " for label '" + labelName + "'";
+                                    }
+                                    LogStatus(work, tagMessage);
+
+                                    // annotated tags require (and are implied by) a tag message;
+                                    // tools like Mercurial's git converter only import annotated tags
+                                    var tagComment = label.Comment;
+                                    if (string.IsNullOrEmpty(tagComment) && forceAnnotatedTags)
+                                    {
+                                        // use the original VSS label as the tag message if none was provided
+                                        tagComment = labelName;
+                                    }
+
+                                    if (AbortRetryIgnore(
+                                        delegate
+                                        {
+                                            git.Tag(tagName, label.User, GetEmail(label.User),
+                                                tagComment, label.DateTime);
+                                        }))
+                                    {
+                                        ++tagCount;
+                                    }
                                 }
                             }
                         }
+
+                        ++changesetId;
                     }
 
-                    ++changesetId;
-                }
+                    // Clean up empty directories
+                    LogStatus(work, "Cleaning up empty directories");
+                    var emptyDirsRemoved = RemoveEmptyDirectories(repoPath);
 
-                // Clean up empty directories
-                LogStatus(work, "Cleaning up empty directories");
-                var emptyDirsRemoved = RemoveEmptyDirectories(repoPath);
+                    stopwatch.Stop();
 
-                stopwatch.Stop();
-
-                logger.WriteSectionSeparator();
-                logger.WriteLine("Git export complete in {0:HH:mm:ss}", new DateTime(stopwatch.ElapsedTicks));
-                logger.WriteLine("Replay time: {0:HH:mm:ss}", new DateTime(replayStopwatch.ElapsedTicks));
-                logger.WriteLine("Git time: {0:HH:mm:ss}", new DateTime(git.ElapsedTime.Ticks));
-                logger.WriteLine("Git commits: {0}", commitCount);
-                logger.WriteLine("Git tags: {0}", tagCount);
-                logger.WriteLine("Empty directories removed: {0}", emptyDirsRemoved);
+                    logger.WriteSectionSeparator();
+                    logger.WriteLine("Git export complete in {0:HH:mm:ss}", new DateTime(stopwatch.ElapsedTicks));
+                    logger.WriteLine("Replay time: {0:HH:mm:ss}", new DateTime(replayStopwatch.ElapsedTicks));
+                    logger.WriteLine("Git time: {0:HH:mm:ss}", new DateTime(git.ElapsedTime.Ticks));
+                    logger.WriteLine("Git commits: {0}", commitCount);
+                    logger.WriteLine("Git tags: {0}", tagCount);
+                    logger.WriteLine("Empty directories removed: {0}", emptyDirsRemoved);
+                } // Dispose git repository (CRITICAL: finalizes fast-import)
             });
         }
 
