@@ -35,7 +35,9 @@ namespace Hpdi.Vss2Git
         private readonly IFormatProvider formatProvider;
 
         public Logger(string filename)
-            : this(new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.Read))
+            : this(new BufferedStream(
+                new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.Read),
+                bufferSize: 65536)) // 64KB buffer for much better performance
         {
         }
 
