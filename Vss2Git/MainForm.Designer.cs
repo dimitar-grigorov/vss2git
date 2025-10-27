@@ -193,7 +193,7 @@
             // goButton
             // 
             goButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            goButton.Location = new System.Drawing.Point(533, 425);
+            goButton.Location = new System.Drawing.Point(533, 432);
             goButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             goButton.Name = "goButton";
             goButton.Size = new System.Drawing.Size(88, 27);
@@ -209,7 +209,7 @@
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusLabel, fileLabel, revisionLabel, changeLabel, timeLabel });
-            statusStrip.Location = new System.Drawing.Point(0, 459);
+            statusStrip.Location = new System.Drawing.Point(0, 466);
             statusStrip.Name = "statusStrip";
             statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
             statusStrip.Size = new System.Drawing.Size(729, 22);
@@ -277,14 +277,12 @@
             // useFastImportCheckBox
             // 
             useFastImportCheckBox.AutoSize = true;
-            useFastImportCheckBox.Checked = true;
-            useFastImportCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             useFastImportCheckBox.Location = new System.Drawing.Point(8, 139);
             useFastImportCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             useFastImportCheckBox.Name = "useFastImportCheckBox";
-            useFastImportCheckBox.Size = new System.Drawing.Size(286, 19);
+            useFastImportCheckBox.Size = new System.Drawing.Size(194, 19);
             useFastImportCheckBox.TabIndex = 11;
-            useFastImportCheckBox.Text = "Use fast-import";
+            useFastImportCheckBox.Text = "Use fast-import - Alpha version!";
             useFastImportCheckBox.UseVisualStyleBackColor = true;
             // 
             // exportProjectToGitRootCheckBox
@@ -429,7 +427,7 @@
             // 
             cancelButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            cancelButton.Location = new System.Drawing.Point(628, 425);
+            cancelButton.Location = new System.Drawing.Point(628, 432);
             cancelButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new System.Drawing.Size(88, 27);
@@ -520,7 +518,7 @@
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             CancelButton = cancelButton;
-            ClientSize = new System.Drawing.Size(729, 481);
+            ClientSize = new System.Drawing.Size(729, 488);
             Controls.Add(changesetGroupBox);
             Controls.Add(cancelButton);
             Controls.Add(outputGroupBox);
