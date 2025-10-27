@@ -4,10 +4,12 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "${config:msbuildPath}",
+      "command": "dotnet",
       "args": [
+        "build",
         "${input:buildTarget}",
-        "/p:Configuration=${input:buildConfiguration}"
+        "--configuration",
+        "${input:buildConfiguration}"
       ],
       "group": {
         "kind": "build",
@@ -16,25 +18,39 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-${input:project}-${input:configuration}",
+      "label": "clean",
       "type": "shell",
-      "command": "${config:msbuildPath}",
+      "command": "dotnet",
       "args": [
-        "${input:projectPath}",
-        "/p:Configuration=${input:configuration}"
+        "clean",
+        "Vss2Git.sln",
+        "--configuration",
+        "${input:buildConfiguration}"
       ],
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "clean",
+      "label": "rebuild",
       "type": "shell",
-      "command": "${config:msbuildPath}",
+      "command": "dotnet",
       "args": [
-        "Vss2Git.sln",
-        "/t:Clean",
-        "/p:Configuration=${input:buildConfiguration}"
+        "build",
+        "${input:buildTarget}",
+        "--configuration",
+        "${input:buildConfiguration}",
+        "--no-incremental"
       ],
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "restore",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "restore",
+        "Vss2Git.sln"
+      ],
+      "problemMatcher": []
     }
   ],
   "inputs": [
@@ -53,34 +69,12 @@
         "Vss2Git.sln",
         "Vss2Git/Vss2Git.csproj",
         "VssDump/VssDump.csproj",
-        "HashTest/HashTest.csproj"
+        "HashTest/HashTest.csproj",
+        "VssPhysicalLib/VssPhysicalLib.csproj",
+        "VssLogicalLib/VssLogicalLib.csproj",
+        "HashLib/HashLib.csproj"
       ],
       "default": "Vss2Git.sln"
-    },
-    {
-      "id": "project",
-      "type": "pickString",
-      "description": "Project",
-      "options": ["Vss2Git", "VssDump", "HashTest"],
-      "default": "Vss2Git"
-    },
-    {
-      "id": "configuration",
-      "type": "pickString",
-      "description": "Configuration",
-      "options": ["Debug", "Release"],
-      "default": "Debug"
-    },
-    {
-      "id": "projectPath",
-      "type": "pickString",
-      "description": "Project path",
-      "options": [
-        "Vss2Git/Vss2Git.csproj",
-        "VssDump/VssDump.csproj",
-        "HashTest/HashTest.csproj"
-      ],
-      "default": "Vss2Git/Vss2Git.csproj"
     }
   ]
 }
