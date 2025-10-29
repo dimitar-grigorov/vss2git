@@ -598,6 +598,12 @@ namespace Hpdi.Vss2Git
             {
                 if (projectSpec.StartsWith(rootInfo.OriginalVssPath))
                 {
+                    // Handle exact match - projectSpec is the root itself
+                    if (projectSpec == rootInfo.OriginalVssPath)
+                    {
+                        return rootInfo;
+                    }
+
                     var rootLength = rootInfo.OriginalVssPath.Length;
                     if (!rootInfo.OriginalVssPath.EndsWith("/"))
                     {
