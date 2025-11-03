@@ -49,7 +49,6 @@
             changeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             timeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             outputGroupBox = new System.Windows.Forms.GroupBox();
-            useFastImportCheckBox = new System.Windows.Forms.CheckBox();
             exportProjectToGitRootCheckBox = new System.Windows.Forms.CheckBox();
             outDirBrowseButton = new System.Windows.Forms.Button();
             ignoreErrorsCheckBox = new System.Windows.Forms.CheckBox();
@@ -251,7 +250,6 @@
             // outputGroupBox
             // 
             outputGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            outputGroupBox.Controls.Add(useFastImportCheckBox);
             outputGroupBox.Controls.Add(exportProjectToGitRootCheckBox);
             outputGroupBox.Controls.Add(outDirBrowseButton);
             outputGroupBox.Controls.Add(ignoreErrorsCheckBox);
@@ -273,17 +271,6 @@
             outputGroupBox.TabIndex = 1;
             outputGroupBox.TabStop = false;
             outputGroupBox.Text = "Output Settings";
-            // 
-            // useFastImportCheckBox
-            // 
-            useFastImportCheckBox.AutoSize = true;
-            useFastImportCheckBox.Location = new System.Drawing.Point(8, 139);
-            useFastImportCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            useFastImportCheckBox.Name = "useFastImportCheckBox";
-            useFastImportCheckBox.Size = new System.Drawing.Size(194, 19);
-            useFastImportCheckBox.TabIndex = 11;
-            useFastImportCheckBox.Text = "Use fast-import - Alpha version!";
-            useFastImportCheckBox.UseVisualStyleBackColor = true;
             // 
             // exportProjectToGitRootCheckBox
             // 
@@ -591,7 +578,6 @@
         private System.Windows.Forms.Button vssDirBrowseButton;
         private System.Windows.Forms.Button outDirBrowseButton;
         private System.Windows.Forms.CheckBox exportProjectToGitRootCheckBox;
-        private System.Windows.Forms.CheckBox useFastImportCheckBox;
     }
 }
 

@@ -138,6 +138,11 @@ namespace Hpdi.Vss2Git
             return ExecuteUnless(startInfo, "did not match any files");
         }
 
+        public bool AddAll(IEnumerable<string> changedPaths)
+        {
+            return AddAll();
+        }
+
         public void Remove(string path, bool recursive)
         {
             GitExec("rm " + (recursive ? "-r " : "") + "-- " + Quote(path));

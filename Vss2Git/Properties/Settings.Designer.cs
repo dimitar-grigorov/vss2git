@@ -178,17 +178,5 @@ namespace Hpdi.Vss2Git.Properties {
                 this["DefaultComment"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseFastImport {
-            get {
-                return ((bool)(this["UseFastImport"]));
-            }
-            set {
-                this["UseFastImport"] = value;
-            }
-        }
     }
 }

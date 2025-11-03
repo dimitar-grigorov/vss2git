@@ -38,6 +38,8 @@ namespace Hpdi.Vss2Git
 
         bool AddAll();
 
+        bool AddAll(IEnumerable<string> changedPaths);
+
         void Remove(string path, bool recursive);
 
         void Move(string sourcePath, string destPath);

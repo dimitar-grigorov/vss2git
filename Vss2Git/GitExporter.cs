@@ -74,13 +74,6 @@ namespace Hpdi.Vss2Git
             set { defaultComment = value; }
         }
 
-        private bool useFastImport = true;
-        public bool UseFastImport
-        {
-            get { return useFastImport; }
-            set { useFastImport = value; }
-        }
-
         private bool exportProjectToGitRoot = false;
         public bool ExportProjectToGitRoot
         {
@@ -112,16 +105,10 @@ namespace Hpdi.Vss2Git
                     Directory.CreateDirectory(repoPath);
                 }
 
-                // Create Git repository using either fast-import or legacy wrapper
                 // IMPORTANT: Use 'using' statement to ensure Dispose() is called
-                using (IGitRepository git = useFastImport
-                    ? (IGitRepository)new GitFastImporter(repoPath, logger)
-                    : (IGitRepository)new GitWrapper(repoPath, logger))
+                using (IGitRepository git = new GitWrapper(repoPath, logger))
                 {
                     git.CommitEncoding = commitEncoding;
-
-                    logger.WriteLine("Using {0} for Git operations",
-                        useFastImport ? "fast-import" : "legacy git commands");
 
                     if (!RetryCancel(delegate { git.Init(); }))
                     {
