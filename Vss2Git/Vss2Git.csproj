@@ -31,10 +31,6 @@
     <AssemblyTitle>Vss2Git</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VssLogicalLib\VssLogicalLib.csproj" />
-    <ProjectReference Include="..\VssPhysicalLib\VssPhysicalLib.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Vss2Git.ico" />
     <Content Include="Vss2Git32.ico" />
   </ItemGroup>
@@ -47,6 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.10" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vss2Git.Core\Vss2Git.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">

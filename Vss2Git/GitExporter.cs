@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Forms;
 using Hpdi.VssLogicalLib;
 
 namespace Hpdi.Vss2Git
@@ -82,8 +81,9 @@ namespace Hpdi.Vss2Git
         }
 
         public GitExporter(WorkQueue workQueue, Logger logger,
-            RevisionAnalyzer revisionAnalyzer, ChangesetBuilder changesetBuilder)
-            : base(workQueue, logger)
+            RevisionAnalyzer revisionAnalyzer, ChangesetBuilder changesetBuilder,
+            IUserInteraction userInteraction)
+            : base(workQueue, logger, userInteraction)
         {
             this.database = revisionAnalyzer.Database;
             this.revisionAnalyzer = revisionAnalyzer;
@@ -602,15 +602,15 @@ namespace Hpdi.Vss2Git
 
         private bool RetryCancel(ThreadStart work)
         {
-            return AbortRetryIgnore(work, MessageBoxButtons.RetryCancel);
+            return AbortRetryIgnore(work, ErrorActionOptions.RetryCancel);
         }
 
         private bool AbortRetryIgnore(ThreadStart work)
         {
-            return AbortRetryIgnore(work, MessageBoxButtons.AbortRetryIgnore);
+            return AbortRetryIgnore(work, ErrorActionOptions.AbortRetryIgnore);
         }
 
-        private bool AbortRetryIgnore(ThreadStart work, MessageBoxButtons buttons)
+        private bool AbortRetryIgnore(ThreadStart work, ErrorActionOptions options)
         {
             bool retry;
             do
@@ -632,13 +632,13 @@ namespace Hpdi.Vss2Git
                         continue;
                     }
 
-                    var button = MessageBox.Show(message, "Error", buttons, MessageBoxIcon.Error);
-                    switch (button)
+                    var action = userInteraction.ReportError(message, options);
+                    switch (action)
                     {
-                        case DialogResult.Retry:
+                        case ErrorAction.Retry:
                             retry = true;
                             break;
-                        case DialogResult.Ignore:
+                        case ErrorAction.Ignore:
                             retry = false;
                             break;
                         default:

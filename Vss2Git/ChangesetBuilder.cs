@@ -51,8 +51,8 @@ namespace Hpdi.Vss2Git
             set { sameCommentThreshold = value; }
         }
 
-        public ChangesetBuilder(WorkQueue workQueue, Logger logger, RevisionAnalyzer revisionAnalyzer)
-            : base(workQueue, logger)
+        public ChangesetBuilder(WorkQueue workQueue, Logger logger, RevisionAnalyzer revisionAnalyzer, IUserInteraction userInteraction)
+            : base(workQueue, logger, userInteraction)
         {
             this.revisionAnalyzer = revisionAnalyzer;
         }

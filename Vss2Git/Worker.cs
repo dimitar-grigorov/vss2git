@@ -14,7 +14,6 @@
  */
 
 using System;
-using System.Windows.Forms;
 
 namespace Hpdi.Vss2Git
 {
@@ -26,11 +25,13 @@ namespace Hpdi.Vss2Git
     {
         protected readonly WorkQueue workQueue;
         protected readonly Logger logger;
+        protected readonly IUserInteraction userInteraction;
 
-        public Worker(WorkQueue workQueue, Logger logger)
+        public Worker(WorkQueue workQueue, Logger logger, IUserInteraction userInteraction)
         {
             this.workQueue = workQueue;
             this.logger = logger;
+            this.userInteraction = userInteraction ?? throw new ArgumentNullException(nameof(userInteraction));
         }
 
         protected void LogStatus(object work, string status)
@@ -54,8 +55,8 @@ namespace Hpdi.Vss2Git
 
         protected void ReportError(string message)
         {
-            var button = MessageBox.Show(message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
-            if (button == DialogResult.Cancel)
+            // Ask user if they want to continue or cancel
+            if (!userInteraction.Confirm(message + "\n\nDo you want to continue?", "Error"))
             {
                 workQueue.Abort();
             }

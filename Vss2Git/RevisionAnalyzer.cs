@@ -84,8 +84,8 @@ namespace Hpdi.Vss2Git
             get { return Thread.VolatileRead(ref revisionCount); }
         }
 
-        public RevisionAnalyzer(WorkQueue workQueue, Logger logger, VssDatabase database)
-            : base(workQueue, logger)
+        public RevisionAnalyzer(WorkQueue workQueue, Logger logger, VssDatabase database, IUserInteraction userInteraction)
+            : base(workQueue, logger, userInteraction)
         {
             this.database = database;
         }

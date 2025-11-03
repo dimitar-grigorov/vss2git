@@ -119,14 +119,16 @@ namespace Hpdi.Vss2Git
                     return;
                 }
 
-                revisionAnalyzer = new RevisionAnalyzer(workQueue, logger, db);
+                var userInteraction = new MessageBoxUserInteraction(this);
+
+                revisionAnalyzer = new RevisionAnalyzer(workQueue, logger, db, userInteraction);
                 if (!string.IsNullOrEmpty(excludeTextBox.Text))
                 {
                     revisionAnalyzer.ExcludeFiles = excludeTextBox.Text;
                 }
                 revisionAnalyzer.AddItem(project);
 
-                changesetBuilder = new ChangesetBuilder(workQueue, logger, revisionAnalyzer);
+                changesetBuilder = new ChangesetBuilder(workQueue, logger, revisionAnalyzer, userInteraction);
                 changesetBuilder.AnyCommentThreshold = TimeSpan.FromSeconds((double)anyCommentUpDown.Value);
                 changesetBuilder.SameCommentThreshold = TimeSpan.FromSeconds((double)sameCommentUpDown.Value);
                 changesetBuilder.BuildChangesets();
@@ -146,7 +148,7 @@ namespace Hpdi.Vss2Git
                     }
 
                     var gitExporter = new GitExporter(workQueue, logger,
-                        revisionAnalyzer, changesetBuilder);
+                        revisionAnalyzer, changesetBuilder, userInteraction);
                     if (!string.IsNullOrEmpty(domainTextBox.Text))
                     {
                         gitExporter.EmailDomain = domainTextBox.Text;
