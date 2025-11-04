@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using Hpdi.VssLogicalLib;
 
 namespace Hpdi.Vss2Git

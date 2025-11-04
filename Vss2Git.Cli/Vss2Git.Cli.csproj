@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vss2Git.Core\Vss2Git.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Mapster" Version="7.4.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Hpdi.Vss2Git.Cli</RootNamespace>
+    <AssemblyName>Vss2Git.Cli</AssemblyName>
+    <AssemblyVersion>1.0.12.0</AssemblyVersion>
+    <FileVersion>1.0.12.0</FileVersion>
+    <Version>1.0.12</Version>
+    <Company>HPDI, LLC</Company>
+    <Product>Vss2Git CLI</Product>
+    <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -35,59 +35,20 @@ namespace Hpdi.Vss2Git
         private readonly VssDatabase database;
         private readonly RevisionAnalyzer revisionAnalyzer;
         private readonly ChangesetBuilder changesetBuilder;
+        private readonly MigrationConfiguration config;
         private readonly StreamCopier streamCopier = new StreamCopier();
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
-        private bool ignoreErrors = false;
-        private string defaultComment = "";
-
-        private string emailDomain = "localhost";
-        public string EmailDomain
-        {
-            get { return emailDomain; }
-            set { emailDomain = value; }
-        }
-
-        private Encoding commitEncoding = Encoding.UTF8;
-        public Encoding CommitEncoding
-        {
-            get { return commitEncoding; }
-            set { commitEncoding = value; }
-        }
-
-        private bool forceAnnotatedTags = true;
-        public bool ForceAnnotatedTags
-        {
-            get { return forceAnnotatedTags; }
-            set { forceAnnotatedTags = value; }
-        }
-
-        public bool IgnoreErrors
-        {
-            get { return ignoreErrors; }
-            set { ignoreErrors = value; }
-        }
-
-        public string DefaultComment
-        {
-            get { return defaultComment; }
-            set { defaultComment = value; }
-        }
-
-        private bool exportProjectToGitRoot = false;
-        public bool ExportProjectToGitRoot
-        {
-            get { return exportProjectToGitRoot; }
-            set { exportProjectToGitRoot = value; }
-        }
 
         public GitExporter(WorkQueue workQueue, Logger logger,
             RevisionAnalyzer revisionAnalyzer, ChangesetBuilder changesetBuilder,
+            MigrationConfiguration config,
             IUserInteraction userInteraction)
             : base(workQueue, logger, userInteraction)
         {
             this.database = revisionAnalyzer.Database;
             this.revisionAnalyzer = revisionAnalyzer;
             this.changesetBuilder = changesetBuilder;
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public void ExportToGit(string repoPath)
@@ -108,18 +69,20 @@ namespace Hpdi.Vss2Git
                 // IMPORTANT: Use 'using' statement to ensure Dispose() is called
                 using (IGitRepository git = new GitWrapper(repoPath, logger))
                 {
-                    git.CommitEncoding = commitEncoding;
+                    // Determine encoding: use UTF-8 if transcoding, otherwise use VssEncoding as-is
+                    var encoding = config.TranscodeComments ? Encoding.UTF8 : config.VssEncoding;
+                    git.CommitEncoding = encoding;
 
                     if (!RetryCancel(delegate { git.Init(); }))
                     {
                         return;
                     }
 
-                    if (commitEncoding.WebName != "utf-8")
+                    if (encoding.WebName != "utf-8")
                     {
                         AbortRetryIgnore(delegate
                         {
-                            git.SetConfig("i18n.commitencoding", commitEncoding.WebName);
+                            git.SetConfig("i18n.commitencoding", encoding.WebName);
                         });
                     }
 
@@ -128,7 +91,7 @@ namespace Hpdi.Vss2Git
                     // create mappings for root projects
                     foreach (var rootProject in revisionAnalyzer.RootProjects)
                     {
-                        var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, exportProjectToGitRoot);
+                        var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, config.ExportProjectToGitRoot);
                         pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
                     }
 
@@ -219,7 +182,7 @@ namespace Hpdi.Vss2Git
                                     // annotated tags require (and are implied by) a tag message;
                                     // tools like Mercurial's git converter only import annotated tags
                                     var tagComment = label.Comment;
-                                    if (string.IsNullOrEmpty(tagComment) && forceAnnotatedTags)
+                                    if (string.IsNullOrEmpty(tagComment) && config.ForceAnnotatedTags)
                                     {
                                         // use the original VSS label as the tag message if none was provided
                                         tagComment = labelName;
@@ -595,7 +558,7 @@ namespace Hpdi.Vss2Git
             {
                 result = git.AddAll() &&
                     git.Commit(changeset.User, GetEmail(changeset.User),
-                    changeset.Comment ?? DefaultComment, changeset.DateTime);
+                    changeset.Comment ?? config.DefaultComment, changeset.DateTime);
             });
             return result;
         }
@@ -626,7 +589,7 @@ namespace Hpdi.Vss2Git
 
                     message += "\nSee log file for more information.";
 
-                    if (ignoreErrors)
+                    if (config.IgnoreErrors)
                     {
                         retry = false;
                         continue;
@@ -654,7 +617,7 @@ namespace Hpdi.Vss2Git
         private string GetEmail(string user)
         {
             // TODO: user-defined mapping of user names to email addresses
-            return user.ToLower().Replace(' ', '.') + "@" + emailDomain;
+            return user.ToLower().Replace(' ', '.') + "@" + config.DefaultEmailDomain;
         }
 
         private string GetTagFromLabel(string label)

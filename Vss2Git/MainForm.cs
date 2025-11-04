@@ -16,11 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Hpdi.VssLogicalLib;
 
 namespace Hpdi.Vss2Git
 {
@@ -32,18 +30,18 @@ namespace Hpdi.Vss2Git
     {
         private readonly Dictionary<int, EncodingInfo> codePages = new Dictionary<int, EncodingInfo>();
         private readonly WorkQueue workQueue = new WorkQueue(1);
+
         private Logger logger = Logger.Null;
+
         private RevisionAnalyzer revisionAnalyzer;
+
         private ChangesetBuilder changesetBuilder;
+
+        private MigrationOrchestrator orchestrator;
 
         public MainForm()
         {
             InitializeComponent();
-        }
-
-        private void OpenLog(string filename)
-        {
-            logger = string.IsNullOrEmpty(filename) ? Logger.Null : new Logger(filename);
         }
 
         private void goButton_Click(object sender, EventArgs e)
@@ -53,132 +51,45 @@ namespace Hpdi.Vss2Git
             {
                 if (workQueue.IsSuspended)
                 {
-                    workQueue.Resume();
+                    orchestrator?.Resume();
                 }
                 else
                 {
-                    workQueue.Suspend();
+                    orchestrator?.Pause();
                 }
                 return;
             }
 
-            // Start new migration
-            try
+            // Save current UI state to settings
+            WriteSettings();
+
+            // Get encoding from combo box (not persisted directly)
+            Encoding encoding = Encoding.Default;
+            EncodingInfo encodingInfo;
+            if (codePages.TryGetValue(encodingComboBox.SelectedIndex, out encodingInfo))
             {
-                OpenLog(logTextBox.Text);
-
-                logger.WriteLine("VSS2Git version {0}", Assembly.GetExecutingAssembly().GetName().Version);
-
-                WriteSettings();
-
-                Encoding encoding = Encoding.Default;
-                EncodingInfo encodingInfo;
-                if (codePages.TryGetValue(encodingComboBox.SelectedIndex, out encodingInfo))
-                {
-                    encoding = encodingInfo.GetEncoding();
-                }
-
-                logger.WriteLine("VSS encoding: {0} (CP: {1}, IANA: {2})",
-                    encoding.EncodingName, encoding.CodePage, encoding.WebName);
-                logger.WriteLine("Comment transcoding: {0}",
-                    transcodeCheckBox.Checked ? "enabled" : "disabled");
-                logger.WriteLine("Ignore errors: {0}",
-                    ignoreErrorsCheckBox.Checked ? "enabled" : "disabled");
-
-                var df = new VssDatabaseFactory(vssDirTextBox.Text);
-                df.Encoding = encoding;
-                var db = df.Open();
-
-                var path = vssProjectTextBox.Text.Trim();
-
-                // Default to root project if path is empty
-                if (string.IsNullOrEmpty(path))
-                {
-                    path = "$";
-                    logger.WriteLine("VSS project path was empty, defaulting to root: $");
-                }
-
-                logger.WriteLine("VSS project: {0}", path);
-                VssItem item;
-                try
-                {
-                    item = db.GetItem(path);
-                }
-                catch (VssPathException ex)
-                {
-                    MessageBox.Show(ex.Message, "Invalid project path",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                var project = item as VssProject;
-                if (project == null)
-                {
-                    MessageBox.Show(path + " is not a project", "Invalid project path",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                var userInteraction = new MessageBoxUserInteraction(this);
-
-                revisionAnalyzer = new RevisionAnalyzer(workQueue, logger, db, userInteraction);
-                if (!string.IsNullOrEmpty(excludeTextBox.Text))
-                {
-                    revisionAnalyzer.ExcludeFiles = excludeTextBox.Text;
-                }
-                revisionAnalyzer.AddItem(project);
-
-                changesetBuilder = new ChangesetBuilder(workQueue, logger, revisionAnalyzer, userInteraction);
-                changesetBuilder.AnyCommentThreshold = TimeSpan.FromSeconds((double)anyCommentUpDown.Value);
-                changesetBuilder.SameCommentThreshold = TimeSpan.FromSeconds((double)sameCommentUpDown.Value);
-                changesetBuilder.BuildChangesets();
-
-                if (!string.IsNullOrEmpty(outDirTextBox.Text))
-                {
-                    var outDir = outDirTextBox.Text.Trim();
-                    if (Directory.Exists(outDir) && Directory.EnumerateFileSystemEntries(outDir).Any())
-                    {
-                        var dlgRes = MessageBox.Show(
-                            "The output directory is not empty. Do you want to continue?",
-                            "Output directory not empty",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Warning);
-                        if (dlgRes != DialogResult.Yes)
-                            return;
-                    }
-
-                    var gitExporter = new GitExporter(workQueue, logger,
-                        revisionAnalyzer, changesetBuilder, userInteraction);
-                    if (!string.IsNullOrEmpty(domainTextBox.Text))
-                    {
-                        gitExporter.EmailDomain = domainTextBox.Text;
-                    }
-                    if (!string.IsNullOrEmpty(commentTextBox.Text))
-                    {
-                        gitExporter.DefaultComment = commentTextBox.Text;
-                    }
-                    if (!transcodeCheckBox.Checked)
-                    {
-                        gitExporter.CommitEncoding = encoding;
-                    }
-                    gitExporter.IgnoreErrors = ignoreErrorsCheckBox.Checked;
-                    gitExporter.ExportProjectToGitRoot = exportProjectToGitRootCheckBox.Checked;
-                    gitExporter.ExportToGit(outDir);
-                }
-
-                workQueue.Idle += delegate
-                {
-                    logger.Dispose();
-                    logger = Logger.Null;
-                };
-
-                statusTimer.Enabled = true;
+                encoding = encodingInfo.GetEncoding();
             }
-            catch (Exception ex)
+
+            // Build configuration from settings using SettingsMapper
+            var config = SettingsMapper.FromSettings(encoding);
+
+            // Override with current UI state for non-persisted fields
+            config.IgnoreErrors = ignoreErrorsCheckBox.Checked;
+
+            // Create UI abstractions
+            var userInteraction = new MessageBoxUserInteraction(this);
+            var statusReporter = new GuiStatusReporter(statusTimer);
+
+            // Create orchestrator
+            orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
+
+            // Run migration - orchestrator will handle all the logic
+            if (orchestrator.Run())
             {
-                logger.Dispose();
-                logger = Logger.Null;
-                ShowException(ex);
+                // Store references for status display
+                revisionAnalyzer = orchestrator.RevisionAnalyzer;
+                changesetBuilder = orchestrator.ChangesetBuilder;
             }
         }
 
