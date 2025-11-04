@@ -73,10 +73,18 @@ Admittedly, some potentially interesting features are currently outside the scop
 Yes! **Vss2Git.Cli** provides a command-line interface for automated migrations.
 
 ```bash
+# Basic migration
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --email-domain "company.com"
+
+# Verify migration results
+Vss2Git.Cli verify --source "C:\VSS\MyProject" --target "C:\Git\MyProject"
 ```
 
 Key options: `--vss-project` (VSS path), `--exclude` (patterns), `--ignore-errors` (unattended mode). Run `Vss2Git.Cli --help` for all options.
+
+## Testing ##
+
+Integration tests validate migrations using pre-built VSS databases. Run with `dotnet test`. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
 ## Screenshot ##
 
