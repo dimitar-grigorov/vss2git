@@ -35,7 +35,7 @@ namespace Hpdi.Vss2Git.Cli
         public string VssExcludePaths { get; set; }
 
         [Option('d', "email-domain", Default = "localhost", HelpText = "Email domain for generated email addresses")]
-        public string EmailDomain { get; set; }
+        public string DefaultEmailDomain { get; set; }
 
         [Option("default-comment", Default = "", HelpText = "Default comment for changesets with no comment")]
         public string DefaultComment { get; set; }
