@@ -24,6 +24,16 @@
       "program": "${workspaceFolder}/HashTest/bin/${input:configuration}/net8.0/HashTest.exe",
       "preLaunchTask": "build",
       "console": "internalConsole"
+    },
+    {
+      "name": "Vss2Git.Cli",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Vss2Git.Cli/bin/${input:configuration}/net8.0/Vss2Git.Cli.dll",
+      "args": ["--help"],
+      "preLaunchTask": "build",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
     }
   ],
   "inputs": [

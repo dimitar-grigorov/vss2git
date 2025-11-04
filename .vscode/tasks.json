@@ -68,6 +68,8 @@
       "options": [
         "Vss2Git.sln",
         "Vss2Git/Vss2Git.csproj",
+        "Vss2Git.Cli/Vss2Git.Cli.csproj",
+        "Vss2Git.Core/Vss2Git.Core.csproj",
         "VssDump/VssDump.csproj",
         "HashTest/HashTest.csproj",
         "VssPhysicalLib/VssPhysicalLib.csproj",
