@@ -26,7 +26,7 @@ namespace Hpdi.Vss2Git
     /// Enumerates revisions in a VSS database.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class RevisionAnalyzer : Worker
+    public class RevisionAnalyzer : Worker
     {
         private string excludeFiles;
         public string ExcludeFiles

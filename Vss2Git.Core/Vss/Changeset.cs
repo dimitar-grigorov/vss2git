@@ -20,56 +20,42 @@ using Hpdi.VssLogicalLib;
 namespace Hpdi.Vss2Git
 {
     /// <summary>
-    /// Represents a single revision to a file or directory.
+    /// Represents a set of revisions made by a particular person at a particular time.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class Revision
+    public class Changeset
     {
-        private readonly DateTime dateTime;
+        private DateTime dateTime;
         public DateTime DateTime
         {
             get { return dateTime; }
+            set { dateTime = value; }
         }
 
-        private readonly string user;
+        private string user;
         public string User
         {
             get { return user; }
+            set { user = value; }
         }
 
-        private readonly VssItemName item;
-        public VssItemName Item
-        {
-            get { return item; }
-        } 
-
-        private readonly int version;
-        public int Version
-        {
-            get { return version; }
-        }
-
-        private readonly string comment;
+        private string comment;
         public string Comment
         {
             get { return comment; }
+            set { comment = value; }
         }
 
-        private readonly VssAction action;
-        public VssAction Action
+        private readonly LinkedList<Revision> revisions = new LinkedList<Revision>();
+        public LinkedList<Revision> Revisions
         {
-            get { return action; }
+            get { return revisions; }
         }
 
-        public Revision(DateTime dateTime, string user, VssItemName item,
-            int version, string comment, VssAction action)
+        private readonly HashSet<string> targetFiles = new HashSet<string>();
+        public HashSet<string> TargetFiles
         {
-            this.dateTime = dateTime;
-            this.user = user;
-            this.item = item;
-            this.version = version;
-            this.comment = comment;
-            this.action = action;
+            get { return targetFiles; }
         }
     }
 }

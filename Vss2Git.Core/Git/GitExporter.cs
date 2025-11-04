@@ -30,7 +30,7 @@ namespace Hpdi.Vss2Git
     /// Replays and commits changesets into a new Git repository.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class GitExporter : Worker
+    public class GitExporter : Worker
     {
         private readonly VssDatabase database;
         private readonly RevisionAnalyzer revisionAnalyzer;

@@ -24,7 +24,7 @@ namespace Hpdi.Vss2Git
     /// Writes log messages to an optional stream.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class Logger : IDisposable
+    public class Logger : IDisposable
     {
         public static readonly Logger Null = new Logger((Stream)null);
 

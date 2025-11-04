@@ -1,16 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <RootNamespace>Hpdi.Vss2Git</RootNamespace>
+    <AssemblyVersion>1.0.11.0</AssemblyVersion>
+    <FileVersion>1.0.11.0</FileVersion>
+    <Version>1.0.12</Version>
+    <Company>HPDI, LLC</Company>
+    <Product>Vss2Git.Core</Product>
+    <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
   </PropertyGroup>
 
- <ItemGroup>
-		<ProjectReference Include="..\VssLogicalLib\VssLogicalLib.csproj" />
-		<ProjectReference Include="..\VssPhysicalLib\VssPhysicalLib.csproj" />
-</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.10" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VssLogicalLib\VssLogicalLib.csproj" />
+    <ProjectReference Include="..\VssPhysicalLib\VssPhysicalLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.10" />
+  </ItemGroup>
 </Project>

@@ -26,7 +26,7 @@ namespace Hpdi.Vss2Git
     /// Reconstructs changesets from independent revisions.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class ChangesetBuilder : Worker
+    public class ChangesetBuilder : Worker
     {
         private readonly RevisionAnalyzer revisionAnalyzer;
 

@@ -21,7 +21,7 @@ namespace Hpdi.Vss2Git
     /// Base class for queued workers in the application.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    abstract class Worker
+    public abstract class Worker
     {
         protected readonly WorkQueue workQueue;
         protected readonly Logger logger;

@@ -21,7 +21,7 @@ namespace Hpdi.Vss2Git
     /// Formats exceptions expected in this application with type-specific details.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    static class ExceptionFormatter
+    public static class ExceptionFormatter
     {
         public static string Format(Exception e)
         {

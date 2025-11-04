@@ -20,42 +20,56 @@ using Hpdi.VssLogicalLib;
 namespace Hpdi.Vss2Git
 {
     /// <summary>
-    /// Represents a set of revisions made by a particular person at a particular time.
+    /// Represents a single revision to a file or directory.
     /// </summary>
     /// <author>Trevor Robinson</author>
-    class Changeset
+    public class Revision
     {
-        private DateTime dateTime;
+        private readonly DateTime dateTime;
         public DateTime DateTime
         {
             get { return dateTime; }
-            set { dateTime = value; }
         }
 
-        private string user;
+        private readonly string user;
         public string User
         {
             get { return user; }
-            set { user = value; }
         }
 
-        private string comment;
+        private readonly VssItemName item;
+        public VssItemName Item
+        {
+            get { return item; }
+        } 
+
+        private readonly int version;
+        public int Version
+        {
+            get { return version; }
+        }
+
+        private readonly string comment;
         public string Comment
         {
             get { return comment; }
-            set { comment = value; }
         }
 
-        private readonly LinkedList<Revision> revisions = new LinkedList<Revision>();
-        public LinkedList<Revision> Revisions
+        private readonly VssAction action;
+        public VssAction Action
         {
-            get { return revisions; }
+            get { return action; }
         }
 
-        private readonly HashSet<string> targetFiles = new HashSet<string>();
-        public HashSet<string> TargetFiles
+        public Revision(DateTime dateTime, string user, VssItemName item,
+            int version, string comment, VssAction action)
         {
-            get { return targetFiles; }
+            this.dateTime = dateTime;
+            this.user = user;
+            this.item = item;
+            this.version = version;
+            this.comment = comment;
+            this.action = action;
         }
     }
 }
