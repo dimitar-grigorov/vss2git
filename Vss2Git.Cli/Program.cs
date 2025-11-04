@@ -28,10 +28,11 @@ namespace Hpdi.Vss2Git.Cli
             // Register code page encodings (required for VSS encoding support)
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // Parse command-line arguments
-            return Parser.Default.ParseArguments<CliOptions>(args)
+            // Parse command-line arguments with verb support
+            return Parser.Default.ParseArguments<CliOptions, VerifyOptions>(args)
                 .MapResult(
-                    options => RunMigration(options),
+                    (CliOptions options) => RunMigration(options),
+                    (VerifyOptions options) => RunVerify(options),
                     errors => 1
                 );
         }
@@ -141,6 +142,17 @@ namespace Hpdi.Vss2Git.Cli
             Console.WriteLine($"  Duration:   {workQueue.ActiveTime:hh\\:mm\\:ss}");
 
             return 0;
+        }
+
+        static int RunVerify(VerifyOptions options)
+        {
+            string[] excludes = null;
+            if (!string.IsNullOrEmpty(options.ExcludePatterns))
+            {
+                excludes = options.ExcludePatterns.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            return VerifyCommand.Run(options.SourceDirectory, options.TargetDirectory, excludes);
         }
     }
 }

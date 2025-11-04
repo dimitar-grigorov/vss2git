@@ -20,6 +20,7 @@ namespace Hpdi.Vss2Git.Cli
     /// <summary>
     /// Command-line options for Vss2Git migration
     /// </summary>
+    [Verb("migrate", isDefault: true, HelpText = "Migrate VSS repository to Git")]
     public class CliOptions
     {
         [Option('v', "vss-dir", Required = true, HelpText = "Path to VSS database directory (contains srcsafe.ini)")]
