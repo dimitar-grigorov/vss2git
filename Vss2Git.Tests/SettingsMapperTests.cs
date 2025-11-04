@@ -29,6 +29,12 @@ namespace Hpdi.Vss2Git.Tests
     /// </summary>
     public class SettingsMapperTests : IDisposable
     {
+        // Static constructor to register code pages encoding provider once for all tests
+        static SettingsMapperTests()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
         private readonly string _originalVssDirectory;
         private readonly string _originalGitDirectory;
         private readonly string _originalVssProject;
