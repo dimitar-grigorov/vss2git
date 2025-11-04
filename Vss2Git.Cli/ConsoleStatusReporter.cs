@@ -24,15 +24,19 @@ namespace Hpdi.Vss2Git.Cli
     public class ConsoleStatusReporter : IStatusReporter
     {
         private readonly WorkQueue workQueue;
-        private readonly MigrationOrchestrator orchestrator;
         private Timer pollTimer;
         private int lastLineLength = 0;
         private readonly object consoleLock = new object();
 
-        public ConsoleStatusReporter(WorkQueue workQueue, MigrationOrchestrator orchestrator)
+        /// <summary>
+        /// Optional orchestrator reference for detailed statistics.
+        /// Set this after construction to enable file/revision/changeset counts in status line.
+        /// </summary>
+        public MigrationOrchestrator Orchestrator { get; set; }
+
+        public ConsoleStatusReporter(WorkQueue workQueue)
         {
             this.workQueue = workQueue;
-            this.orchestrator = orchestrator;
         }
 
         public void Start()
@@ -66,9 +70,6 @@ namespace Hpdi.Vss2Git.Cli
                 {
                     var status = workQueue.LastStatus ?? "Idle";
                     var elapsed = workQueue.ActiveTime;
-                    var files = orchestrator.RevisionAnalyzer?.FileCount ?? 0;
-                    var revisions = orchestrator.RevisionAnalyzer?.RevisionCount ?? 0;
-                    var changesets = orchestrator.ChangesetBuilder?.Changesets.Count ?? 0;
 
                     // Clear previous line (carriage return + spaces)
                     if (lastLineLength > 0)
@@ -76,8 +77,19 @@ namespace Hpdi.Vss2Git.Cli
                         Console.Write('\r' + new string(' ', lastLineLength) + '\r');
                     }
 
-                    // Build status line
-                    var line = $"{status} | Elapsed: {elapsed:hh\\:mm\\:ss} | Files: {files} | Revisions: {revisions} | Changesets: {changesets}";
+                    // Build status line with optional detailed statistics
+                    string line;
+                    if (Orchestrator != null)
+                    {
+                        var files = Orchestrator.RevisionAnalyzer?.FileCount ?? 0;
+                        var revisions = Orchestrator.RevisionAnalyzer?.RevisionCount ?? 0;
+                        var changesets = Orchestrator.ChangesetBuilder?.Changesets.Count ?? 0;
+                        line = $"{status} | Elapsed: {elapsed:hh\\:mm\\:ss} | Files: {files} | Revisions: {revisions} | Changesets: {changesets}";
+                    }
+                    else
+                    {
+                        line = $"{status} | Elapsed: {elapsed:hh\\:mm\\:ss}";
+                    }
 
                     // Truncate if too long for console
                     if (line.Length > Console.WindowWidth - 1)

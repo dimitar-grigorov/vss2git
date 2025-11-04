@@ -100,16 +100,13 @@ namespace Hpdi.Vss2Git.Cli
 
             // Create UI abstractions
             var userInteraction = new ConsoleUserInteraction(options.IgnoreErrors, options.Interactive);
+            var statusReporter = new ConsoleStatusReporter(workQueue);
 
-            // Create orchestrator (temporary status reporter)
-            var orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction,
-                new NullStatusReporter());
+            // Create orchestrator
+            var orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
 
-            // Create status reporter with orchestrator
-            var statusReporter = new ConsoleStatusReporter(workQueue, orchestrator);
-
-            // Recreate orchestrator with real status reporter
-            orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
+            // Set orchestrator reference for detailed statistics in status reporter
+            statusReporter.Orchestrator = orchestrator;
 
             // Handle Ctrl + C
             Console.CancelKeyPress += (sender, e) =>
@@ -131,21 +128,19 @@ namespace Hpdi.Vss2Git.Cli
             // Wait for completion
             workQueue.WaitIdle();
 
+            // Display final statistics
             Console.WriteLine();
             Console.WriteLine("========================================");
             Console.WriteLine("Migration completed successfully!");
             Console.WriteLine("========================================");
+            Console.WriteLine();
+            Console.WriteLine("Statistics:");
+            Console.WriteLine($"  Files:      {orchestrator.RevisionAnalyzer?.FileCount ?? 0}");
+            Console.WriteLine($"  Revisions:  {orchestrator.RevisionAnalyzer?.RevisionCount ?? 0}");
+            Console.WriteLine($"  Changesets: {orchestrator.ChangesetBuilder?.Changesets.Count ?? 0}");
+            Console.WriteLine($"  Duration:   {workQueue.ActiveTime:hh\\:mm\\:ss}");
 
             return 0;
-        }
-
-        /// <summary>
-        /// Null status reporter for initial orchestrator creation
-        /// </summary>
-        private class NullStatusReporter : IStatusReporter
-        {
-            public void Start() { }
-            public void Stop() { }
         }
     }
 }

@@ -30,12 +30,7 @@ namespace Hpdi.Vss2Git
     {
         private readonly Dictionary<int, EncodingInfo> codePages = new Dictionary<int, EncodingInfo>();
         private readonly WorkQueue workQueue = new WorkQueue(1);
-
         private Logger logger = Logger.Null;
-
-        private RevisionAnalyzer revisionAnalyzer;
-
-        private ChangesetBuilder changesetBuilder;
 
         private MigrationOrchestrator orchestrator;
 
@@ -85,12 +80,7 @@ namespace Hpdi.Vss2Git
             orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
 
             // Run migration - orchestrator will handle all the logic
-            if (orchestrator.Run())
-            {
-                // Store references for status display
-                revisionAnalyzer = orchestrator.RevisionAnalyzer;
-                changesetBuilder = orchestrator.ChangesetBuilder;
-            }
+            orchestrator.Run();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -104,22 +94,21 @@ namespace Hpdi.Vss2Git
             timeLabel.Text = string.Format("Elapsed: {0:HH:mm:ss}",
                 new DateTime(workQueue.ActiveTime.Ticks));
 
-            if (revisionAnalyzer != null)
+            if (orchestrator?.RevisionAnalyzer != null)
             {
-                fileLabel.Text = "Files: " + revisionAnalyzer.FileCount;
-                revisionLabel.Text = "Revisions: " + revisionAnalyzer.RevisionCount;
+                fileLabel.Text = "Files: " + orchestrator.RevisionAnalyzer.FileCount;
+                revisionLabel.Text = "Revisions: " + orchestrator.RevisionAnalyzer.RevisionCount;
             }
 
-            if (changesetBuilder != null)
+            if (orchestrator?.ChangesetBuilder != null)
             {
-                changeLabel.Text = "Changesets: " + changesetBuilder.Changesets.Count;
+                changeLabel.Text = "Changesets: " + orchestrator.ChangesetBuilder.Changesets.Count;
             }
 
             // Update button states based on work queue status
             if (workQueue.IsIdle)
             {
-                revisionAnalyzer = null;
-                changesetBuilder = null;
+                orchestrator = null;
 
                 statusTimer.Enabled = false;
                 goButton.Text = "Go";

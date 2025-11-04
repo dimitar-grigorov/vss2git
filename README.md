@@ -70,9 +70,13 @@ Admittedly, some potentially interesting features are currently outside the scop
 
 ## Can I script it? ##
 
-Currently there is no offically supported Command Line Interface (CLI).  
-[There is a fork](https://github.com/bwilli66/vss2git-hybrid) that implements a CLI, but it is a mostly-untested, experimental feature.  
-Use it at your own risk.
+Yes! **Vss2Git.Cli** provides a command-line interface for automated migrations.
+
+```bash
+Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --email-domain "company.com"
+```
+
+Key options: `--vss-project` (VSS path), `--exclude` (patterns), `--ignore-errors` (unattended mode). Run `Vss2Git.Cli --help` for all options.
 
 ## Screenshot ##
 
