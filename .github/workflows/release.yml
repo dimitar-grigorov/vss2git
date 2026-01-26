@@ -1,0 +1,122 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.12)'
+        required: true
+        default: '1.0.12'
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Extract version from tag
+      id: get_version
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION="${{ github.event.inputs.version }}"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+
+    - name: Restore dependencies
+      run: dotnet restore Vss2Git.sln
+
+    - name: Build solution
+      run: dotnet build Vss2Git.sln --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test Vss2Git.sln --configuration Release --no-build --verbosity normal
+
+    - name: Publish CLI (win-x64)
+      run: |
+        dotnet publish Vss2Git.Cli\Vss2Git.Cli.csproj `
+          --configuration Release `
+          --output release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64 `
+          --self-contained false `
+          --runtime win-x64
+
+    - name: Publish GUI (win-x64)
+      run: |
+        dotnet publish Vss2Git\Vss2Git.csproj `
+          --configuration Release `
+          --output release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64 `
+          --self-contained false `
+          --runtime win-x64
+
+    - name: Copy documentation to CLI package
+      run: |
+        Copy-Item README.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item LICENSE.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item ARCHITECTURE.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item CODE_ANALYSIS.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+
+    - name: Copy documentation to GUI package
+      run: |
+        Copy-Item README.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item LICENSE.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item ARCHITECTURE.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item CODE_ANALYSIS.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+
+    - name: Create ZIP archives
+      run: |
+        Compress-Archive -Path release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64 -DestinationPath release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+        Compress-Archive -Path release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64 -DestinationPath release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          release/*.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        body: |
+          ## Vss2Git v${{ steps.get_version.outputs.VERSION }}
+
+          ### Downloads
+          - **Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64.zip** - Command-line interface for automated migrations
+          - **Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64.zip** - Windows GUI application
+
+          ### Requirements
+          - .NET 8.0 Runtime (Windows x64)
+          - Git must be in PATH
+
+          ### Installation
+          1. Download and extract the appropriate ZIP file
+          2. Ensure .NET 8.0 Runtime is installed
+          3. Run `Vss2Git.Cli.exe --help` for CLI or `Vss2Git.exe` for GUI
+
+          See [README.md](https://github.com/${{ github.repository }}/blob/master/README.md) for usage instructions.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload CLI artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64
+        path: release/Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+
+    - name: Upload GUI artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64
+        path: release/Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
