@@ -182,7 +182,7 @@ namespace Hpdi.Vss2Git
                                 {
                                     pendingChange.Comment = revComment;
                                 }
-                                else if (!pendingChange.Comment.Contains(revComment))
+                                else if (!CommentContainsLine(pendingChange.Comment, revComment))
                                 {
                                     pendingChange.Comment += "\n" + revComment;
                                 }
@@ -207,6 +207,16 @@ namespace Hpdi.Vss2Git
         private bool HasSameComment(Revision rev1, Revision rev2)
         {
             return !string.IsNullOrEmpty(rev1.Comment) && rev1.Comment == rev2.Comment;
+        }
+
+        private static bool CommentContainsLine(string accumulated, string newComment)
+        {
+            foreach (var line in accumulated.Split('\n'))
+            {
+                if (line.Trim() == newComment)
+                    return true;
+            }
+            return false;
         }
 
         private void AddChangeset(Changeset change)

@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Hpdi.VssLogicalLib;
 
 namespace Hpdi.Vss2Git
@@ -593,7 +594,8 @@ namespace Hpdi.Vss2Git
                 throw new ArgumentException("Project spec must start with $/ but was \"" + projectSpec + "\"", "projectSpec");
             }
 
-            foreach (var rootInfo in rootInfos.Values)
+            // Sort by path length descending so $/ProjectX matches before $/Project
+            foreach (var rootInfo in rootInfos.Values.OrderByDescending(r => r.OriginalVssPath.Length))
             {
                 if (projectSpec.StartsWith(rootInfo.OriginalVssPath))
                 {
