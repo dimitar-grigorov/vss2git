@@ -79,7 +79,7 @@ public class ProjectMoveChainTests : IDisposable
         var commits = _runner.Inspector!.GetCommits();
 
         // Operations: add file1, add file2, move1, edit, move2, edit, rename, edit = ~8 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(6);
+        commits.Should().HaveCountGreaterThanOrEqualTo(7);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
         withMessage.Should().BeGreaterThanOrEqualTo(3);

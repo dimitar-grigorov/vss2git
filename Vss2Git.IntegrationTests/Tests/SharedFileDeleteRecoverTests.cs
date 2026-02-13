@@ -40,8 +40,14 @@ public class SharedFileDeleteRecoverTests : IDisposable
     [Fact]
     public void Migration_DestroyedFileNotInProjectC()
     {
-        _runner.Inspector!.FileExists("ShareTest/ProjectC/shared.txt")
+        var inspector = _runner.Inspector!;
+
+        inspector.FileExists("ShareTest/ProjectC/shared.txt")
             .Should().BeFalse("shared.txt was destroyed from ProjectC");
+
+        // ProjectC itself still exists (only the file was destroyed, not the project)
+        inspector.DirectoryExists("ShareTest/ProjectC").Should().BeFalse(
+            "ProjectC has no files, so git doesn't track it");
     }
 
     [Fact]
@@ -70,7 +76,7 @@ public class SharedFileDeleteRecoverTests : IDisposable
 
         // Operations: add, share B, share C, edit v2, delete B, edit v3,
         // recover B, edit v4, destroy C, edit v5 = ~10 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(8);
+        commits.Should().HaveCountGreaterThanOrEqualTo(9);
 
         // Most edits have comments
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));

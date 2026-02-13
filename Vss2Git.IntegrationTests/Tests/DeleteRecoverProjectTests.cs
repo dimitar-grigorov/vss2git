@@ -66,7 +66,7 @@ public class DeleteRecoverProjectTests : IDisposable
         // Operations: add file1, add inner, add root, edit file1, edit inner,
         // delete project, edit root, recover project, edit file1, edit inner,
         // delete file1, recover file1, edit file1 = ~13 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(8);
+        commits.Should().HaveCountGreaterThanOrEqualTo(10);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
         withMessage.Should().BeGreaterThanOrEqualTo(6);
