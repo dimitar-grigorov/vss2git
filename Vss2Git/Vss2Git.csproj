@@ -22,9 +22,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <!-- Assembly Information -->
-    <AssemblyVersion>1.0.15.0</AssemblyVersion>
-    <FileVersion>1.0.15.0</FileVersion>
-    <Version>1.0.15</Version>
+    <AssemblyVersion>1.0.16.0</AssemblyVersion>
+    <FileVersion>1.0.16.0</FileVersion>
+    <Version>1.0.16</Version>
     <Company>HPDI, LLC</Company>
     <Product>Vss2Git</Product>
     <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
