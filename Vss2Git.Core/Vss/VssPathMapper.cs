@@ -538,8 +538,8 @@ namespace Hpdi.Vss2Git
                 var parentInfo = ResolveProjectSpec(newParentSpec);
                 if (parentInfo != null)
                 {
-                    // propagate the destroyed flag from the new parent
-                    subprojectInfo.Parent = parentInfo;
+                    // Only propagate destroyed flag; Parent is updated by MoveProjectFrom.
+                    // Updating Parent here would corrupt GetProjectPath for MoveFrom.
                     subprojectInfo.Destroyed |= parentInfo.Destroyed;
                 }
                 else

@@ -262,7 +262,13 @@ namespace Hpdi.Vss2Git
             IGitRepository git, LinkedList<Revision> labels)
         {
             var needCommit = false;
-            foreach (Revision revision in changeset.Revisions)
+
+            // Process MoveFrom before MoveTo so GetProjectPath returns the
+            // source path before MoveTo updates the parent pointer.
+            var revisions = changeset.Revisions.OrderBy(r =>
+                r.Action.Type == VssActionType.MoveTo ? 1 : 0);
+
+            foreach (Revision revision in revisions)
             {
                 if (workQueue.IsAborting)
                 {
