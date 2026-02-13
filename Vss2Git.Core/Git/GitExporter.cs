@@ -263,10 +263,9 @@ namespace Hpdi.Vss2Git
         {
             var needCommit = false;
 
-            // Process MoveFrom before MoveTo so GetProjectPath returns the
-            // source path before MoveTo updates the parent pointer.
-            var revisions = changeset.Revisions.OrderBy(r =>
-                r.Action.Type == VssActionType.MoveTo ? 1 : 0);
+            // Sort by action type priority to ensure causal ordering within a changeset.
+            // Handles: Add/Share before Branch, MoveFrom before MoveTo, Delete/Destroy last.
+            var revisions = changeset.Revisions.OrderBy(r => GetActionPriority(r.Action.Type));
 
             foreach (Revision revision in revisions)
             {
@@ -282,6 +281,30 @@ namespace Hpdi.Vss2Git
             }
             return needCommit;
         }
+
+        /// <summary>
+        /// Defines causal ordering for action types within a changeset.
+        /// Lower values are processed first.
+        /// </summary>
+        private static int GetActionPriority(VssActionType actionType) => actionType switch
+        {
+            VssActionType.Create  => 0,  // ignored but logically first
+            VssActionType.Label   => 1,  // deferred to after commit
+            VssActionType.Add     => 2,  // structural: adds items
+            VssActionType.Share   => 2,
+            VssActionType.Recover => 2,
+            VssActionType.Restore => 2,
+            VssActionType.MoveFrom => 3, // must come before MoveTo
+            VssActionType.Branch  => 4,  // must come after Share
+            VssActionType.Pin     => 5,
+            VssActionType.Edit    => 6,
+            VssActionType.Rename  => 7,
+            VssActionType.Archive => 8,  // currently ignored
+            VssActionType.MoveTo  => 9,  // cleanup after MoveFrom
+            VssActionType.Delete  => 10,
+            VssActionType.Destroy => 11,
+            _                     => 6,
+        };
 
         private bool ReplayRevision(VssPathMapper pathMapper, Revision revision,
             IGitRepository git, LinkedList<Revision> labels)

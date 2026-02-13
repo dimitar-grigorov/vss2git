@@ -43,6 +43,7 @@ var scenarios = new ITestScenario[]
     new Scenario09_DeleteRecoverProject(),
     new Scenario10_SharedFilePinDuringShare(),
     new Scenario11_UnmappedProjectRevisions(),
+    new Scenario12_TimestampCollision(),
 };
 
 var passed = 0;
