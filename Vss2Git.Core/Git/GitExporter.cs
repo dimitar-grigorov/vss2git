@@ -38,6 +38,7 @@ namespace Hpdi.Vss2Git
         private readonly MigrationConfiguration config;
         private readonly StreamCopier streamCopier = new StreamCopier();
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
+        private readonly PerformanceTracker perfTracker;
         private bool skipGitOperations;
 
         public GitExporter(WorkQueue workQueue, Logger logger,
@@ -50,6 +51,7 @@ namespace Hpdi.Vss2Git
             this.revisionAnalyzer = revisionAnalyzer;
             this.changesetBuilder = changesetBuilder;
             this.config = config ?? throw new ArgumentNullException(nameof(config));
+            this.perfTracker = config.EnablePerformanceTracking ? new PerformanceTracker() : null;
         }
 
         public void ExportToGit(string repoPath)
@@ -68,7 +70,7 @@ namespace Hpdi.Vss2Git
                 }
 
                 // IMPORTANT: Use 'using' statement to ensure Dispose() is called
-                using (IGitRepository git = new GitWrapper(repoPath, logger))
+                using (IGitRepository git = new GitWrapper(repoPath, logger, perfTracker))
                 {
                     // Determine encoding: use UTF-8 if transcoding, otherwise use VssEncoding as-is
                     var encoding = config.TranscodeComments ? Encoding.UTF8 : config.VssEncoding;
@@ -99,9 +101,11 @@ namespace Hpdi.Vss2Git
                     // replay each changeset
                     var changesetId = 1;
                     var changesets = changesetBuilder.Changesets;
+                    var totalChangesets = changesets.Count;
                     var commitCount = 0;
                     var tagCount = 0;
                     var replayStopwatch = new Stopwatch();
+                    var progressStopwatch = Stopwatch.StartNew();
                     var labels = new LinkedList<Revision>();
                     tagsUsed.Clear();
                     skipGitOperations = config.FromDate.HasValue;
@@ -123,6 +127,21 @@ namespace Hpdi.Vss2Git
 
                         var changesetDesc = string.Format(CultureInfo.InvariantCulture,
                             "changeset {0} from {1}", changesetId, changeset.DateTime);
+
+                        // progress logging every 100 changesets
+                        if (changesetId % 100 == 0)
+                        {
+                            var elapsed = progressStopwatch.Elapsed;
+                            var rate = changesetId / elapsed.TotalSeconds;
+                            var remaining = (totalChangesets - changesetId) / rate;
+                            logger.WriteSectionSeparator();
+                            logger.WriteLine("PROGRESS: {0}/{1} changesets ({2:F1}%) - {3:F1} changesets/sec - ETA: {4:hh\\:mm\\:ss}",
+                                changesetId, totalChangesets,
+                                (double)changesetId / totalChangesets * 100.0,
+                                rate,
+                                TimeSpan.FromSeconds(remaining));
+                            logger.WriteSectionSeparator();
+                        }
 
                         // replay each revision in changeset
                         LogStatus(work, (skipGitOperations ? "Building state for " : "Replaying ") + changesetDesc);
@@ -233,6 +252,8 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("Git commits: {0}", commitCount);
                     logger.WriteLine("Git tags: {0}", tagCount);
                     logger.WriteLine("Empty directories removed: {0}", emptyDirsRemoved);
+
+                    perfTracker?.WriteSummary(logger, stopwatch.Elapsed);
                 } // Dispose git repository (CRITICAL: finalizes fast-import)
             });
         }
@@ -523,14 +544,14 @@ namespace Hpdi.Vss2Git
                         {
                             logger.WriteLine("{0}: Creating subdirectory {1}",
                                 projectDesc, projectInfo.LogicalName);
-                            Directory.CreateDirectory(projectInfo.GetPath());
+                                    Directory.CreateDirectory(projectInfo.GetPath());
                         }
 
                         // write current rev of all contained files
                         foreach (var fileInfo in pathMapper.GetAllFiles(target.PhysicalName))
                         {
                             if (WriteRevision(pathMapper, actionType, fileInfo.PhysicalName,
-                                fileInfo.Version, target.PhysicalName, git))
+                                fileInfo.Version, target.PhysicalName))
                             {
                                 // one or more files were written
                                 needCommit = true;
@@ -543,8 +564,7 @@ namespace Hpdi.Vss2Git
                         int version = pathMapper.GetFileVersion(target.PhysicalName);
                         if (WriteRevisionTo(target.PhysicalName, version, targetPath))
                         {
-                            // add file explicitly, so it is visible to subsequent git operations
-                            git.Add(targetPath);
+                            // git add -A in CommitChangeset will stage this file
                             needCommit = true;
                         }
                     }
@@ -566,7 +586,7 @@ namespace Hpdi.Vss2Git
                 if (!skipGitOperations)
                 {
                     WriteRevision(pathMapper, actionType, target.PhysicalName,
-                        revision.Version, null, git);
+                        revision.Version, null);
                     needCommit = true;
                 }
             }
@@ -661,7 +681,7 @@ namespace Hpdi.Vss2Git
         }
 
         private bool WriteRevision(VssPathMapper pathMapper, VssActionType actionType,
-            string physicalName, int version, string underProject, IGitRepository git)
+            string physicalName, int version, string underProject)
         {
             var needCommit = false;
             var paths = pathMapper.GetFilePaths(physicalName, underProject);
@@ -670,8 +690,7 @@ namespace Hpdi.Vss2Git
                 logger.WriteLine("{0}: {1} revision {2}", path, actionType, version);
                 if (WriteRevisionTo(physicalName, version, path))
                 {
-                    // add file explicitly, so it is visible to subsequent git operations
-                    git.Add(path);
+                    // git add -A in CommitChangeset will stage this file
                     needCommit = true;
                 }
             }

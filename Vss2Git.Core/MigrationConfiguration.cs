@@ -39,6 +39,9 @@ namespace Hpdi.Vss2Git
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
 
+        // Diagnostics
+        public bool EnablePerformanceTracking { get; set; } = false;
+
         /// <summary>
         /// Validate the configuration and return validation result
         /// </summary>

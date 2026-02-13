@@ -61,5 +61,8 @@ namespace Hpdi.Vss2Git.Cli
 
         [Option("to-date", HelpText = "Export changesets up to this date (yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss). Stops after last matching changeset.")]
         public string ToDate { get; set; }
+
+        [Option("perf", Default = false, HelpText = "Enable performance tracking and print summary at end")]
+        public bool EnablePerformanceTracking { get; set; }
     }
 }

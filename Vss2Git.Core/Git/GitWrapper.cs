@@ -32,6 +32,7 @@ namespace Hpdi.Vss2Git
     {
         private readonly string repoPath;
         private readonly Logger logger;
+        private readonly PerformanceTracker perfTracker;
         private readonly Stopwatch stopwatch = new Stopwatch();
         private string gitExecutable = "git.exe";
         private string gitInitialArguments = null;
@@ -67,10 +68,11 @@ namespace Hpdi.Vss2Git
             set { commitEncoding = value; }
         }
 
-        public GitWrapper(string repoPath, Logger logger)
+        public GitWrapper(string repoPath, Logger logger, PerformanceTracker perfTracker = null)
         {
             this.repoPath = repoPath;
             this.logger = logger;
+            this.perfTracker = perfTracker;
         }
 
         private bool FindExecutable()
@@ -99,12 +101,12 @@ namespace Hpdi.Vss2Git
             {
                 throw new FileNotFoundException("Git executable not found in PATH. Please ensure git.exe or git.cmd is available.");
             }
-            GitExec("init");
+            using (perfTracker?.Start("Git:init")) GitExec("init");
         }
 
         public void SetConfig(string name, string value)
         {
-            GitExec("config " + name + " " + Quote(value));
+            using (perfTracker?.Start("Git:config")) GitExec("config " + name + " " + Quote(value));
         }
 
         public bool Add(string path)
@@ -112,7 +114,8 @@ namespace Hpdi.Vss2Git
             var startInfo = GetStartInfo("add -- " + Quote(path));
 
             // add fails if there are no files (directories don't count)
-            return ExecuteUnless(startInfo, "did not match any files");
+            using (perfTracker?.Start("Git:add"))
+                return ExecuteUnless(startInfo, "did not match any files");
         }
 
         public bool Add(IEnumerable<string> paths)
@@ -127,7 +130,8 @@ namespace Hpdi.Vss2Git
             var startInfo = GetStartInfo(args.ToString());
 
             // add fails if there are no files (directories don't count)
-            return ExecuteUnless(startInfo, "did not match any files");
+            using (perfTracker?.Start("Git:add"))
+                return ExecuteUnless(startInfo, "did not match any files");
         }
 
         public bool AddAll()
@@ -135,7 +139,8 @@ namespace Hpdi.Vss2Git
             var startInfo = GetStartInfo("add -A");
 
             // add fails if there are no files (directories don't count)
-            return ExecuteUnless(startInfo, "did not match any files");
+            using (perfTracker?.Start("Git:addAll"))
+                return ExecuteUnless(startInfo, "did not match any files");
         }
 
         public bool AddAll(IEnumerable<string> changedPaths)
@@ -145,12 +150,12 @@ namespace Hpdi.Vss2Git
 
         public void Remove(string path, bool recursive)
         {
-            GitExec("rm " + (recursive ? "-rf " : "") + "-- " + Quote(path));
+            using (perfTracker?.Start("Git:remove")) GitExec("rm " + (recursive ? "-rf " : "") + "-- " + Quote(path));
         }
 
         public void Move(string sourcePath, string destPath)
         {
-            GitExec("mv -- " + Quote(sourcePath) + " " + Quote(destPath));
+            using (perfTracker?.Start("Git:move")) GitExec("mv -- " + Quote(sourcePath) + " " + Quote(destPath));
         }
 
         class TempFile : IDisposable
@@ -239,7 +244,8 @@ namespace Hpdi.Vss2Git
 
                 // ignore empty commits, since they are non-trivial to detect
                 // (e.g. when renaming a directory)
-                return ExecuteUnless(startInfo, "nothing to commit");
+                using (perfTracker?.Start("Git:commit"))
+                    return ExecuteUnless(startInfo, "nothing to commit");
             }
         }
 
@@ -260,7 +266,8 @@ namespace Hpdi.Vss2Git
                 startInfo.EnvironmentVariables["GIT_COMMITTER_EMAIL"] = taggerEmail;
                 startInfo.EnvironmentVariables["GIT_COMMITTER_DATE"] = GetUtcTimeString(localTime);
 
-                ExecuteUnless(startInfo, null);
+                using (perfTracker?.Start("Git:tag"))
+                    ExecuteUnless(startInfo, null);
             }
         }
 
