@@ -1,5 +1,12 @@
-.vs/
+# Dot-folders: ignore all except already tracked ones
+.*/
+!.github/
+!.vscode/
 *.csproj.user
 bin/
 obj/
 Vss2GitSetup*.exe
+*.scc
+
+# TestDbBuilder output (VSS test databases are created on-the-fly)
+Vss2Git.IntegrationTests/TestData/
