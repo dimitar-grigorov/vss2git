@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Hpdi.Vss2Git.IntegrationTests.Helpers;
 
@@ -31,17 +32,45 @@ public class DeleteAndRecoverTests : IDisposable
     {
         var inspector = _runner.Inspector!;
 
-        inspector.DirectoryExists("DelTest/ToDestroy").Should().BeFalse(
-            "destroyed project should not exist in git");
-        inspector.FileExists("DelTest/ToDestroy/destroyed.txt").Should().BeFalse(
-            "destroyed file should not exist in git");
+        inspector.DirectoryExists("DelTest/ToDestroy").Should().BeFalse("destroyed");
+        inspector.FileExists("DelTest/ToDestroy/destroyed.txt").Should().BeFalse("destroyed");
     }
 
     [Fact]
-    public void Migration_DeletedProjectFilesShouldBeRemoved()
+    public void Migration_DeletedProjectFullyRemoved()
     {
-        _runner.Inspector!.FileExists("DelTest/ToDelete/also-delete.txt").Should().BeFalse(
-            "also-delete.txt should not exist after project deletion");
+        var inspector = _runner.Inspector!;
+
+        inspector.DirectoryExists("DelTest/ToDelete").Should().BeFalse("project was deleted");
+        inspector.FileExists("DelTest/ToDelete/also-delete.txt").Should().BeFalse("project was deleted");
+        inspector.FileExists("DelTest/ToDelete/deletable.txt").Should().BeFalse(
+            "recovered then project deleted");
+    }
+
+    [Fact]
+    public void Migration_TagExists()
+    {
+        _runner.Inspector!.GetTags().Should().Contain(t =>
+            t.Contains("after") && t.Contains("deletion"));
+    }
+
+    [Fact]
+    public void Migration_ExactFileList()
+    {
+        var files = _runner.Inspector!.GetFileList();
+
+        files.Should().HaveCount(2, "root.txt + kept.txt");
+    }
+
+    [Fact]
+    public void Migration_CommitQuality()
+    {
+        var commits = _runner.Inspector!.GetCommits();
+
+        commits.Should().HaveCountGreaterThanOrEqualTo(5);
+
+        var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
+        withMessage.Should().BeGreaterThanOrEqualTo(4);
     }
 
     public void Dispose() => _runner.Dispose();

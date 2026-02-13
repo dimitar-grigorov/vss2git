@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Hpdi.Vss2Git.IntegrationTests.Helpers;
 
@@ -20,10 +21,22 @@ public class RenameAndMoveTests : IDisposable
     {
         var inspector = _runner.Inspector!;
 
-        // oldname.txt renamed to newname.txt, FolderA renamed to FolderRenamed
         inspector.FileExists("Project/FolderRenamed/newname.txt").Should().BeTrue();
         inspector.GetFileContent("Project/FolderRenamed/newname.txt")
             .Should().Contain("Edited after rename");
+    }
+
+    [Fact]
+    public void Migration_OldNamesDoNotExist()
+    {
+        var inspector = _runner.Inspector!;
+
+        inspector.FileExists("Project/FolderA/oldname.txt").Should().BeFalse(
+            "renamed to newname.txt");
+        inspector.FileExists("Project/FolderRenamed/oldname.txt").Should().BeFalse(
+            "renamed to newname.txt");
+        inspector.DirectoryExists("Project/FolderA").Should().BeFalse(
+            "renamed to FolderRenamed");
     }
 
     [Fact]
@@ -39,7 +52,7 @@ public class RenameAndMoveTests : IDisposable
         var inspector = _runner.Inspector!;
 
         inspector.DirectoryExists("Project/FolderB/SubDir").Should().BeTrue(
-            "SubDir should be under FolderB after move");
+            "SubDir moved to FolderB");
         inspector.GetFileContent("Project/FolderB/SubDir/nested.txt")
             .Should().Contain("Edited after move");
         inspector.FileExists("Project/FolderB/stay.txt").Should().BeTrue();
@@ -50,12 +63,28 @@ public class RenameAndMoveTests : IDisposable
     {
         var inspector = _runner.Inspector!;
 
-        // After moving SubDir from FolderRenamed to FolderB,
-        // SubDir should NOT remain under FolderRenamed.
         inspector.DirectoryExists("Project/FolderRenamed/SubDir").Should().BeFalse(
-            "SubDir should be gone from FolderRenamed after move to FolderB");
+            "SubDir moved to FolderB");
         inspector.FileExists("Project/FolderRenamed/SubDir/nested.txt").Should().BeFalse(
-            "nested.txt should not remain at old location after move");
+            "moved with SubDir");
+    }
+
+    [Fact]
+    public void Migration_ExactFileList()
+    {
+        _runner.Inspector!.GetFileList()
+            .Should().HaveCount(4, "newname.txt + casename.txt + stay.txt + nested.txt");
+    }
+
+    [Fact]
+    public void Migration_CommitQuality()
+    {
+        var commits = _runner.Inspector!.GetCommits();
+
+        commits.Should().HaveCountGreaterThanOrEqualTo(7);
+
+        var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
+        withMessage.Should().BeGreaterThanOrEqualTo(4);
     }
 
     public void Dispose() => _runner.Dispose();

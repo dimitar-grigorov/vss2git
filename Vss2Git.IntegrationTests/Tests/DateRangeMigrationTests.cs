@@ -51,7 +51,7 @@ public class DateRangeMigrationTests : IDisposable
         for (int i = 1; i < dates.Count; i++)
         {
             var gap = dates[i] - dates[i - 1];
-            if (gap.TotalSeconds >= 1.5) // 2-second sleeps should be clearly > 1.5s
+            if (gap.TotalSeconds >= 1.5) // 2-second phase gaps are clearly > 1.5s
             {
                 gaps.Add((gap, dates[i - 1], dates[i]));
             }

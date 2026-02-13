@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Hpdi.Vss2Git.IntegrationTests.Helpers;
 
@@ -30,17 +31,21 @@ public class SharingAndBranchingTests : IDisposable
     {
         var inspector = _runner.Inspector!;
 
-        // A and C still share — both should have version 3
+        // A and C still share — both should have v3
         inspector.GetFileContent("ProjectA/shared.txt").Should().Contain("version 3");
         inspector.GetFileContent("ProjectC/shared.txt").Should().Contain("version 3");
+
+        var contentA = inspector.GetFileContent("ProjectA/shared.txt");
+        var contentC = inspector.GetFileContent("ProjectC/shared.txt");
+        contentA.Should().Be(contentC, "A and C still share the same file");
     }
 
     [Fact]
     public void Migration_BranchIsolation()
     {
-        // B branched and edited independently — should NOT have version 3
-        var content = _runner.Inspector!.GetFileContent("ProjectB/shared.txt");
-        content.Should().Contain("independent edit");
+        var contentB = _runner.Inspector!.GetFileContent("ProjectB/shared.txt");
+        contentB.Should().Contain("independent edit");
+        contentB.Should().NotContain("version 3", "B branched before v3 edit");
     }
 
     [Fact]
@@ -49,8 +54,30 @@ public class SharingAndBranchingTests : IDisposable
         var inspector = _runner.Inspector!;
 
         inspector.FileExists("ProjectA/unique.txt").Should().BeTrue();
+        inspector.GetFileContent("ProjectA/unique.txt").Should().Contain("only in ProjectA");
         inspector.FileExists("ProjectB/unique.txt").Should().BeFalse();
         inspector.FileExists("ProjectC/unique.txt").Should().BeFalse();
+    }
+
+    [Fact]
+    public void Migration_FileCountPerProject()
+    {
+        var inspector = _runner.Inspector!;
+
+        inspector.GetFilesInDirectory("ProjectA").Should().HaveCount(2);
+        inspector.GetFilesInDirectory("ProjectB").Should().HaveCount(1);
+        inspector.GetFilesInDirectory("ProjectC").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void Migration_CommitQuality()
+    {
+        var commits = _runner.Inspector!.GetCommits();
+
+        commits.Should().HaveCountGreaterThanOrEqualTo(4);
+
+        var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
+        withMessage.Should().BeGreaterThanOrEqualTo(3);
     }
 
     public void Dispose() => _runner.Dispose();
