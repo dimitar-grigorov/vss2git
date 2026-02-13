@@ -42,8 +42,10 @@ jobs:
     - name: Build solution
       run: dotnet build Vss2Git.sln --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test Vss2Git.sln --configuration Release --no-build --verbosity normal
+    - name: Run tests (excluding integration tests that require VSS tools)
+      run: |
+        dotnet test Vss2Git.Tests\Vss2Git.Tests.csproj --configuration Release --no-build --verbosity normal
+        dotnet test Vss2Git.Cli.Tests\Vss2Git.Cli.Tests.csproj --configuration Release --no-build --verbosity normal
 
     - name: Publish CLI (win-x64)
       run: |
