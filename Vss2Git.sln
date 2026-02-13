@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vss2Git.Tests", "Vss2Git.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vss2Git.TestDbBuilder", "Vss2Git.TestDbBuilder\Vss2Git.TestDbBuilder.csproj", "{3B1FB169-E1A6-47E4-8F05-D0A37411D557}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vss2Git.IntegrationTests", "Vss2Git.IntegrationTests\Vss2Git.IntegrationTests.csproj", "{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,18 @@ Global
 		{3B1FB169-E1A6-47E4-8F05-D0A37411D557}.Release|x64.Build.0 = Release|Any CPU
 		{3B1FB169-E1A6-47E4-8F05-D0A37411D557}.Release|x86.ActiveCfg = Release|Any CPU
 		{3B1FB169-E1A6-47E4-8F05-D0A37411D557}.Release|x86.Build.0 = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|x64.Build.0 = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Debug|x86.Build.0 = Debug|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|x64.ActiveCfg = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|x64.Build.0 = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|x86.ActiveCfg = Release|Any CPU
+		{EEE4C5AA-6EB1-448A-AD29-FB080C735DEE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,6 +28,9 @@
     <FileVersion>1.0.1.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Vss2Git.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\VssPhysicalLib\VssPhysicalLib.csproj" />
   </ItemGroup>
   <ItemGroup>
