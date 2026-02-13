@@ -71,12 +71,6 @@ namespace Hpdi.Vss2Git.Cli
                     var status = workQueue.LastStatus ?? "Idle";
                     var elapsed = workQueue.ActiveTime;
 
-                    // Clear previous line (carriage return + spaces)
-                    if (lastLineLength > 0)
-                    {
-                        Console.Write('\r' + new string(' ', lastLineLength) + '\r');
-                    }
-
                     // Build status line with optional detailed statistics
                     string line;
                     if (Orchestrator != null)
@@ -97,7 +91,11 @@ namespace Hpdi.Vss2Git.Cli
                         line = line.Substring(0, Console.WindowWidth - 4) + "...";
                     }
 
-                    Console.Write(line);
+                    // Overwrite in place: pad with spaces to cover any leftover chars from previous line
+                    var padding = lastLineLength > line.Length
+                        ? new string(' ', lastLineLength - line.Length)
+                        : string.Empty;
+                    Console.Write('\r' + line + padding);
                     lastLineLength = line.Length;
                 }
             }
