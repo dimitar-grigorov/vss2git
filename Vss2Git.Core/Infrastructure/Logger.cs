@@ -1,19 +1,4 @@
-﻿/* Copyright 2009 HPDI, LLC
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -309,6 +294,36 @@ namespace Hpdi.Vss2Git
         public void WriteSectionSeparator()
         {
             WriteLine(sectionSeparator);
+        }
+
+        /// <summary>
+        /// Rotates an existing log file using numbered suffixes (.1, .2, .3, etc.).
+        /// Call before creating a new Logger to preserve previous session logs.
+        /// </summary>
+        public static void RotateLogFile(string filename)
+        {
+            if (string.IsNullOrEmpty(filename) || !File.Exists(filename))
+                return;
+
+            var dir = Path.GetDirectoryName(filename) ?? ".";
+            var name = Path.GetFileNameWithoutExtension(filename);
+            var ext = Path.GetExtension(filename);
+
+            // Find the highest existing numbered log
+            int max = 0;
+            while (File.Exists(Path.Combine(dir, $"{name}.{max + 1}{ext}")))
+                max++;
+
+            // Shift numbered files up: .3 → .4, .2 → .3, .1 → .2
+            for (int i = max; i >= 1; i--)
+            {
+                File.Move(
+                    Path.Combine(dir, $"{name}.{i}{ext}"),
+                    Path.Combine(dir, $"{name}.{i + 1}{ext}"));
+            }
+
+            // Current log becomes .1
+            File.Move(filename, Path.Combine(dir, $"{name}.1{ext}"));
         }
 
         private void WriteInternal(string value)

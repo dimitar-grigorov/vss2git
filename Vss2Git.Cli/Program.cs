@@ -125,6 +125,9 @@ namespace Hpdi.Vss2Git.Cli
             }
             Console.WriteLine();
 
+            // Rotate previous log file
+            Logger.RotateLogFile(config.LogFile);
+
             // Create work queue
             var workQueue = new WorkQueue(1);
 

@@ -76,6 +76,9 @@ namespace Hpdi.Vss2Git
             var userInteraction = new MessageBoxUserInteraction(this);
             var statusReporter = new GuiStatusReporter(statusTimer);
 
+            // Rotate previous log file
+            Logger.RotateLogFile(config.LogFile);
+
             // Create orchestrator
             orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
 
