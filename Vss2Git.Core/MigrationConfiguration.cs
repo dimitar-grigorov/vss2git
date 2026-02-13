@@ -19,6 +19,7 @@ namespace Hpdi.Vss2Git
 
         // Git settings
         public string GitDirectory { get; set; }
+        public GitBackend GitBackend { get; set; } = GitBackend.Process;
         public string DefaultEmailDomain { get; set; } = "localhost";
         public string DefaultComment { get; set; } = "";
         public bool ExportProjectToGitRoot { get; set; } = false;

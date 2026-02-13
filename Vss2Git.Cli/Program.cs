@@ -113,6 +113,7 @@ namespace Hpdi.Vss2Git.Cli
             Console.WriteLine($"  Email Domain:      {config.DefaultEmailDomain}");
             Console.WriteLine($"  Encoding:          {encoding.EncodingName} (CP: {encoding.CodePage})");
             Console.WriteLine($"  Log File:          {config.LogFile}");
+            Console.WriteLine($"  Git Backend:       {config.GitBackend}");
             Console.WriteLine($"  Ignore Errors:     {config.IgnoreErrors}");
             Console.WriteLine($"  Interactive:       {options.Interactive}");
             if (!string.IsNullOrEmpty(config.VssExcludePaths))

@@ -70,7 +70,7 @@ namespace Hpdi.Vss2Git
                 }
 
                 // IMPORTANT: Use 'using' statement to ensure Dispose() is called
-                using (IGitRepository git = new GitWrapper(repoPath, logger, perfTracker))
+                using (IGitRepository git = CreateGitRepository(repoPath))
                 {
                     // Determine encoding: use UTF-8 if transcoding, otherwise use VssEncoding as-is
                     var encoding = config.TranscodeComments ? Encoding.UTF8 : config.VssEncoding;
@@ -263,9 +263,10 @@ namespace Hpdi.Vss2Git
         {
             var needCommit = false;
 
-            // Sort by action type priority to ensure causal ordering within a changeset.
-            // Handles: Add/Share before Branch, MoveFrom before MoveTo, Delete/Destroy last.
-            var revisions = changeset.Revisions.OrderBy(r => GetActionPriority(r.Action.Type));
+            // Order by time, then by action priority for same-timestamp tiebreaking
+            var revisions = changeset.Revisions
+                .OrderBy(r => r.DateTime)
+                .ThenBy(r => GetActionPriority(r.Action.Type));
 
             foreach (Revision revision in revisions)
             {
@@ -816,6 +817,19 @@ namespace Hpdi.Vss2Git
             else
             {
                 renamer(sourcePath, destPath);
+            }
+        }
+
+        private IGitRepository CreateGitRepository(string repoPath)
+        {
+            switch (config.GitBackend)
+            {
+                case GitBackend.LibGit2Sharp:
+                    logger.WriteLine("Using LibGit2Sharp backend");
+                    return new LibGit2SharpRepository(repoPath, logger, perfTracker);
+                default:
+                    logger.WriteLine("Using git.exe process backend");
+                    return new GitWrapper(repoPath, logger, perfTracker);
             }
         }
 
