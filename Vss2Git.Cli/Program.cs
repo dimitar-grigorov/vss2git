@@ -84,9 +84,21 @@ namespace Hpdi.Vss2Git.Cli
             if (config.FromDate == null && !options.Force && Directory.Exists(options.GitDirectory) &&
                 Directory.EnumerateFileSystemEntries(options.GitDirectory).Any())
             {
-                Console.Error.WriteLine($"ERROR: Output directory is not empty: {options.GitDirectory}");
-                Console.Error.WriteLine("Use --force or --from-date to continue.");
-                return 1;
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                var renamedDir = options.GitDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + "-" + timestamp;
+
+                Console.Error.WriteLine($"Output directory is not empty: {options.GitDirectory}");
+                Console.Write($"Rename it to \"{renamedDir}\" and continue? [y/N] ");
+                var key = Console.ReadLine()?.Trim();
+                if (!string.Equals(key, "y", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.Error.WriteLine("Aborted. Use --force or --from-date to continue.");
+                    return 1;
+                }
+
+                Directory.Move(options.GitDirectory, renamedDir);
+                Console.WriteLine($"Renamed to: {renamedDir}");
             }
 
             // Display configuration summary
