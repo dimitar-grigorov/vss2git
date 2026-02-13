@@ -1,18 +1,4 @@
-/* Copyright 2009 HPDI, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+using System;
 using System.Text;
 using FluentAssertions;
 using Hpdi.Vss2Git;
@@ -321,6 +307,141 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 resultOptions.EncodingCodePage.Should().Be(encoding.CodePage,
                     $"because encoding {encoding.EncodingName} should be preserved");
             }
+        }
+
+        #endregion
+
+        #region Date Filtering Tests
+
+        [Fact]
+        public void FromOptions_WithFromDateOnly_ParsesCorrectly()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = "2005-01-01"
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.FromDate.Should().Be(new DateTime(2005, 1, 1));
+            config.ToDate.Should().BeNull();
+        }
+
+        [Fact]
+        public void FromOptions_WithFromDateAndTime_ParsesCorrectly()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = "2005-06-15T14:30:00"
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.FromDate.Should().Be(new DateTime(2005, 6, 15, 14, 30, 0));
+        }
+
+        [Fact]
+        public void FromOptions_WithToDateOnly_ParsesCorrectly()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                ToDate = "2006-12-31"
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.FromDate.Should().BeNull();
+            config.ToDate.Should().Be(new DateTime(2006, 12, 31));
+        }
+
+        [Fact]
+        public void FromOptions_WithInvalidFromDate_ThrowsArgumentException()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = "not-a-date"
+            };
+
+            Action act = () => CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            act.Should().Throw<ArgumentException>()
+                .WithMessage("*--from-date*not-a-date*");
+        }
+
+        [Fact]
+        public void FromOptions_WithInvalidToDate_ThrowsArgumentException()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                ToDate = "31/12/2006"
+            };
+
+            Action act = () => CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            act.Should().Throw<ArgumentException>()
+                .WithMessage("*--to-date*31/12/2006*");
+        }
+
+        [Fact]
+        public void FromOptions_WithNullDates_LeavesConfigDatesNull()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = null,
+                ToDate = null
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.FromDate.Should().BeNull();
+            config.ToDate.Should().BeNull();
+        }
+
+        [Fact]
+        public void ToOptions_WithDates_FormatsCorrectly()
+        {
+            var config = new MigrationConfiguration
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = new DateTime(2005, 1, 1),
+                ToDate = new DateTime(2006, 6, 15, 14, 30, 0)
+            };
+
+            var options = CliOptionsMapper.ToOptions(config);
+
+            options.FromDate.Should().Be("2005-01-01T00:00:00");
+            options.ToDate.Should().Be("2006-06-15T14:30:00");
+        }
+
+        [Fact]
+        public void RoundTrip_WithDates_PreservesDates()
+        {
+            var originalOptions = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                FromDate = "2005-03-15T10:00:00",
+                ToDate = "2006-12-31T23:59:59"
+            };
+
+            var config = CliOptionsMapper.FromOptions(originalOptions, Encoding.UTF8);
+            var resultOptions = CliOptionsMapper.ToOptions(config);
+
+            resultOptions.FromDate.Should().Be(originalOptions.FromDate);
+            resultOptions.ToDate.Should().Be(originalOptions.ToDate);
         }
 
         #endregion

@@ -1,18 +1,5 @@
-/* Copyright 2009 HPDI, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+using System;
+using System.Globalization;
 using System.Text;
 using Mapster;
 
@@ -27,13 +14,17 @@ namespace Hpdi.Vss2Git.Cli
         {
             // Configure mapping from CliOptions to MigrationConfiguration
             TypeAdapterConfig<CliOptions, MigrationConfiguration>.NewConfig()
-                .Ignore(dest => dest.VssEncoding);      // Set separately based on EncodingCodePage
+                .Ignore(dest => dest.VssEncoding)    // Set separately based on EncodingCodePage
+                .Ignore(dest => dest.FromDate)       // Parsed manually from string
+                .Ignore(dest => dest.ToDate);        // Parsed manually from string
 
             // Configure mapping from MigrationConfiguration to CliOptions
             TypeAdapterConfig<MigrationConfiguration, CliOptions>.NewConfig()
                 .Ignore(dest => dest.EncodingCodePage)  // Derived from VssEncoding
                 .Ignore(dest => dest.Force)             // Not part of MigrationConfiguration
-                .Ignore(dest => dest.Interactive);      // Not part of MigrationConfiguration
+                .Ignore(dest => dest.Interactive)        // Not part of MigrationConfiguration
+                .Ignore(dest => dest.FromDate)           // Formatted manually from DateTime
+                .Ignore(dest => dest.ToDate);            // Formatted manually from DateTime
         }
 
         /// <summary>
@@ -44,6 +35,24 @@ namespace Hpdi.Vss2Git.Cli
             var config = options.Adapt<MigrationConfiguration>();
 
             config.VssEncoding = encoding;
+
+            if (!string.IsNullOrEmpty(options.FromDate))
+            {
+                if (TryParseDate(options.FromDate, out var fromDate))
+                    config.FromDate = fromDate;
+                else
+                    throw new ArgumentException(
+                        $"Invalid --from-date format: '{options.FromDate}'. Expected yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss");
+            }
+
+            if (!string.IsNullOrEmpty(options.ToDate))
+            {
+                if (TryParseDate(options.ToDate, out var toDate))
+                    config.ToDate = toDate;
+                else
+                    throw new ArgumentException(
+                        $"Invalid --to-date format: '{options.ToDate}'. Expected yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss");
+            }
 
             return config;
         }
@@ -60,7 +69,19 @@ namespace Hpdi.Vss2Git.Cli
                 options.EncodingCodePage = config.VssEncoding.CodePage;
             }
 
+            if (config.FromDate.HasValue)
+                options.FromDate = config.FromDate.Value.ToString("yyyy-MM-ddTHH:mm:ss");
+            if (config.ToDate.HasValue)
+                options.ToDate = config.ToDate.Value.ToString("yyyy-MM-ddTHH:mm:ss");
+
             return options;
+        }
+
+        private static bool TryParseDate(string value, out DateTime result)
+        {
+            var formats = new[] { "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd" };
+            return DateTime.TryParseExact(value, formats,
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
         }
     }
 }

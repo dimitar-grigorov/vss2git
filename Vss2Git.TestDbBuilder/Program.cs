@@ -37,6 +37,7 @@ var scenarios = new ITestScenario[]
     new Scenario03_SharingAndBranching(),
     new Scenario04_PinsAndLabels(),
     new Scenario05_DeleteAndRecover(),
+    new Scenario06_DateRangeMigration(),
 };
 
 var passed = 0;
@@ -68,9 +69,6 @@ foreach (var scenario in scenarios)
         Console.WriteLine("Verifying...");
         var verifier = new VssTestDatabaseVerifier(dbDir);
         scenario.Verify(verifier);
-
-        // Clean up after successful verification
-        ForceDeleteDirectory(scenarioDir);
 
         Console.WriteLine($"=== {scenario.Name}: PASSED ===");
         Console.WriteLine();

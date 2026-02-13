@@ -12,11 +12,14 @@ namespace Hpdi.Vss2Git.IntegrationTests.Helpers;
 public class MigrationTestRunner : IDisposable
 {
     private string? _gitDir;
+    private string? _logFile;
+    private bool _ownsGitDir = true;
     private bool _disposed;
 
     public TestUserInteraction UserInteraction { get; } = new();
     public GitRepoInspector? Inspector { get; private set; }
     public string? GitDirectory => _gitDir;
+    public string? LogFilePath { get; private set; }
 
     static MigrationTestRunner()
     {
@@ -24,13 +27,40 @@ public class MigrationTestRunner : IDisposable
     }
 
     /// <summary>
-    /// Runs the full migration pipeline for a given scenario.
+    /// Runs the full migration pipeline for a given scenario, creating a new temp git directory.
     /// </summary>
     /// <param name="scenarioName">Scenario folder name (e.g. "01_Basic")</param>
     /// <param name="vssProject">VSS project path to migrate (default: root "$")</param>
     /// <param name="configureAction">Optional action to customize MigrationConfiguration</param>
     public void Run(string scenarioName, string vssProject = "$",
         Action<MigrationConfiguration>? configureAction = null)
+    {
+        _gitDir = Path.Combine(Path.GetTempPath(), "vss2git_test_" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_gitDir);
+        _ownsGitDir = true;
+
+        RunMigration(scenarioName, _gitDir, vssProject, configureAction);
+    }
+
+    /// <summary>
+    /// Runs the migration pipeline into an existing git directory (for chunked/continuation tests).
+    /// The caller owns the directory — Dispose() will NOT delete it.
+    /// </summary>
+    /// <param name="scenarioName">Scenario folder name (e.g. "06_DateRangeMigration")</param>
+    /// <param name="gitDir">Existing git directory to migrate into</param>
+    /// <param name="vssProject">VSS project path to migrate (default: root "$")</param>
+    /// <param name="configureAction">Optional action to customize MigrationConfiguration</param>
+    public void RunInto(string scenarioName, string gitDir, string vssProject = "$",
+        Action<MigrationConfiguration>? configureAction = null)
+    {
+        _gitDir = gitDir;
+        _ownsGitDir = false;
+
+        RunMigration(scenarioName, gitDir, vssProject, configureAction);
+    }
+
+    private void RunMigration(string scenarioName, string gitDir, string vssProject,
+        Action<MigrationConfiguration>? configureAction)
     {
         var vssDir = GetTestDataPath(scenarioName);
         if (!Directory.Exists(vssDir))
@@ -39,14 +69,11 @@ public class MigrationTestRunner : IDisposable
                 $"VSS test database not found at: {vssDir}. Run TestDbBuilder first.");
         }
 
-        _gitDir = Path.Combine(Path.GetTempPath(), "vss2git_test_" + Guid.NewGuid().ToString("N")[..8]);
-        Directory.CreateDirectory(_gitDir);
-
         var config = new MigrationConfiguration
         {
             VssDirectory = vssDir,
             VssProject = vssProject,
-            GitDirectory = _gitDir,
+            GitDirectory = gitDir,
             DefaultEmailDomain = "test.local",
             VssEncoding = Encoding.Default,
             IgnoreErrors = true,
@@ -56,6 +83,11 @@ public class MigrationTestRunner : IDisposable
             AnyCommentSeconds = 30,
             SameCommentSeconds = 600
         };
+
+        // Place log file outside git dir so it doesn't get committed by git add -A
+        _logFile = Path.Combine(Path.GetTempPath(), "vss2git_log_" + Guid.NewGuid().ToString("N")[..8] + ".log");
+        LogFilePath = _logFile;
+        config.LogFile = _logFile;
 
         configureAction?.Invoke(config);
 
@@ -80,7 +112,7 @@ public class MigrationTestRunner : IDisposable
             throw new AggregateException("Exceptions during migration", exceptions);
         }
 
-        Inspector = new GitRepoInspector(_gitDir);
+        Inspector = new GitRepoInspector(gitDir);
     }
 
     private static string GetTestDataPath(string scenarioName)
@@ -96,7 +128,7 @@ public class MigrationTestRunner : IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        if (_gitDir != null && Directory.Exists(_gitDir))
+        if (_ownsGitDir && _gitDir != null && Directory.Exists(_gitDir))
         {
             try
             {
@@ -111,6 +143,11 @@ public class MigrationTestRunner : IDisposable
             {
                 // Best-effort cleanup
             }
+        }
+
+        if (_logFile != null && File.Exists(_logFile))
+        {
+            try { File.Delete(_logFile); } catch { }
         }
     }
 }

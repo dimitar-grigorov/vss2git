@@ -1,18 +1,4 @@
-/* Copyright 2009 HPDI, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,6 +35,10 @@ namespace Hpdi.Vss2Git
         public bool IgnoreErrors { get; set; } = false;
         public string LogFile { get; set; }
 
+        // Date filtering
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
+
         /// <summary>
         /// Validate the configuration and return validation result
         /// </summary>
@@ -72,6 +62,9 @@ namespace Hpdi.Vss2Git
 
             if (SameCommentSeconds < 0)
                 errors.Add("Same comment threshold must be non-negative");
+
+            if (FromDate.HasValue && ToDate.HasValue && FromDate.Value > ToDate.Value)
+                errors.Add("From date must be earlier than or equal to to date");
 
             return new ValidationResult(errors.Count == 0, errors);
         }

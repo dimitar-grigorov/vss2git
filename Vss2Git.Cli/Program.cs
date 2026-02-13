@@ -57,7 +57,16 @@ namespace Hpdi.Vss2Git.Cli
             }
 
             // Build configuration using CliOptionsMapper
-            var config = CliOptionsMapper.FromOptions(options, encoding);
+            MigrationConfiguration config;
+            try
+            {
+                config = CliOptionsMapper.FromOptions(options, encoding);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.Error.WriteLine($"ERROR: {ex.Message}");
+                return 1;
+            }
 
             // Validate configuration
             var validation = config.Validate();
@@ -71,12 +80,12 @@ namespace Hpdi.Vss2Git.Cli
                 return 1;
             }
 
-            // Check output directory
-            if (!options.Force && Directory.Exists(options.GitDirectory) &&
+            // Check output directory (skip when --from-date is set for continuation)
+            if (config.FromDate == null && !options.Force && Directory.Exists(options.GitDirectory) &&
                 Directory.EnumerateFileSystemEntries(options.GitDirectory).Any())
             {
                 Console.Error.WriteLine($"ERROR: Output directory is not empty: {options.GitDirectory}");
-                Console.Error.WriteLine("Use --force to continue anyway.");
+                Console.Error.WriteLine("Use --force or --from-date to continue.");
                 return 1;
             }
 
@@ -93,6 +102,14 @@ namespace Hpdi.Vss2Git.Cli
             if (!string.IsNullOrEmpty(config.VssExcludePaths))
             {
                 Console.WriteLine($"  Exclude Patterns:  {config.VssExcludePaths}");
+            }
+            if (config.FromDate.HasValue)
+            {
+                Console.WriteLine($"  From Date:         {config.FromDate.Value:yyyy-MM-dd HH:mm:ss}");
+            }
+            if (config.ToDate.HasValue)
+            {
+                Console.WriteLine($"  To Date:           {config.ToDate.Value:yyyy-MM-dd HH:mm:ss}");
             }
             Console.WriteLine();
 

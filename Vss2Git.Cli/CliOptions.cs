@@ -1,18 +1,3 @@
-/* Copyright 2009 HPDI, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 using CommandLine;
 
 namespace Hpdi.Vss2Git.Cli
@@ -70,5 +55,11 @@ namespace Hpdi.Vss2Git.Cli
 
         [Option("export-to-root", Default = false, HelpText = "Export project directly to Git root")]
         public bool ExportProjectToGitRoot { get; set; }
+
+        [Option("from-date", HelpText = "Export changesets from this date (yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss). Earlier changesets build mapper state only.")]
+        public string FromDate { get; set; }
+
+        [Option("to-date", HelpText = "Export changesets up to this date (yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss). Stops after last matching changeset.")]
+        public string ToDate { get; set; }
     }
 }

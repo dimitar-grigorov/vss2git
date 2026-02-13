@@ -38,6 +38,7 @@ namespace Hpdi.Vss2Git
         private readonly MigrationConfiguration config;
         private readonly StreamCopier streamCopier = new StreamCopier();
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
+        private bool skipGitOperations;
 
         public GitExporter(WorkQueue workQueue, Logger logger,
             RevisionAnalyzer revisionAnalyzer, ChangesetBuilder changesetBuilder,
@@ -103,13 +104,28 @@ namespace Hpdi.Vss2Git
                     var replayStopwatch = new Stopwatch();
                     var labels = new LinkedList<Revision>();
                     tagsUsed.Clear();
+                    skipGitOperations = config.FromDate.HasValue;
                     foreach (var changeset in changesets)
                     {
+                        // Date range filtering
+                        if (skipGitOperations && changeset.DateTime >= config.FromDate.Value)
+                        {
+                            skipGitOperations = false;
+                            logger.WriteLine("Date range start reached at {0}, beginning git operations",
+                                changeset.DateTime);
+                        }
+                        if (config.ToDate.HasValue && changeset.DateTime > config.ToDate.Value)
+                        {
+                            logger.WriteLine("Date range end reached at {0}, stopping export",
+                                changeset.DateTime);
+                            break;
+                        }
+
                         var changesetDesc = string.Format(CultureInfo.InvariantCulture,
                             "changeset {0} from {1}", changesetId, changeset.DateTime);
 
                         // replay each revision in changeset
-                        LogStatus(work, "Replaying " + changesetDesc);
+                        LogStatus(work, (skipGitOperations ? "Building state for " : "Replaying ") + changesetDesc);
                         labels.Clear();
                         replayStopwatch.Start();
                         bool needCommit;
@@ -133,8 +149,8 @@ namespace Hpdi.Vss2Git
                             return; // Aborting
                         }
 
-                        // commit changes
-                        if (needCommit)
+                        // commit changes (skip if outside date range)
+                        if (needCommit && !skipGitOperations)
                         {
                             LogStatus(work, "Committing " + changesetDesc);
                             if (CommitChangeset(git, changeset))
@@ -154,8 +170,8 @@ namespace Hpdi.Vss2Git
                             return; // Aborting
                         }
 
-                        // create tags for any labels in the changeset
-                        if (labels.Count > 0)
+                        // create tags for any labels in the changeset (skip if outside date range)
+                        if (labels.Count > 0 && !skipGitOperations)
                         {
                             foreach (Revision label in labels)
                             {
@@ -305,7 +321,7 @@ namespace Hpdi.Vss2Git
                         {
                             logger.WriteLine("{0}: {1} {2}", projectDesc, actionType, target.LogicalName);
                             itemInfo = pathMapper.DeleteItem(project, target);
-                            if (targetPath != null && !itemInfo.Destroyed)
+                            if (!skipGitOperations && targetPath != null && !itemInfo.Destroyed)
                             {
                                 if (target.IsProject)
                                 {
@@ -352,7 +368,7 @@ namespace Hpdi.Vss2Git
                             logger.WriteLine("{0}: {1} {2} to {3}",
                                 projectDesc, actionType, renameAction.OriginalName, target.LogicalName);
                             itemInfo = pathMapper.RenameItem(target);
-                            if (targetPath != null && !itemInfo.Destroyed)
+                            if (!skipGitOperations && targetPath != null && !itemInfo.Destroyed)
                             {
                                 var sourcePath = Path.Combine(projectPath, renameAction.OriginalName);
                                 if (target.IsProject ? Directory.Exists(sourcePath) : File.Exists(sourcePath))
@@ -389,7 +405,7 @@ namespace Hpdi.Vss2Git
                             var sourcePath = pathMapper.GetProjectPath(target.PhysicalName);
                             var projectInfo = pathMapper.MoveProjectFrom(
                                 project, target, moveFromAction.OriginalProject);
-                            if (targetPath != null && !projectInfo.Destroyed)
+                            if (!skipGitOperations && targetPath != null && !projectInfo.Destroyed)
                             {
                                 if (sourcePath != null && Directory.Exists(sourcePath))
                                 {
@@ -421,7 +437,7 @@ namespace Hpdi.Vss2Git
                                 projectDesc, moveToAction.NewProject, targetPath ?? target.LogicalName);
                             var projectInfo = pathMapper.MoveProjectTo(
                                 project, target, moveToAction.NewProject);
-                            if (projectInfo.Destroyed && targetPath != null && Directory.Exists(targetPath))
+                            if (!skipGitOperations && projectInfo.Destroyed && targetPath != null && Directory.Exists(targetPath))
                             {
                                 // project was moved to a now-destroyed project; remove empty directory
                                 Directory.Delete(targetPath, true);
@@ -441,7 +457,7 @@ namespace Hpdi.Vss2Git
                             {
                                 logger.WriteLine("{0}: Unpin {1}", projectDesc, target.LogicalName);
                                 itemInfo = pathMapper.UnpinItem(project, target);
-                                writeFile = !itemInfo.Destroyed;
+                                writeFile = !skipGitOperations && !itemInfo.Destroyed;
                             }
                         }
                         break;
@@ -452,7 +468,7 @@ namespace Hpdi.Vss2Git
                             logger.WriteLine("{0}: {1} {2}", projectDesc, actionType, target.LogicalName);
                             itemInfo = pathMapper.BranchFile(project, target, branchAction.Source);
                             // branching within the project might happen after branching of the file
-                            writeFile = true;
+                            writeFile = !skipGitOperations;
                         }
                         break;
 
@@ -486,14 +502,17 @@ namespace Hpdi.Vss2Git
                             logger.WriteLine("NOTE: Skipping destroyed file: {0}", targetPath);
                             itemInfo.Destroyed = true;
                         }
-                        else if (target.IsProject)
+                        else if (!skipGitOperations)
                         {
-                            Directory.CreateDirectory(targetPath);
-                            writeProject = true;
-                        }
-                        else
-                        {
-                            writeFile = true;
+                            if (target.IsProject)
+                            {
+                                Directory.CreateDirectory(targetPath);
+                                writeProject = true;
+                            }
+                            else
+                            {
+                                writeFile = true;
+                            }
                         }
                     }
 
@@ -544,9 +563,12 @@ namespace Hpdi.Vss2Git
                 pathMapper.SetFileVersion(target, revision.Version);
 
                 // write current rev to all sharing projects
-                WriteRevision(pathMapper, actionType, target.PhysicalName,
-                    revision.Version, null, git);
-                needCommit = true;
+                if (!skipGitOperations)
+                {
+                    WriteRevision(pathMapper, actionType, target.PhysicalName,
+                        revision.Version, null, git);
+                    needCommit = true;
+                }
             }
             return needCommit;
         }

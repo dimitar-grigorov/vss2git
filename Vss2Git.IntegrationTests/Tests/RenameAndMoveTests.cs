@@ -45,5 +45,18 @@ public class RenameAndMoveTests : IDisposable
         inspector.FileExists("Project/FolderB/stay.txt").Should().BeTrue();
     }
 
+    [Fact]
+    public void Migration_MovedDirectoryShouldNotRemainAtOldLocation()
+    {
+        var inspector = _runner.Inspector!;
+
+        // After moving SubDir from FolderRenamed to FolderB,
+        // SubDir should NOT remain under FolderRenamed.
+        inspector.DirectoryExists("Project/FolderRenamed/SubDir").Should().BeFalse(
+            "SubDir should be gone from FolderRenamed after move to FolderB");
+        inspector.FileExists("Project/FolderRenamed/SubDir/nested.txt").Should().BeFalse(
+            "nested.txt should not remain at old location after move");
+    }
+
     public void Dispose() => _runner.Dispose();
 }
