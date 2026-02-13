@@ -12,6 +12,11 @@ public class Scenario06_DateRangeMigration : ITestScenario
 
     public void Build(VssCommandRunner runner)
     {
+        // Disable auto-delay: this scenario needs operations within each phase to share
+        // the same timestamp (grouped into one changeset), with only the manual Thread.Sleep
+        // gaps between phases providing time separation for date-range filtering.
+        runner.DelayAfterRevision = TimeSpan.Zero;
+
         // === PHASE 1: Initial setup ===
         runner.CreateProject("$/ChunkTest", "Phase1: Create project");
 
@@ -25,7 +30,7 @@ public class Scenario06_DateRangeMigration : ITestScenario
 
         runner.Label("$/ChunkTest", "Phase1_Release", "End of phase 1");
 
-        // === TIME GAP: 2 seconds ===
+        // === TIME GAP: 2 seconds between phases for date-range boundary detection ===
         Console.WriteLine("  Sleeping 2s between Phase 1 and Phase 2...");
         Thread.Sleep(2000);
 
@@ -40,7 +45,7 @@ public class Scenario06_DateRangeMigration : ITestScenario
 
         runner.Label("$/ChunkTest", "Phase2_Release", "End of phase 2");
 
-        // === TIME GAP: 2 seconds ===
+        // === TIME GAP: 2 seconds between phases ===
         Console.WriteLine("  Sleeping 2s between Phase 2 and Phase 3...");
         Thread.Sleep(2000);
 

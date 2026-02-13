@@ -18,6 +18,15 @@ public class VssCommandRunner : IDisposable
     public string DatabasePath => databasePath;
     public string WorkingDirectory => workingDirectory;
 
+    /// <summary>
+    /// Automatically sleeps after each VSS operation that creates a revision.
+    /// This ensures VSS timestamps (1-second resolution) differ between operations,
+    /// so the ChangesetBuilder produces separate changesets.
+    /// Default is 1100ms. Set to zero to disable (e.g. for operations that should
+    /// be grouped into the same changeset).
+    /// </summary>
+    public TimeSpan DelayAfterRevision { get; set; } = TimeSpan.FromMilliseconds(1100);
+
     public VssCommandRunner(string vssInstallDir, string databasePath, string workingDirectory)
     {
         ssExePath = Path.Combine(vssInstallDir, "ss.exe");
@@ -82,6 +91,7 @@ public class VssCommandRunner : IDisposable
         args += comment != null ? $" -C\"{comment}\"" : " -C-";
         RunSs(args, "Create");
         Console.WriteLine($"  Created project: {projectPath}");
+        ApplyRevisionDelay();
     }
 
     public void SetCurrentProject(string projectPath)
@@ -93,6 +103,7 @@ public class VssCommandRunner : IDisposable
     {
         RunSs($"Move \"{projectPath}\" \"{newParentPath}\" -I-Y", "Move");
         Console.WriteLine($"  Moved: {projectPath} -> {newParentPath}");
+        ApplyRevisionDelay();
     }
 
     public void Cloak(string projectPath)
@@ -117,6 +128,7 @@ public class VssCommandRunner : IDisposable
         args += comment != null ? $" -C\"{comment}\"" : " -C-";
         RunSs(args, "Add");
         Console.WriteLine($"  Added file: {filePath}");
+        ApplyRevisionDelay();
     }
 
     public void Checkout(string itemPath)
@@ -135,6 +147,7 @@ public class VssCommandRunner : IDisposable
         args += comment != null ? $" -C\"{comment}\"" : " -C-";
         RunSs(args, "Checkin");
         Console.WriteLine($"  Checked in: {itemPath}");
+        ApplyRevisionDelay();
     }
 
     public void Get(string itemPath, string? outputDir = null)
@@ -159,12 +172,14 @@ public class VssCommandRunner : IDisposable
     {
         RunSs($"Delete \"{itemPath}\" -I-Y", "Delete");
         Console.WriteLine($"  Deleted: {itemPath}");
+        ApplyRevisionDelay();
     }
 
     public void Recover(string itemPath)
     {
         RunSs($"Recover \"{itemPath}\" -I-Y -G-", "Recover");
         Console.WriteLine($"  Recovered: {itemPath}");
+        ApplyRevisionDelay();
     }
 
     public void Destroy(string itemPath)
@@ -193,6 +208,7 @@ public class VssCommandRunner : IDisposable
 
         RunSs($"Rename \"{itemPath}\" \"{newName}\" -I-Y", "Rename");
         Console.WriteLine($"  Renamed: {itemPath} -> {newName}");
+        ApplyRevisionDelay();
     }
 
     #endregion
@@ -221,12 +237,14 @@ public class VssCommandRunner : IDisposable
                 $"  Stderr: {result.stderr}");
         }
         Console.WriteLine($"  Shared: {sourceItemPath} -> {targetProjectPath}");
+        ApplyRevisionDelay();
     }
 
     public void Branch(string itemPath)
     {
         RunSs($"Branch \"{itemPath}\" -I-Y -G-", "Branch");
         Console.WriteLine($"  Branched: {itemPath}");
+        ApplyRevisionDelay();
     }
 
     #endregion
@@ -237,12 +255,14 @@ public class VssCommandRunner : IDisposable
     {
         RunSs($"Pin \"{itemPath}\" -V{version} -I-Y -G-", "Pin");
         Console.WriteLine($"  Pinned: {itemPath} at version {version}");
+        ApplyRevisionDelay();
     }
 
     public void Unpin(string itemPath)
     {
         RunSs($"Unpin \"{itemPath}\" -I-Y -G-", "Unpin");
         Console.WriteLine($"  Unpinned: {itemPath}");
+        ApplyRevisionDelay();
     }
 
     public void Label(string projectPath, string label, string? comment = null)
@@ -251,6 +271,7 @@ public class VssCommandRunner : IDisposable
         args += comment != null ? $" -C\"{comment}\"" : " -C-";
         RunSs(args, "Label");
         Console.WriteLine($"  Labeled: {projectPath} as '{label}'");
+        ApplyRevisionDelay();
     }
 
     /// <summary>
@@ -260,6 +281,7 @@ public class VssCommandRunner : IDisposable
     {
         RunSs($"Rollback \"{itemPath}\" -V{version} -I-Y", "Rollback");
         Console.WriteLine($"  Rolled back: {itemPath} to version {version}");
+        ApplyRevisionDelay();
     }
 
     #endregion
@@ -361,6 +383,7 @@ public class VssCommandRunner : IDisposable
         RunSs($"Checkin \"{vssPath}\" -I-Y -GL\"{projectWorkDir}\"" +
             (comment != null ? $" -C\"{comment}\"" : " -C-"), "Checkin after edit");
         Console.WriteLine($"  Checked in: {vssPath}");
+        ApplyRevisionDelay();
     }
 
     public void SetWorkingFolder(string projectPath)
@@ -382,6 +405,12 @@ public class VssCommandRunner : IDisposable
     #endregion
 
     #region Infrastructure
+
+    private void ApplyRevisionDelay()
+    {
+        if (DelayAfterRevision > TimeSpan.Zero)
+            Thread.Sleep(DelayAfterRevision);
+    }
 
     public static void ClearReadOnly(string filePath)
     {

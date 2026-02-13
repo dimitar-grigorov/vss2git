@@ -80,8 +80,8 @@ public class MigrationTestRunner : IDisposable
             ForceAnnotatedTags = true,
             TranscodeComments = true,
             DefaultComment = "",
-            AnyCommentSeconds = 30,
-            SameCommentSeconds = 600
+            AnyCommentSeconds = 0,
+            SameCommentSeconds = 0
         };
 
         // Place log file outside git dir so it doesn't get committed by git add -A

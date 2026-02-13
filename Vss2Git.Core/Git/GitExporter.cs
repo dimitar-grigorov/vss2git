@@ -585,9 +585,11 @@ namespace Hpdi.Vss2Git
                 // write current rev to all sharing projects
                 if (!skipGitOperations)
                 {
-                    WriteRevision(pathMapper, actionType, target.PhysicalName,
-                        revision.Version, null);
-                    needCommit = true;
+                    if (WriteRevision(pathMapper, actionType, target.PhysicalName,
+                        revision.Version, null))
+                    {
+                        needCommit = true;
+                    }
                 }
             }
             return needCommit;
