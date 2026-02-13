@@ -38,11 +38,8 @@ public class DeleteAndRecoverTests : IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "H2")]
     public void Migration_DeletedProjectFilesShouldBeRemoved()
     {
-        // BUG H2: project-level soft-delete does not remove contained files from git.
-        // This test asserts the CORRECT expected behavior — it will fail until H2 is fixed.
         _runner.Inspector!.FileExists("DelTest/ToDelete/also-delete.txt").Should().BeFalse(
             "also-delete.txt should not exist after project deletion");
     }
