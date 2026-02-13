@@ -41,6 +41,8 @@ var scenarios = new ITestScenario[]
     new Scenario07_SharedFileDeleteRecover(),
     new Scenario08_ProjectMoveChain(),
     new Scenario09_DeleteRecoverProject(),
+    new Scenario10_SharedFilePinDuringShare(),
+    new Scenario11_UnmappedProjectRevisions(),
 };
 
 var passed = 0;
