@@ -50,15 +50,14 @@ namespace Hpdi.Vss2Git.Cli
             pollTimer?.Dispose();
             pollTimer = null;
 
-            // Clear the status line and move to next line
             lock (consoleLock)
             {
                 if (lastLineLength > 0)
                 {
                     Console.Write('\r' + new string(' ', lastLineLength) + '\r');
                     lastLineLength = 0;
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
             }
         }
 

@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using CommandLine;
+using CommandLine.Text;
 
 namespace Hpdi.Vss2Git.Cli
 {
@@ -25,16 +26,19 @@ namespace Hpdi.Vss2Git.Cli
     {
         static int Main(string[] args)
         {
-            // Register code page encodings (required for VSS encoding support)
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // Parse command-line arguments with verb support
-            return Parser.Default.ParseArguments<CliOptions, VerifyOptions>(args)
-                .MapResult(
-                    (CliOptions options) => RunMigration(options),
-                    (VerifyOptions options) => RunVerify(options),
-                    errors => 1
-                );
+            int width;
+            try { width = Console.WindowWidth; } catch { width = 80; }
+
+            var parser = new Parser(s => { s.HelpWriter = null; s.MaximumDisplayWidth = width; });
+            var parsed = parser.ParseArguments<CliOptions, VerifyOptions>(args);
+
+            return parsed.MapResult(
+                (CliOptions o) => RunMigration(o),
+                (VerifyOptions o) => RunVerify(o),
+                _ => { Console.Error.WriteLine(HelpText.AutoBuild(parsed, h =>
+                    { h.AdditionalNewLineAfterOption = false; return h; })); return 1; });
         }
 
         static int RunMigration(CliOptions options)
@@ -132,8 +136,10 @@ namespace Hpdi.Vss2Git.Cli
             var workQueue = new WorkQueue(1);
 
             // Create UI abstractions
-            var userInteraction = new ConsoleUserInteraction(options.IgnoreErrors, options.Interactive);
             var statusReporter = new ConsoleStatusReporter(workQueue);
+            var userInteraction = new ConsoleUserInteraction(
+                options.IgnoreErrors, options.Interactive,
+                statusReporter.Stop, statusReporter.Start);
 
             // Create orchestrator
             var orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);
@@ -155,11 +161,13 @@ namespace Hpdi.Vss2Git.Cli
 
             if (!orchestrator.Run())
             {
+                statusReporter.Stop();
                 return 1;
             }
 
             // Wait for completion
             workQueue.WaitIdle();
+            statusReporter.Stop();
 
             // Display final statistics
             Console.WriteLine();

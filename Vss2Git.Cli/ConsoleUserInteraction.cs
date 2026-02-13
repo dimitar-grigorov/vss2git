@@ -24,22 +24,27 @@ namespace Hpdi.Vss2Git.Cli
     {
         private readonly bool ignoreErrors;
         private readonly bool interactive;
+        private readonly Action pauseStatus;
+        private readonly Action resumeStatus;
 
-        public ConsoleUserInteraction(bool ignoreErrors, bool interactive)
+        public ConsoleUserInteraction(bool ignoreErrors, bool interactive,
+            Action pauseStatus = null, Action resumeStatus = null)
         {
             this.ignoreErrors = ignoreErrors;
             this.interactive = interactive;
+            this.pauseStatus = pauseStatus;
+            this.resumeStatus = resumeStatus;
         }
 
         public ErrorAction ReportError(string message, ErrorActionOptions options)
         {
-            // Move to new line if status was being displayed
-            Console.WriteLine();
+            pauseStatus?.Invoke();
             Console.Error.WriteLine($"ERROR: {message}");
 
             if (ignoreErrors)
             {
                 Console.Error.WriteLine("Ignoring error (--ignore-errors mode)");
+                resumeStatus?.Invoke();
                 return ErrorAction.Ignore;
             }
 
@@ -58,32 +63,39 @@ namespace Hpdi.Vss2Git.Cli
 
             var choice = input.Trim().ToUpperInvariant();
 
-            return choice switch
+            var result = choice switch
             {
                 "R" or "RETRY" => ErrorAction.Retry,
                 "I" or "IGNORE" => ErrorAction.Ignore,
                 _ => ErrorAction.Abort
             };
+
+            if (result != ErrorAction.Abort)
+                resumeStatus?.Invoke();
+
+            return result;
         }
 
         public bool Confirm(string message, string title)
         {
-            Console.WriteLine();
+            pauseStatus?.Invoke();
+
             Console.WriteLine($"{title}:");
             Console.WriteLine(message);
             Console.Write("Continue? [Y/N]: ");
 
             var input = Console.ReadLine();
-            if (string.IsNullOrEmpty(input))
-                return false;
+            var choice = input?.Trim().ToUpperInvariant();
+            var confirmed = choice == "Y" || choice == "YES";
 
-            var choice = input.Trim().ToUpperInvariant();
-            return choice == "Y" || choice == "YES";
+            resumeStatus?.Invoke();
+            return confirmed;
         }
 
         public void ShowFatalError(string message, Exception exception)
         {
-            Console.WriteLine();
+            pauseStatus?.Invoke();
+
             Console.Error.WriteLine("FATAL ERROR:");
             Console.Error.WriteLine(message);
 
