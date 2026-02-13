@@ -38,6 +38,9 @@ var scenarios = new ITestScenario[]
     new Scenario04_PinsAndLabels(),
     new Scenario05_DeleteAndRecover(),
     new Scenario06_DateRangeMigration(),
+    new Scenario07_SharedFileDeleteRecover(),
+    new Scenario08_ProjectMoveChain(),
+    new Scenario09_DeleteRecoverProject(),
 };
 
 var passed = 0;
