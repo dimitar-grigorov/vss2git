@@ -27,7 +27,8 @@ namespace Hpdi.Vss2Git
         {
             // From Settings to MigrationConfiguration
             TypeAdapterConfig<Properties.Settings, MigrationConfiguration>.NewConfig()
-                .Ignore(dest => dest.VssEncoding)  
+                .Ignore(dest => dest.VssEncoding)
+                .Ignore(dest => dest.Force)
                 .Ignore(dest => dest.IgnoreErrors);
         }
 

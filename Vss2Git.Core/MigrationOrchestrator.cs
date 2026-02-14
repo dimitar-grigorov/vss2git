@@ -132,8 +132,8 @@ namespace Hpdi.Vss2Git
                 {
                     var outDir = config.GitDirectory.Trim();
 
-                    // Check if output directory is not empty (skip when continuing with --from-date)
-                    if (!config.FromDate.HasValue &&
+                    // Check if output directory is not empty (skip when --force or --from-date)
+                    if (!config.Force && !config.FromDate.HasValue &&
                         Directory.Exists(outDir) && Directory.EnumerateFileSystemEntries(outDir).Any())
                     {
                         if (!userInteraction.Confirm(

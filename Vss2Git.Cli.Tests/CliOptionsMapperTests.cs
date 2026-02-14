@@ -38,7 +38,7 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 TranscodeComments = false,
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
-                Force = true,              // Should be ignored
+                Force = true,
                 Interactive = true         // Should be ignored
             };
             var encoding = Encoding.UTF8;
@@ -60,6 +60,7 @@ namespace Hpdi.Vss2Git.Cli.Tests
             config.TranscodeComments.Should().BeFalse();
             config.ForceAnnotatedTags.Should().BeFalse();
             config.ExportProjectToGitRoot.Should().BeTrue();
+            config.Force.Should().BeTrue();
         }
 
         [Fact]
@@ -223,10 +224,44 @@ namespace Hpdi.Vss2Git.Cli.Tests
             // Act
             var options = CliOptionsMapper.ToOptions(config);
 
-            // Assert - Force and Interactive are not part of MigrationConfiguration
-            // so they should have their default values
-            options.Force.Should().BeFalse();
+            // Assert - Interactive is not part of MigrationConfiguration
             options.Interactive.Should().BeFalse();
+        }
+
+        [Fact]
+        public void FromOptions_Force_MapsToConfig()
+        {
+            // Arrange
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                Force = true
+            };
+
+            // Act
+            var config = CliOptionsMapper.FromOptions(options, Encoding.Default);
+
+            // Assert
+            config.Force.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ToOptions_Force_MapsFromConfig()
+        {
+            // Arrange
+            var config = new MigrationConfiguration
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                Force = true
+            };
+
+            // Act
+            var options = CliOptionsMapper.ToOptions(config);
+
+            // Assert
+            options.Force.Should().BeTrue();
         }
 
         #endregion

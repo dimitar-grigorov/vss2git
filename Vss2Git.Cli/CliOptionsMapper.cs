@@ -21,7 +21,6 @@ namespace Hpdi.Vss2Git.Cli
             // Configure mapping from MigrationConfiguration to CliOptions
             TypeAdapterConfig<MigrationConfiguration, CliOptions>.NewConfig()
                 .Ignore(dest => dest.EncodingCodePage)  // Derived from VssEncoding
-                .Ignore(dest => dest.Force)             // Not part of MigrationConfiguration
                 .Ignore(dest => dest.Interactive)        // Not part of MigrationConfiguration
                 .Ignore(dest => dest.FromDate)           // Formatted manually from DateTime
                 .Ignore(dest => dest.ToDate);            // Formatted manually from DateTime

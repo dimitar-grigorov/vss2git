@@ -140,7 +140,7 @@ namespace Hpdi.Vss2Git.Cli
             var statusReporter = new ConsoleStatusReporter(workQueue);
             var userInteraction = new ConsoleUserInteraction(
                 options.IgnoreErrors, options.Interactive,
-                statusReporter.Stop, statusReporter.Start);
+                statusReporter.ConsoleLock, statusReporter.Stop, statusReporter.Start);
 
             // Create orchestrator
             var orchestrator = new MigrationOrchestrator(config, workQueue, userInteraction, statusReporter);

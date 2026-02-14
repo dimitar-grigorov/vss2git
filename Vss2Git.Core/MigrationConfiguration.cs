@@ -32,6 +32,7 @@ namespace Hpdi.Vss2Git
         public bool TranscodeComments { get; set; } = true;
 
         // Operational settings
+        public bool Force { get; set; } = false;
         public bool ForceAnnotatedTags { get; set; } = true;
         public bool IgnoreErrors { get; set; } = false;
         public string LogFile { get; set; }

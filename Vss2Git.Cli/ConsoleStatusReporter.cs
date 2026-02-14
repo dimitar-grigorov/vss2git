@@ -29,6 +29,12 @@ namespace Hpdi.Vss2Git.Cli
         private readonly object consoleLock = new object();
 
         /// <summary>
+        /// Shared lock for all console output. Pass this to ConsoleUserInteraction
+        /// to prevent timer callbacks from corrupting interactive prompts.
+        /// </summary>
+        public object ConsoleLock => consoleLock;
+
+        /// <summary>
         /// Optional orchestrator reference for detailed statistics.
         /// Set this after construction to enable file/revision/changeset counts in status line.
         /// </summary>
