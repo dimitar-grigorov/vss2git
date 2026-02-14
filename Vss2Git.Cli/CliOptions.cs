@@ -47,10 +47,10 @@ namespace Hpdi.Vss2Git.Cli
         [Option("same-comment-threshold", Default = 60, HelpText = "Seconds threshold for grouping revisions with identical comment")]
         public int SameCommentSeconds { get; set; }
 
-        [Option('t', "transcode", Default = true, HelpText = "Transcode comments to UTF-8 (use --transcode false to disable)")]
+        [Option('t', "transcode", Default = true, HelpText = "Transcode comments to UTF-8 (use --transcode=false to disable)")]
         public bool TranscodeComments { get; set; }
 
-        [Option("force-annotated-tags", Default = true, HelpText = "Force annotated tags (use --force-annotated-tags false to disable)")]
+        [Option("force-annotated-tags", Default = true, HelpText = "Force annotated tags (use --force-annotated-tags=false to disable)")]
         public bool ForceAnnotatedTags { get; set; }
 
         [Option("export-to-root", Default = false, HelpText = "Export project directly to Git root")]

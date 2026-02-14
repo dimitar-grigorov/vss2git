@@ -142,7 +142,7 @@ namespace Hpdi.Vss2Git.Cli
                 var relativePath = GetRelativePath(baseDir, file.FullName);
                 if (!ShouldExclude(relativePath, excludes))
                 {
-                    items[relativePath.ToLowerInvariant()] = relativePath;
+                    items[relativePath] = relativePath;
                 }
             }
 
@@ -152,7 +152,7 @@ namespace Hpdi.Vss2Git.Cli
                 var relativePath = GetRelativePath(baseDir, dir.FullName);
                 if (!ShouldExclude(relativePath, excludes))
                 {
-                    items[relativePath.ToLowerInvariant()] = relativePath;
+                    items[relativePath] = relativePath;
                     ScanDirectoryRecursive(baseDir, dir.FullName, items, excludes);
                 }
             }
