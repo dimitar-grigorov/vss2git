@@ -1,4 +1,17 @@
-> :warning: **This project is no longer actively maintained or supported.** You can open issues to record, share, and discuss them, but **please do not expect anyone else to act on them.** Because there are no regression tests or automated builds, **pull requests will likely never be merged.** If you would like to implement automated tests and builds, please contact me about becoming a maintainer.
+> **This fork is actively being improved.** The original project by Trevor Robinson was abandoned, but this fork modernizes it and adds significant new features. This is still a work in progress and may contain bugs or inconsistencies — always manually inspect the resulting Git repository and its history before relying on it.
+
+### What's new in this fork
+
+- **Targets .NET 8.0** (upgraded from .NET Framework 4.5.2)
+- **Command-line interface** (`Vss2Git.Cli`) for scripted/unattended migrations
+- **Three git backends** with identical output:
+  - `Process` (default) — spawns git.exe per command
+  - `LibGit2Sharp` — managed library, ~6x faster
+  - `FastImport` — streaming via `git fast-import`, ~19x faster
+- **Date range migration** (`--from-date`, `--to-date`) for incremental/chunked exports
+- **Directory comparison tool** (`compare-dirs.cmd`) to verify migration results against VSS working copies
+- **237 automated tests** — unit tests, CLI tests, 13 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all backends produce identical output
+- **Bug fixes**: timestamp collision ordering, directory deletion, comment deduplication, case-only renames, shared file branching validation, and more
 
 ## What is it? ##
 
@@ -10,18 +23,16 @@ The Vss2Git project contains several components:
   * **VssPhysicalLib** is a set of low-level classes for reading the various data files that make up a VSS database.
   * **HashLib** is a generic stateless hashing API that currently provides 16- and 32-bit [CRC](http://en.wikipedia.org/wiki/Cyclic_redundancy_check) generation.
 
-All components are written in C# using the Microsoft [.NET Framework](https://www.microsoft.com/net).
+All components are written in C# targeting .NET 8.0.
 
 ## Building ##
 
-**Prerequisites:** Visual Studio 2015+ or MSBuild with .NET Framework 4.5.2+
+**Prerequisites:** [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-**Quick Start:**
-- **With Visual Studio:** Open `Vss2Git.sln` and build (Ctrl+Shift+B)
-- **With VS Code:** Press `Ctrl+Shift+B` (requires MSBuild path in `.vscode/settings.json`)
-- **Command Line:** `msbuild Vss2Git.sln /p:Configuration=Debug`
-
-**If MSBuild is missing:** Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) or full Visual Studio with .NET desktop development workload.
+```bash
+dotnet build Vss2Git.sln --configuration Debug
+dotnet test Vss2Git.sln --configuration Debug
+```
 
 ## How is it licensed? ##
 
@@ -34,16 +45,17 @@ Several key features not found in other VSS migration tools inspired this projec
   * **Preserving as much history as possible from the VSS database**, including deleted and renamed files. Vss2Git replays the history of the VSS database from the very beginning, so it is possible to reconstruct any prior version of the tree. Only explicitly destroyed or externally archived (but not restored) history should be lost. Ideally, a migrated VSS database should never need to be consulted again.
   * **Making historical changes easily comprehensible**. Migration tools that simply do a one-pass traversal of the files currently in the repository, replaying all the revisions of each file as it is encountered, generate version history that is difficult to correlate among multiple files. Vss2Git scans the entire repository for revisions, sorts them chronologically, and groups them into conceptual changesets, which are then committed in chronological order. The resulting repository should appear as if it were maintained in Git right from the beginning.
   * **Robustness, recoverability, and minimal user intervention**. Vss2Git aims to be robust against common VSS database inconsistencies, such as missing data files, so that migration can proceed unattended. However, serious errors, such as Git reporting an error during commit, necessarily suspend migration. In such cases, the user is presented with an Abort/Retry/Ignore dialog, so that manual intervention is an option.
-  * **Speed**. Vss2Git takes negligible CPU time. It can scan and build changesets for a 300MB+ VSS database with 6000+ files and 13000+ revisions in about 30 seconds (or under 2 seconds if the files are cached) on a modern desktop machine. Total migration time is about an hour, with 98% of the time spent in Git.
+  * **Speed**. With the FastImport backend, a 19,358-file VSS database with 148,260 revisions migrates in about 21 seconds. LibGit2Sharp takes about 1 minute, and the Process backend about 7 minutes. Revision scanning and changeset building take only a few seconds regardless of backend.
 
 Admittedly, some potentially interesting features are currently outside the scope of the project, such as:
 
-  * **Incremental migration**. Vss2Git currently always exports the entire history of the selected files, and it does not attempt to handle conflicts with files already in the Git repository prior to migration.
   * **Handling of corrupt databases**. Vss2Git will fail to process VSS data files with CRC errors. If you encounter such errors, run the VSS Analyze.exe tool with the "-f" option. Make sure to back up your database first.
 
 ## How well tested is it? ##
 
-**This code has not been extensively tested.** Vss2Git was developed in about 2 weeks with the primary purpose of migrating HPDI's VSS database to Git. With more than 300MB of data and 13000 revisions committed over 7 years, that should be reasonably representative of a large repository, but it is only one dataset. If you decide to use Vss2Git, please let me know how it works for you, and if you'd like me to add stats for your database here.
+This fork has **237 automated tests**: 120 unit tests (including 51 cross-backend common tests verifying all 3 git backends produce identical results), 22 CLI tests, and 95 integration tests covering 13 migration scenarios with pre-built VSS databases. Cross-backend validation tests confirm that Process, LibGit2Sharp, and FastImport backends produce byte-for-byte identical file content, matching commits, tags, and authors.
+
+That said, VSS databases can vary widely. **Always inspect the resulting Git repository manually** — check file content, commit history, and tags against your VSS database before considering the migration complete.
 
 ## Usage tips ##
 
@@ -76,15 +88,27 @@ Yes! **Vss2Git.Cli** provides a command-line interface for automated migrations.
 # Basic migration
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --email-domain "company.com"
 
-# Verify migration results
-Vss2Git.Cli verify --source "C:\VSS\MyProject" --target "C:\Git\MyProject"
+# Fast migration with FastImport backend
+Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --git-backend FastImport --ignore-errors
+
+# Incremental migration with date ranges
+Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --to-date 2005-01-01
+Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --from-date 2005-01-01
+
+# Migrate a subproject with encoding and exclusions
+Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" \
+  --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1252
 ```
 
-Key options: `--vss-project` (VSS path), `--exclude` (patterns), `--ignore-errors` (unattended mode). Run `Vss2Git.Cli --help` for all options.
+Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`--to-date` (incremental migration), `--vss-project` (VSS path), `--exclude` (patterns), `--ignore-errors` (unattended mode), `--perf` (performance tracking). Run `Vss2Git.Cli --help` for all options.
 
 ## Testing ##
 
-Integration tests validate migrations using pre-built VSS databases. Run with `dotnet test`. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
+```bash
+dotnet test Vss2Git.sln --configuration Debug
+```
+
+237 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
 ## Screenshot ##
 
