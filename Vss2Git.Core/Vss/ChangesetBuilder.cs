@@ -77,11 +77,10 @@ namespace Hpdi.Vss2Git
                         // determine target of project revisions
                         var actionType = revision.Action.Type;
                         var namedAction = revision.Action as VssNamedAction;
-                        var targetFile = revision.Item.PhysicalName;
-                        if (namedAction != null)
-                        {
-                            targetFile = namedAction.Name.PhysicalName;
-                        }
+                        // Use (project, file) key for project-level actions
+                        var targetFile = namedAction != null
+                            ? revision.Item.PhysicalName + "/" + namedAction.Name.PhysicalName
+                            : revision.Item.PhysicalName;
 
                         // Create actions are only used to obtain initial item comments;
                         // items are actually created when added to a project
