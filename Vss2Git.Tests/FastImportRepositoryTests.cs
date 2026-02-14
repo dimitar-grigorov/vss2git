@@ -5,21 +5,21 @@ using Xunit;
 namespace Hpdi.Vss2Git.Tests
 {
     /// <summary>
-    /// Tests for LibGit2Sharp-specific behavior not covered by GitRepositoryCommonTests.
-    /// Common operations (add, remove, move, commit, tag, binary, mixed-state)
-    /// are tested in LibGit2SharpCommonTests via the shared base class.
+    /// Tests for FastImport-specific behavior not covered by GitRepositoryCommonTests.
+    /// Common operations (add, remove, move, commit, tag, binary) are tested
+    /// in FastImportCommonTests via the shared base class.
     /// </summary>
-    public class LibGit2SharpRepositoryTests : IDisposable
+    public class FastImportRepositoryTests : IDisposable
     {
         private readonly string _repoDir;
-        private readonly LibGit2SharpRepository _repo;
+        private readonly FastImportRepository _repo;
 
-        public LibGit2SharpRepositoryTests()
+        public FastImportRepositoryTests()
         {
             _repoDir = Path.Combine(Path.GetTempPath(),
-                "vss2git_l2s_test_" + Guid.NewGuid().ToString("N")[..8]);
+                "vss2git_fi_test_" + Guid.NewGuid().ToString("N")[..8]);
             Directory.CreateDirectory(_repoDir);
-            _repo = new LibGit2SharpRepository(_repoDir, Logger.Null);
+            _repo = new FastImportRepository(_repoDir, Logger.Null);
             _repo.Init();
         }
 
@@ -46,7 +46,7 @@ namespace Hpdi.Vss2Git.Tests
             return fullPath;
         }
 
-        #region L3: CommitEncoding and i18n.commitencoding
+        #region Encoding: i18n.commitencoding skip (shared with LibGit2Sharp)
 
         [Fact]
         public void SetConfig_SkipsCommitEncoding_SoGitLogShowsUtf8()
@@ -60,6 +60,7 @@ namespace Hpdi.Vss2Git.Tests
             _repo.AddAll(new[] { f1 });
             _repo.Commit("Иван Петров", "ivan@test.com", "Промяна на файл", DateTime.Now);
 
+            _repo.Dispose();
             var psi = new System.Diagnostics.ProcessStartInfo("git", "log --format=%s -1")
             {
                 WorkingDirectory = _repoDir,
@@ -72,7 +73,43 @@ namespace Hpdi.Vss2Git.Tests
             proc.WaitForExit();
 
             subject.Should().Be("Промяна на файл",
-                "i18n.commitencoding should not be set to non-UTF-8 for LibGit2Sharp backend");
+                "i18n.commitencoding should not be set to non-UTF-8 for FastImport backend");
+        }
+
+        #endregion
+
+        #region Tags: edge case
+
+        [Fact]
+        public void Tag_BeforeFirstCommit_DoesNotThrow()
+        {
+            // Should log a warning but not crash
+            var act = () => _repo.Tag("v0.0", "test", "test@test", "early tag", DateTime.Now);
+            act.Should().NotThrow();
+        }
+
+        #endregion
+
+        #region Path quoting (FastImport-specific API)
+
+        [Fact]
+        public void QuotePath_PlainPath_NotQuoted()
+        {
+            FastImportRepository.QuotePath("src/main.c").Should().Be("src/main.c");
+        }
+
+        [Fact]
+        public void QuotePath_PathWithSpaces_IsQuoted()
+        {
+            FastImportRepository.QuotePath("my project/file name.txt")
+                .Should().Be("\"my project/file name.txt\"");
+        }
+
+        [Fact]
+        public void QuotePath_PathWithQuotes_IsEscaped()
+        {
+            FastImportRepository.QuotePath("file\"name.txt")
+                .Should().Be("\"file\\\"name.txt\"");
         }
 
         #endregion
