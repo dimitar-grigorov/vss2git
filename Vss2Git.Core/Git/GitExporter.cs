@@ -40,6 +40,7 @@ namespace Hpdi.Vss2Git
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
         private readonly PerformanceTracker perfTracker;
         private readonly List<string> pendingChangedPaths = new List<string>();
+        private const int GcCommitInterval = 1000;
         private bool skipGitOperations;
 
         public GitExporter(WorkQueue workQueue, Logger logger,
@@ -176,6 +177,15 @@ namespace Hpdi.Vss2Git
                             if (CommitChangeset(git, changeset))
                             {
                                 ++commitCount;
+
+                                // Periodically compact the git object database to
+                                // prevent loose object accumulation from degrading
+                                // performance (especially with LibGit2Sharp backend).
+                                if (commitCount % GcCommitInterval == 0)
+                                {
+                                    LogStatus(work, "Compacting git repository");
+                                    AbortRetryIgnore(delegate { git.Compact(); });
+                                }
                             }
                         }
                         else
@@ -768,9 +778,12 @@ namespace Hpdi.Vss2Git
             Stream contents;
             try
             {
-                item = (VssFile)database.GetItemPhysical(physical);
-                revision = item.GetRevision(version);
-                contents = revision.GetContents();
+                using (perfTracker?.Start("VSS:getItem"))
+                    item = (VssFile)database.GetItemPhysical(physical);
+                using (perfTracker?.Start("VSS:getRevision"))
+                    revision = item.GetRevision(version);
+                using (perfTracker?.Start("VSS:getContents"))
+                    contents = revision.GetContents();
             }
             catch (Exception e)
             {
@@ -782,25 +795,31 @@ namespace Hpdi.Vss2Git
             }
 
             // propagate exceptions here (e.g. disk full) to abort/retry/ignore
-            using (contents)
+            using (perfTracker?.Start("VSS:writeFile"))
             {
-                WriteStream(contents, destPath);
+                using (contents)
+                {
+                    WriteStream(contents, destPath);
+                }
             }
 
             // try to use the first revision (for this branch) as the create time,
             // since the item creation time doesn't seem to be meaningful
-            var createDateTime = item.Created;
-            using (var revEnum = item.Revisions.GetEnumerator())
+            using (perfTracker?.Start("VSS:setTimestamps"))
             {
-                if (revEnum.MoveNext())
+                var createDateTime = item.Created;
+                using (var revEnum = item.Revisions.GetEnumerator())
                 {
-                    createDateTime = revEnum.Current.DateTime;
+                    if (revEnum.MoveNext())
+                    {
+                        createDateTime = revEnum.Current.DateTime;
+                    }
                 }
-            }
 
-            // set file creation and update timestamps
-            File.SetCreationTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(createDateTime));
-            File.SetLastWriteTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(revision.DateTime));
+                // set file creation and update timestamps
+                File.SetCreationTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(createDateTime));
+                File.SetLastWriteTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(revision.DateTime));
+            }
 
             pendingChangedPaths.Add(destPath);
             return true;

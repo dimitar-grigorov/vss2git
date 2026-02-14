@@ -512,6 +512,12 @@ namespace Hpdi.Vss2Git
                 (shellQuoting && ShellMetaChars.Contains(c));
         }
 
+        public void Compact()
+        {
+            // git.exe handles auto-gc internally and each process starts fresh,
+            // so explicit compaction adds overhead without benefit.
+        }
+
         public void Dispose()
         {
             // GitWrapper doesn't hold any resources that need disposal

@@ -47,5 +47,7 @@ namespace Hpdi.Vss2Git
         bool Commit(string authorName, string authorEmail, string comment, DateTime localTime);
 
         void Tag(string name, string taggerName, string taggerEmail, string comment, DateTime localTime);
+
+        void Compact();
     }
 }

@@ -300,8 +300,12 @@ namespace Hpdi.Vss2Git
                     // Build tree from our incrementally-maintained TreeDefinition
                     var tree = repo.ObjectDatabase.CreateTree(currentTree);
 
+                    // Reset to committed tree to avoid re-hashing dirty subtrees on every commit
+                    currentTree = TreeDefinition.From(tree);
+
                     // Check if tree is same as HEAD (nothing changed)
-                    if (repo.Head.Tip != null && tree.Id == repo.Head.Tip.Tree.Id)
+                    var headTip = repo.Head.Tip;
+                    if (headTip != null && tree.Id == headTip.Tree.Id)
                     {
                         return false;
                     }
@@ -313,8 +317,8 @@ namespace Hpdi.Vss2Git
                     var author = new Signature(authorName, authorEmail, dateTimeOffset);
                     var committer = author;
 
-                    var parents = repo.Head.Tip != null
-                        ? new[] { repo.Head.Tip }
+                    var parents = headTip != null
+                        ? new[] { headTip }
                         : Array.Empty<Commit>();
 
                     var commit = repo.ObjectDatabase.CreateCommit(
@@ -347,6 +351,77 @@ namespace Hpdi.Vss2Git
                     var tagger = new Signature(taggerName, taggerEmail, dateTimeOffset);
 
                     repo.Tags.Add(name, repo.Head.Tip, tagger, CleanupMessage(comment));
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
+        public void Compact()
+        {
+            stopwatch.Start();
+            try
+            {
+                using (perfTracker?.Start("Git:compact"))
+                {
+                    logger.WriteLine("LibGit2Sharp: compacting object database");
+
+                    // Close the repository to release file locks
+                    repo?.Dispose();
+                    repo = null;
+
+                    // Run git gc to pack loose objects
+                    var startInfo = new ProcessStartInfo("git", "gc")
+                    {
+                        WorkingDirectory = repoPath,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    };
+
+                    try
+                    {
+                        using (var process = Process.Start(startInfo))
+                        {
+                            // Read streams before WaitForExit to avoid deadlock
+                            // when output buffers fill up.
+                            var stdout = process.StandardOutput.ReadToEndAsync();
+                            var stderr = process.StandardError.ReadToEndAsync();
+                            process.WaitForExit(120_000); // 2 minute timeout
+                            if (!process.HasExited)
+                            {
+                                process.Kill();
+                                logger.WriteLine("WARNING: git gc timed out after 120 seconds");
+                            }
+                            else if (process.ExitCode != 0)
+                            {
+                                logger.WriteLine("WARNING: git gc exited with code {0}: {1}",
+                                    process.ExitCode, stderr.Result);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.WriteLine("WARNING: git gc failed: {0}", ex.Message);
+                    }
+
+                    // Reopen the repository
+                    repo = new Repository(repoPath);
+
+                    // Rebuild TreeDefinition from HEAD
+                    if (repo.Head.Tip != null)
+                    {
+                        currentTree = TreeDefinition.From(repo.Head.Tip.Tree);
+                    }
+                    else
+                    {
+                        currentTree = new TreeDefinition();
+                    }
+
+                    logger.WriteLine("LibGit2Sharp: compaction complete, repository reopened");
                 }
             }
             finally
