@@ -870,10 +870,11 @@ namespace Hpdi.Vss2Git
         {
             int removedCount = 0;
             var gitDir = Path.Combine(rootPath, ".git");
+            var gitDirPrefix = gitDir + Path.DirectorySeparatorChar;
 
             // Process from deepest to shallowest directories
             var allDirs = Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories)
-                .Where(d => !d.StartsWith(gitDir))
+                .Where(d => d != gitDir && !d.StartsWith(gitDirPrefix))
                 .OrderByDescending(d => d.Length);
 
             foreach (var dir in allDirs)
