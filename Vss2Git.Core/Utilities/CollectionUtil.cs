@@ -27,6 +27,8 @@ namespace Hpdi.Vss2Git
     {
         public static bool IsEmpty(IEnumerable items)
         {
+            if (items == null)
+                return true;
             var itemCollection = items as ICollection;
             if (itemCollection != null)
             {

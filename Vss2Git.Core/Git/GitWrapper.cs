@@ -145,7 +145,9 @@ namespace Hpdi.Vss2Git
 
         public bool AddAll(IEnumerable<string> changedPaths)
         {
-            return AddAll();
+            if (CollectionUtil.IsEmpty(changedPaths))
+                return AddAll();
+            return Add(changedPaths);
         }
 
         public void Remove(string path, bool recursive)
