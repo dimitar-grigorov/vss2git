@@ -41,10 +41,10 @@ namespace Hpdi.Vss2Git.Cli
         [Option("interactive", Default = false, HelpText = "Prompt for user input on errors (default: abort on error)")]
         public bool Interactive { get; set; }
 
-        [Option("any-comment-threshold", Default = 30, HelpText = "Seconds threshold for grouping revisions with any comment")]
+        [Option("any-comment-threshold", Default = 0, HelpText = "Seconds threshold for grouping revisions regardless of comment (0 = same-second only)")]
         public int AnyCommentSeconds { get; set; }
 
-        [Option("same-comment-threshold", Default = 600, HelpText = "Seconds threshold for grouping revisions with same comment")]
+        [Option("same-comment-threshold", Default = 60, HelpText = "Seconds threshold for grouping revisions with identical comment")]
         public int SameCommentSeconds { get; set; }
 
         [Option('t', "transcode", Default = true, HelpText = "Transcode comments to UTF-8 (use --transcode false to disable)")]

@@ -155,8 +155,8 @@ namespace Hpdi.Vss2Git.Tests
             Settings.Default.VssProject = "$";
             Settings.Default.DefaultEmailDomain = "localhost";
             Settings.Default.DefaultComment = "";
-            Settings.Default.AnyCommentSeconds = 30;
-            Settings.Default.SameCommentSeconds = 600;
+            Settings.Default.AnyCommentSeconds = 0;
+            Settings.Default.SameCommentSeconds = 60;
             Settings.Default.TranscodeComments = true;
             Settings.Default.ForceAnnotatedTags = true;
             Settings.Default.ExportProjectToGitRoot = false;
@@ -170,8 +170,8 @@ namespace Hpdi.Vss2Git.Tests
             config.VssProject.Should().Be("$");
             config.DefaultEmailDomain.Should().Be("localhost");
             config.DefaultComment.Should().Be("");
-            config.AnyCommentSeconds.Should().Be(30);
-            config.SameCommentSeconds.Should().Be(600);
+            config.AnyCommentSeconds.Should().Be(0);
+            config.SameCommentSeconds.Should().Be(60);
             config.TranscodeComments.Should().BeTrue();
             config.ForceAnnotatedTags.Should().BeTrue();
             config.ExportProjectToGitRoot.Should().BeFalse();

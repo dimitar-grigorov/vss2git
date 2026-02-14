@@ -109,8 +109,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 VssProject = "$",
                 DefaultEmailDomain = "localhost",
                 DefaultComment = "",
-                AnyCommentSeconds = 30,
-                SameCommentSeconds = 600,
+                AnyCommentSeconds = 0,
+                SameCommentSeconds = 60,
                 TranscodeComments = true,
                 ForceAnnotatedTags = true
             };
@@ -123,8 +123,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
             config.VssProject.Should().Be("$");
             config.DefaultEmailDomain.Should().Be("localhost");
             config.DefaultComment.Should().Be("");
-            config.AnyCommentSeconds.Should().Be(30);
-            config.SameCommentSeconds.Should().Be(600);
+            config.AnyCommentSeconds.Should().Be(0);
+            config.SameCommentSeconds.Should().Be(60);
             config.TranscodeComments.Should().BeTrue();
             config.ForceAnnotatedTags.Should().BeTrue();
         }

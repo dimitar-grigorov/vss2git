@@ -34,15 +34,14 @@ namespace Hpdi.Vss2Git
             get { return changesets; }
         }
 
-        private TimeSpan anyCommentThreshold = TimeSpan.FromSeconds(30);
+        private TimeSpan anyCommentThreshold = TimeSpan.Zero;
         public TimeSpan AnyCommentThreshold
         {
             get { return anyCommentThreshold; }
             set { anyCommentThreshold = value; }
         }
 
-
-        private TimeSpan sameCommentThreshold = TimeSpan.FromMinutes(10);
+        private TimeSpan sameCommentThreshold = TimeSpan.FromSeconds(60);
         public TimeSpan SameCommentThreshold
         {
             get { return sameCommentThreshold; }

@@ -133,7 +133,7 @@ namespace Hpdi.Vss2Git.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int AnyCommentSeconds {
             get {
                 return ((int)(this["AnyCommentSeconds"]));
@@ -145,7 +145,7 @@ namespace Hpdi.Vss2Git.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("600")]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
         public int SameCommentSeconds {
             get {
                 return ((int)(this["SameCommentSeconds"]));

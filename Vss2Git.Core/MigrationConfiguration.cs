@@ -25,8 +25,8 @@ namespace Hpdi.Vss2Git
         public bool ExportProjectToGitRoot { get; set; } = false;
 
         // Changeset settings
-        public int AnyCommentSeconds { get; set; } = 30;
-        public int SameCommentSeconds { get; set; } = 600;
+        public int AnyCommentSeconds { get; set; } = 0;
+        public int SameCommentSeconds { get; set; } = 60;
 
         // Transcoding settings
         public bool TranscodeComments { get; set; } = true;
