@@ -65,9 +65,15 @@ namespace Hpdi.Vss2Git
                 var pendingChangesByUser = new Dictionary<string, Changeset>();
                 foreach (var dateEntry in revisionAnalyzer.SortedRevisions)
                 {
+                    if (workQueue.IsAborting)
+                        break;
+
                     var dateTime = dateEntry.Key;
                     foreach (Revision revision in dateEntry.Value)
                     {
+                        if (workQueue.IsAborting)
+                            break;
+
                         // determine target of project revisions
                         var actionType = revision.Action.Type;
                         var namedAction = revision.Action as VssNamedAction;
@@ -212,7 +218,7 @@ namespace Hpdi.Vss2Git
         {
             foreach (var line in accumulated.Split('\n'))
             {
-                if (line.Trim() == newComment)
+                if (line.Trim() == newComment.Trim())
                     return true;
             }
             return false;
