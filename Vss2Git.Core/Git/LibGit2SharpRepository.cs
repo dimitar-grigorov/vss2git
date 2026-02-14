@@ -194,7 +194,13 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("LibGit2Sharp: remove {0}{1}",
                         recursive ? "-rf " : "", relativePath);
 
-                    // Remove from tree definition
+                    // Materialize before recursive remove: TreeDefinition.Remove("dir")
+                    // silently fails on uncommitted subtrees (L1 bug).
+                    if (recursive)
+                    {
+                        var tempTree = repo.ObjectDatabase.CreateTree(currentTree);
+                        currentTree = TreeDefinition.From(tempTree);
+                    }
                     currentTree.Remove(relativePath);
 
                     // Remove from working directory
