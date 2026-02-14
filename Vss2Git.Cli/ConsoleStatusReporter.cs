@@ -85,9 +85,11 @@ namespace Hpdi.Vss2Git.Cli
                     }
 
                     // Truncate if too long for console
-                    if (line.Length > Console.WindowWidth - 1)
+                    int width;
+                    try { width = Console.WindowWidth; } catch { width = 120; }
+                    if (line.Length > width - 1)
                     {
-                        line = line.Substring(0, Console.WindowWidth - 4) + "...";
+                        line = line.Substring(0, width - 4) + "...";
                     }
 
                     // Overwrite in place: pad with spaces to cover any leftover chars from previous line

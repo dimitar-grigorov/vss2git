@@ -249,6 +249,7 @@ namespace Hpdi.Vss2Git
             settings.VssExcludePaths = excludeTextBox.Text;
             settings.GitDirectory = outDirTextBox.Text;
             settings.DefaultEmailDomain = domainTextBox.Text;
+            settings.DefaultComment = commentTextBox.Text;
             settings.LogFile = logTextBox.Text;
             settings.TranscodeComments = transcodeCheckBox.Checked;
             settings.ForceAnnotatedTags = forceAnnotatedCheckBox.Checked;
