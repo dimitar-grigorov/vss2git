@@ -72,6 +72,10 @@ namespace Hpdi.Vss2Git
 
         private static void ConvertPatternInto(string glob, StringBuilder buf)
         {
+            // Anchor to path segment boundary: match at start of string or after
+            // a directory separator. Without this, "bin/*" would match "mybin/file"
+            // because the regex finds "bin/" as a substring (C2 fix).
+            buf.Append(@"(?:^|[/\\])");
             for (int i = 0; i < glob.Length; ++i)
             {
                 char c = glob[i];
