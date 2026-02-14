@@ -167,10 +167,13 @@ namespace Hpdi.Vss2Git.Cli
 
         private static bool ShouldExclude(string relativePath, string[] excludes)
         {
+            var segments = relativePath.Split(
+                new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
+                StringSplitOptions.RemoveEmptyEntries);
+
             foreach (var exclude in excludes)
             {
-                // Check if path contains the excluded pattern
-                if (relativePath.IndexOf(exclude, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (segments.Any(s => s.Equals(exclude, StringComparison.OrdinalIgnoreCase)))
                 {
                     return true;
                 }

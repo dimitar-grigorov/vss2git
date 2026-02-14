@@ -54,7 +54,7 @@ namespace Hpdi.Vss2Git.Cli
             {
                 encoding = Encoding.GetEncoding(encodingCodePage);
             }
-            catch (ArgumentException)
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
             {
                 Console.Error.WriteLine($"ERROR: Invalid encoding code page: {encodingCodePage}");
                 return 1;
