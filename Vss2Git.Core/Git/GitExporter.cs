@@ -879,6 +879,9 @@ namespace Hpdi.Vss2Git
                 case GitBackend.LibGit2Sharp:
                     logger.WriteLine("Using LibGit2Sharp backend");
                     return new LibGit2SharpRepository(repoPath, logger, perfTracker);
+                case GitBackend.FastImport:
+                    logger.WriteLine("Using git fast-import backend");
+                    return new FastImportRepository(repoPath, logger, perfTracker);
                 default:
                     logger.WriteLine("Using git.exe process backend");
                     return new GitWrapper(repoPath, logger, perfTracker);

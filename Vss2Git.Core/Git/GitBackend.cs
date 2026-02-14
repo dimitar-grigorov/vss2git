@@ -13,6 +13,11 @@ namespace Hpdi.Vss2Git
         /// <summary>
         /// Use LibGit2Sharp managed library (faster, no git.exe dependency).
         /// </summary>
-        LibGit2Sharp
+        LibGit2Sharp,
+
+        /// <summary>
+        /// Use git fast-import for streaming bulk imports (fastest for initial migration).
+        /// </summary>
+        FastImport
     }
 }

@@ -310,6 +310,12 @@ namespace Hpdi.Vss2Git
                         return false;
                     }
 
+                    // No HEAD and empty tree — nothing to commit
+                    if (headTip == null && tree.Count == 0)
+                    {
+                        return false;
+                    }
+
                     // Match GitWrapper: convert to UTC with +0000 offset
                     var utcTime = TimeZoneInfo.ConvertTimeToUtc(localTime);
                     var dateTimeOffset = new DateTimeOffset(utcTime, TimeSpan.Zero);
