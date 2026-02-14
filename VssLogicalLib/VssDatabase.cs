@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Hpdi.VssPhysicalLib;
@@ -37,6 +38,7 @@ namespace Hpdi.VssLogicalLib
         private readonly NameFile nameFile;
         private readonly VssProject rootProject;
         private readonly Encoding encoding;
+        private readonly Dictionary<string, VssItem> itemCache = new Dictionary<string, VssItem>(StringComparer.OrdinalIgnoreCase);
 
         public string BasePath
         {
@@ -108,6 +110,11 @@ namespace Hpdi.VssLogicalLib
                 return rootProject;
             }
 
+            if (itemCache.TryGetValue(physicalName, out var cached))
+            {
+                return cached;
+            }
+
             var physicalPath = GetDataPath(physicalName);
             var itemFile = new ItemFile(physicalPath, encoding);
             var isProject = (itemFile.Header.ItemType == ItemType.Project);
@@ -126,6 +133,7 @@ namespace Hpdi.VssLogicalLib
                 item = new VssFile(this, itemName, physicalPath);
             }
             item.ItemFile = itemFile;
+            itemCache[physicalName] = item;
             return item;
         }
 
