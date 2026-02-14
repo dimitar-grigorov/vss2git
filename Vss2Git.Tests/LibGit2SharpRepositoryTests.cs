@@ -158,5 +158,92 @@ namespace Hpdi.Vss2Git.Tests
         }
 
         #endregion
+
+        #region L2: Move on uncommitted subtrees
+
+        [Fact]
+        public void Move_Directory_AfterCommit_MovesSubtree()
+        {
+            // Arrange: add files, commit (subtree becomes committed in ODB)
+            var f1 = CreateFile("olddir/file1.txt", "hello1");
+            var f2 = CreateFile("olddir/sub/file2.txt", "hello2");
+            _repo.AddAll(new[] { f1, f2 });
+            _repo.Commit("test", "test@test", "initial", DateTime.Now);
+
+            // Act: move committed directory
+            _repo.Move(Path.Combine(_repoDir, "olddir"), Path.Combine(_repoDir, "newdir"));
+            _repo.Commit("test", "test@test", "move dir", DateTime.Now);
+
+            // Assert
+            var files = GetHeadFileList();
+            files.Should().NotContain(f => f.StartsWith("olddir"), "old path should be gone");
+            files.Should().Contain("newdir/file1.txt");
+            files.Should().Contain("newdir/sub/file2.txt");
+        }
+
+        [Fact]
+        public void Move_Directory_BeforeCommit_MovesSubtree()
+        {
+            // Arrange: add files WITHOUT committing (uncommitted subtree — L2 bug)
+            var f1 = CreateFile("olddir/file1.txt", "hello1");
+            var f2 = CreateFile("olddir/sub/file2.txt", "hello2");
+            var other = CreateFile("other.txt", "keep me");
+            _repo.AddAll(new[] { f1, f2, other });
+
+            // Act: move before commit (same changeset: Add + MoveFrom)
+            _repo.Move(Path.Combine(_repoDir, "olddir"), Path.Combine(_repoDir, "newdir"));
+            _repo.Commit("test", "test@test", "add and move", DateTime.Now);
+
+            // Assert
+            var files = GetHeadFileList();
+            files.Should().NotContain(f => f.StartsWith("olddir"), "old path should be gone");
+            files.Should().Contain("newdir/file1.txt");
+            files.Should().Contain("newdir/sub/file2.txt");
+            files.Should().Contain("other.txt", "unrelated file should survive");
+        }
+
+        [Fact]
+        public void Move_Directory_MixedState_MovesSubtree()
+        {
+            // Arrange: commit some files, then add more to same dir
+            var f1 = CreateFile("olddir/file1.txt", "hello1");
+            _repo.AddAll(new[] { f1 });
+            _repo.Commit("test", "test@test", "initial", DateTime.Now);
+
+            var f2 = CreateFile("olddir/file2.txt", "hello2");
+            _repo.AddAll(new[] { f2 });
+
+            // Act: move mixed-state directory
+            _repo.Move(Path.Combine(_repoDir, "olddir"), Path.Combine(_repoDir, "newdir"));
+            _repo.Commit("test", "test@test", "move mixed dir", DateTime.Now);
+
+            // Assert
+            var files = GetHeadFileList();
+            files.Should().NotContain(f => f.StartsWith("olddir"), "old path should be gone");
+            files.Should().Contain("newdir/file1.txt");
+            files.Should().Contain("newdir/file2.txt");
+        }
+
+        [Fact]
+        public void Move_SingleFile_BeforeCommit_Works()
+        {
+            // Arrange: add files without committing
+            var f1 = CreateFile("proj/file1.txt", "hello1");
+            var f2 = CreateFile("proj/file2.txt", "hello2");
+            _repo.AddAll(new[] { f1, f2 });
+
+            // Act: move single file (not directory — should always work)
+            var dest = Path.Combine(_repoDir, "proj", "renamed.txt");
+            _repo.Move(f1, dest);
+            _repo.Commit("test", "test@test", "move file", DateTime.Now);
+
+            // Assert
+            var files = GetHeadFileList();
+            files.Should().NotContain("proj/file1.txt", "old file path should be gone");
+            files.Should().Contain("proj/renamed.txt");
+            files.Should().Contain("proj/file2.txt", "other file should remain");
+        }
+
+        #endregion
     }
 }

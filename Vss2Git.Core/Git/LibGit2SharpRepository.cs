@@ -257,7 +257,11 @@ namespace Hpdi.Vss2Git
                     }
                     else if (isDirectory)
                     {
-                        // Get tree entry for the source directory before moving
+                        // Materialize before move: Add(dest, tree[source]) crashes
+                        // on uncommitted subtrees (L2 bug).
+                        var tempTree = repo.ObjectDatabase.CreateTree(currentTree);
+                        currentTree = TreeDefinition.From(tempTree);
+
                         var dirEntry = currentTree[relSource];
 
                         // Filesystem move
@@ -265,7 +269,6 @@ namespace Hpdi.Vss2Git
 
                         if (dirEntry != null)
                         {
-                            // Move subtree: add at new path, remove from old
                             currentTree.Add(relDest, dirEntry);
                             currentTree.Remove(relSource);
                         }
