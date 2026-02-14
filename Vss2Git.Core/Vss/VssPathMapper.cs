@@ -156,9 +156,9 @@ namespace Hpdi.Vss2Git
             items.AddLast(item);
         }
 
-        public void RemoveItem(VssItemInfo item)
+        public bool RemoveItem(VssItemInfo item)
         {
-            items.Remove(item);
+            return items.Remove(item);
         }
 
         public bool ContainsLogicalName(string logicalName)
@@ -291,9 +291,9 @@ namespace Hpdi.Vss2Git
             projects.Add(project);
         }
 
-        public void RemoveProject(VssProjectInfo project)
+        public bool RemoveProject(VssProjectInfo project)
         {
-            projects.Remove(project);
+            return projects.Remove(project);
         }
     }
 
@@ -505,7 +505,10 @@ namespace Hpdi.Vss2Git
 
             // remove filename from old project
             var oldFile = GetOrCreateFile(oldName);
-            oldFile.RemoveProject(parentInfo);
+            if (!oldFile.RemoveProject(parentInfo))
+            {
+                Debug.WriteLine($"BranchFile: old file {oldName.PhysicalName} was not shared in project {project.PhysicalName}; skipping removal");
+            }
             parentInfo.RemoveItem(oldFile);
 
             // add filename to new project
