@@ -39,6 +39,7 @@ namespace Hpdi.Vss2Git
         private readonly StreamCopier streamCopier = new StreamCopier();
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
         private readonly PerformanceTracker perfTracker;
+        private readonly List<string> pendingChangedPaths = new List<string>();
         private bool skipGitOperations;
 
         public GitExporter(WorkQueue workQueue, Logger logger,
@@ -176,6 +177,10 @@ namespace Hpdi.Vss2Git
                             {
                                 ++commitCount;
                             }
+                        }
+                        else
+                        {
+                            pendingChangedPaths.Clear();
                         }
 
                         if (workQueue.IsAborting)
@@ -405,6 +410,7 @@ namespace Hpdi.Vss2Git
                                         else
                                         {
                                             File.Delete(targetPath);
+                                            pendingChangedPaths.Add(targetPath);
                                             needCommit = true;
                                         }
                                     }
@@ -429,6 +435,8 @@ namespace Hpdi.Vss2Git
                                     if (projectInfo == null || projectInfo.ContainsFiles())
                                     {
                                         CaseSensitiveRename(sourcePath, targetPath, git.Move);
+                                        if (target.IsProject)
+                                            TranslatePendingPaths(sourcePath, targetPath);
                                         needCommit = true;
                                     }
                                     else
@@ -463,6 +471,7 @@ namespace Hpdi.Vss2Git
                                     if (projectInfo.ContainsFiles())
                                     {
                                         git.Move(sourcePath, targetPath);
+                                        TranslatePendingPaths(sourcePath, targetPath);
                                         needCommit = true;
                                     }
                                     else
@@ -625,12 +634,35 @@ namespace Hpdi.Vss2Git
             return needCommit;
         }
 
+        /// <summary>
+        /// After a directory move/rename, translates any pending changed paths
+        /// from the old directory to the new one so AddAll processes them correctly.
+        /// </summary>
+        private void TranslatePendingPaths(string oldDir, string newDir)
+        {
+            TranslatePendingPaths(pendingChangedPaths, oldDir, newDir);
+        }
+
+        internal static void TranslatePendingPaths(List<string> paths, string oldDir, string newDir)
+        {
+            var oldPrefix = oldDir + Path.DirectorySeparatorChar;
+            for (int i = 0; i < paths.Count; i++)
+            {
+                if (paths[i].StartsWith(oldPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    paths[i] = newDir + paths[i].Substring(oldDir.Length);
+                }
+            }
+        }
+
         private bool CommitChangeset(IGitRepository git, Changeset changeset)
         {
             var result = false;
+            var paths = pendingChangedPaths.ToArray();
+            pendingChangedPaths.Clear();
             AbortRetryIgnore(delegate
             {
-                result = git.AddAll() &&
+                result = git.AddAll(paths) &&
                     git.Commit(changeset.User, GetEmail(changeset.User),
                     changeset.Comment ?? config.DefaultComment, changeset.DateTime);
             });
@@ -770,6 +802,7 @@ namespace Hpdi.Vss2Git
             File.SetCreationTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(createDateTime));
             File.SetLastWriteTimeUtc(destPath, TimeZoneInfo.ConvertTimeToUtc(revision.DateTime));
 
+            pendingChangedPaths.Add(destPath);
             return true;
         }
 

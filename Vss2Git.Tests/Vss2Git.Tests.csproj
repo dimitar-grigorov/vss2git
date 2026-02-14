@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Vss2Git\Vss2Git.csproj" />
+    <ProjectReference Include="..\Vss2Git.Core\Vss2Git.Core.csproj" />
   </ItemGroup>
 
 </Project>

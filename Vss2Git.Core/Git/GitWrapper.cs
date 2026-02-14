@@ -155,7 +155,31 @@ namespace Hpdi.Vss2Git
 
         public void Move(string sourcePath, string destPath)
         {
-            using (perfTracker?.Start("Git:move")) GitExec("mv -- " + Quote(sourcePath) + " " + Quote(destPath));
+            using (perfTracker?.Start("Git:move"))
+            {
+                var mvArgs = "mv -- " + Quote(sourcePath) + " " + Quote(destPath);
+                var startInfo = GetStartInfo(mvArgs);
+                if (!ExecuteUnless(startInfo, "bad source"))
+                {
+                    // git mv failed (untracked files in directory) - fall back to
+                    // filesystem move; the next git add -A will pick up changes
+                    logger.WriteLine("NOTE: git mv failed with 'bad source', falling back to filesystem move: {0} -> {1}",
+                        sourcePath, destPath);
+                    MoveFileSystem(sourcePath, destPath);
+                }
+            }
+        }
+
+        internal static void MoveFileSystem(string sourcePath, string destPath)
+        {
+            var destDir = Path.GetDirectoryName(destPath);
+            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                Directory.CreateDirectory(destDir);
+
+            if (Directory.Exists(sourcePath))
+                Directory.Move(sourcePath, destPath);
+            else if (File.Exists(sourcePath))
+                File.Move(sourcePath, destPath);
         }
 
         class TempFile : IDisposable

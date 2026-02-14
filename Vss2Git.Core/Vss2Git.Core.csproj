@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Vss2Git.IntegrationTests" />
+    <InternalsVisibleTo Include="Vss2Git.Tests" />
   </ItemGroup>
 
   <ItemGroup>

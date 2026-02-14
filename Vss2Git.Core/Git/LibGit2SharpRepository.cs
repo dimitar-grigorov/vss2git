@@ -10,7 +10,8 @@ namespace Hpdi.Vss2Git
 {
     /// <summary>
     /// Implements IGitRepository using the LibGit2Sharp managed library.
-    /// Eliminates git.exe process spawning overhead.
+    /// Uses TreeDefinition for O(k) commits (k = changed files per commit),
+    /// bypassing the git index to avoid O(n) full-tree scans.
     /// </summary>
     class LibGit2SharpRepository : IGitRepository
     {
@@ -21,6 +22,7 @@ namespace Hpdi.Vss2Git
         private readonly Stopwatch stopwatch = new Stopwatch();
         private Repository repo;
         private Encoding commitEncoding = Encoding.UTF8;
+        private TreeDefinition currentTree;
 
         public TimeSpan ElapsedTime => stopwatch.Elapsed;
 
@@ -52,6 +54,7 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("LibGit2Sharp: init {0}", repoPath);
                     Repository.Init(repoPath);
                     repo = new Repository(repoPath);
+                    currentTree = new TreeDefinition();
                 }
             }
             finally
@@ -79,26 +82,18 @@ namespace Hpdi.Vss2Git
 
         public bool Add(string path)
         {
+            // Not used in current pipeline - AddAll(changedPaths) handles staging
             stopwatch.Start();
             try
             {
                 using (perfTracker?.Start("Git:add"))
                 {
-                    var relativePath = ToRelativePath(path);
-
-                    // Directories without files are no-ops for git
-                    var fullPath = Path.Combine(repoPath, relativePath);
-                    if (Directory.Exists(fullPath))
-                    {
-                        if (!Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories).Any())
-                            return false;
-                    }
-                    else if (!File.Exists(fullPath))
-                    {
+                    if (!File.Exists(path))
                         return false;
-                    }
 
-                    Commands.Stage(repo, relativePath);
+                    var relativePath = ToRelativePath(path);
+                    var blob = repo.ObjectDatabase.CreateBlob(path);
+                    currentTree.Add(relativePath, blob, Mode.NonExecutableFile);
                     return true;
                 }
             }
@@ -120,7 +115,12 @@ namespace Hpdi.Vss2Git
                 {
                     foreach (var path in paths)
                     {
-                        Commands.Stage(repo, ToRelativePath(path));
+                        if (File.Exists(path))
+                        {
+                            var relativePath = ToRelativePath(path);
+                            var blob = repo.ObjectDatabase.CreateBlob(path);
+                            currentTree.Add(relativePath, blob, Mode.NonExecutableFile);
+                        }
                     }
                     return true;
                 }
@@ -133,12 +133,15 @@ namespace Hpdi.Vss2Git
 
         public bool AddAll()
         {
+            // Fallback: sync TreeDefinition from working tree via index
             stopwatch.Start();
             try
             {
                 using (perfTracker?.Start("Git:addAll"))
                 {
                     Commands.Stage(repo, "*");
+                    var tree = repo.ObjectDatabase.CreateTree(repo.Index);
+                    currentTree = TreeDefinition.From(tree);
                     return true;
                 }
             }
@@ -150,7 +153,34 @@ namespace Hpdi.Vss2Git
 
         public bool AddAll(IEnumerable<string> changedPaths)
         {
-            return AddAll();
+            if (changedPaths == null)
+                return AddAll();
+
+            stopwatch.Start();
+            try
+            {
+                using (perfTracker?.Start("Git:addAll"))
+                {
+                    foreach (var path in changedPaths)
+                    {
+                        var relativePath = ToRelativePath(path);
+                        if (File.Exists(path))
+                        {
+                            var blob = repo.ObjectDatabase.CreateBlob(path);
+                            currentTree.Add(relativePath, blob, Mode.NonExecutableFile);
+                        }
+                        else
+                        {
+                            currentTree.Remove(relativePath);
+                        }
+                    }
+                    return true;
+                }
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
         }
 
         public void Remove(string path, bool recursive)
@@ -164,32 +194,17 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("LibGit2Sharp: remove {0}{1}",
                         recursive ? "-rf " : "", relativePath);
 
+                    // Remove from tree definition
+                    currentTree.Remove(relativePath);
+
+                    // Remove from working directory
                     if (recursive && Directory.Exists(path))
                     {
-                        // Remove all indexed entries under this directory
-                        var prefix = relativePath.Replace('\\', '/');
-                        if (!prefix.EndsWith("/")) prefix += "/";
-
-                        var entries = repo.Index
-                            .Where(e => e.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                            .Select(e => e.Path)
-                            .ToList();
-
-                        foreach (var entry in entries)
-                        {
-                            repo.Index.Remove(entry);
-                        }
-                        repo.Index.Write();
-
-                        // Also remove from working directory (matches git rm -rf)
-                        if (Directory.Exists(path))
-                        {
-                            Directory.Delete(path, true);
-                        }
+                        Directory.Delete(path, true);
                     }
-                    else
+                    else if (File.Exists(path))
                     {
-                        Commands.Remove(repo, relativePath, removeFromWorkingDirectory: true);
+                        File.Delete(path);
                     }
                 }
             }
@@ -210,10 +225,6 @@ namespace Hpdi.Vss2Git
                     var relDest = ToRelativePath(destPath);
                     logger.WriteLine("LibGit2Sharp: move {0} -> {1}", relSource, relDest);
 
-                    // git mv = filesystem move + index update.
-                    // CaseSensitiveRename in GitExporter passes git.Move as delegate,
-                    // so we must handle the filesystem move ourselves.
-
                     bool isDirectory = Directory.Exists(sourcePath);
                     bool isFile = !isDirectory && File.Exists(sourcePath);
 
@@ -224,40 +235,34 @@ namespace Hpdi.Vss2Git
                             Directory.CreateDirectory(destDir);
                         File.Move(sourcePath, destPath);
 
-                        // Update index: remove old, add new
-                        repo.Index.Remove(relSource.Replace('\\', '/'));
-                        repo.Index.Add(relDest.Replace('\\', '/'));
-                        repo.Index.Write();
+                        // Update tree: move entry from old path to new path
+                        var entry = currentTree[relSource];
+                        if (entry != null)
+                        {
+                            currentTree.Add(relDest, entry);
+                            currentTree.Remove(relSource);
+                        }
+                        else
+                        {
+                            // Entry not in tree yet - create blob from new location
+                            var blob = repo.ObjectDatabase.CreateBlob(destPath);
+                            currentTree.Add(relDest, blob, Mode.NonExecutableFile);
+                        }
                     }
                     else if (isDirectory)
                     {
-                        // Collect old index entries before moving
-                        var prefix = relSource.Replace('\\', '/');
-                        if (!prefix.EndsWith("/")) prefix += "/";
-
-                        var oldEntries = repo.Index
-                            .Where(e => e.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                            .Select(e => e.Path)
-                            .ToList();
+                        // Get tree entry for the source directory before moving
+                        var dirEntry = currentTree[relSource];
 
                         // Filesystem move
                         Directory.Move(sourcePath, destPath);
 
-                        // Remove old entries from index
-                        foreach (var entry in oldEntries)
+                        if (dirEntry != null)
                         {
-                            repo.Index.Remove(entry);
+                            // Move subtree: add at new path, remove from old
+                            currentTree.Add(relDest, dirEntry);
+                            currentTree.Remove(relSource);
                         }
-
-                        // Add new entries
-                        var newPrefix = relDest.Replace('\\', '/');
-                        if (!newPrefix.EndsWith("/")) newPrefix += "/";
-                        foreach (var oldEntry in oldEntries)
-                        {
-                            var newEntry = newPrefix + oldEntry.Substring(prefix.Length);
-                            repo.Index.Add(newEntry);
-                        }
-                        repo.Index.Write();
                     }
                 }
             }
@@ -274,9 +279,11 @@ namespace Hpdi.Vss2Git
             {
                 using (perfTracker?.Start("Git:commit"))
                 {
-                    // Check if there's anything to commit (matches "nothing to commit" behavior)
-                    var status = repo.RetrieveStatus();
-                    if (!status.IsDirty)
+                    // Build tree from our incrementally-maintained TreeDefinition
+                    var tree = repo.ObjectDatabase.CreateTree(currentTree);
+
+                    // Check if tree is same as HEAD (nothing changed)
+                    if (repo.Head.Tip != null && tree.Id == repo.Head.Tip.Tree.Id)
                     {
                         return false;
                     }
@@ -286,9 +293,18 @@ namespace Hpdi.Vss2Git
                     var dateTimeOffset = new DateTimeOffset(utcTime, TimeSpan.Zero);
 
                     var author = new Signature(authorName, authorEmail, dateTimeOffset);
-                    var committer = author; // Same person, matching GitWrapper behavior
+                    var committer = author;
 
-                    repo.Commit(comment ?? "", author, committer);
+                    var parents = repo.Head.Tip != null
+                        ? new[] { repo.Head.Tip }
+                        : Array.Empty<Commit>();
+
+                    var commit = repo.ObjectDatabase.CreateCommit(
+                        author, committer, CleanupMessage(comment), tree, parents, false);
+
+                    // Update HEAD to point to the new commit
+                    repo.Refs.UpdateTarget(repo.Refs.Head, commit.Id);
+
                     return true;
                 }
             }
@@ -312,15 +328,7 @@ namespace Hpdi.Vss2Git
                     var dateTimeOffset = new DateTimeOffset(utcTime, TimeSpan.Zero);
                     var tagger = new Signature(taggerName, taggerEmail, dateTimeOffset);
 
-                    if (string.IsNullOrEmpty(comment))
-                    {
-                        // Annotated tag with empty message (matches git tag -m "")
-                        repo.Tags.Add(name, repo.Head.Tip, tagger, "");
-                    }
-                    else
-                    {
-                        repo.Tags.Add(name, repo.Head.Tip, tagger, comment);
-                    }
+                    repo.Tags.Add(name, repo.Head.Tip, tagger, CleanupMessage(comment));
                 }
             }
             finally
@@ -333,6 +341,44 @@ namespace Hpdi.Vss2Git
         {
             repo?.Dispose();
             repo = null;
+        }
+
+        /// <summary>
+        /// Normalizes a commit/tag message to match git's default 'strip' cleanup:
+        /// CRLF→LF, strip trailing whitespace per line, strip leading/trailing
+        /// blank lines, ensure trailing newline.
+        /// </summary>
+        internal static string CleanupMessage(string comment)
+        {
+            if (string.IsNullOrEmpty(comment))
+                return "";
+
+            var lines = comment.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+
+            // Strip trailing whitespace from each line
+            for (int i = 0; i < lines.Length; i++)
+                lines[i] = lines[i].TrimEnd();
+
+            // Strip leading blank lines
+            int start = 0;
+            while (start < lines.Length && lines[start].Length == 0)
+                start++;
+
+            // Strip trailing blank lines
+            int end = lines.Length - 1;
+            while (end >= start && lines[end].Length == 0)
+                end--;
+
+            if (start > end)
+                return "";
+
+            var sb = new StringBuilder();
+            for (int i = start; i <= end; i++)
+            {
+                sb.Append(lines[i]);
+                sb.Append('\n');
+            }
+            return sb.ToString();
         }
 
         /// <summary>
