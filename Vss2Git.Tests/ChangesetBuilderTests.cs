@@ -32,7 +32,7 @@ namespace Hpdi.Vss2Git.Tests
         }
 
         private static Revision MakeRevision(DateTime dt, string user,
-            VssItemName item, VssAction action, string comment = null)
+            VssItemName item, VssAction action, string? comment = null)
         {
             return new Revision(dt, user, item, 1, comment, action);
         }
@@ -49,7 +49,7 @@ namespace Hpdi.Vss2Git.Tests
         }
 
         private void AddRevision(DateTime dt, string user, VssItemName item,
-            VssAction action, string comment = null)
+            VssAction action, string? comment = null)
         {
             var rev = MakeRevision(dt, user, item, action, comment);
             if (!_analyzer.SortedRevisions.TryGetValue(dt, out var list))
@@ -84,7 +84,7 @@ namespace Hpdi.Vss2Git.Tests
             // Assert: both deletes should be in ONE changeset (no false conflict)
             changesets.Should().HaveCount(1,
                 "deleting the same shared file from two different projects is not a conflict");
-            changesets.First.Value.Revisions.Should().HaveCount(2);
+            changesets.First!.Value.Revisions.Should().HaveCount(2);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Hpdi.Vss2Git.Tests
             // Assert: both adds should be in ONE changeset
             changesets.Should().HaveCount(1,
                 "adding the same shared file to two different projects is not a conflict");
-            changesets.First.Value.Revisions.Should().HaveCount(2);
+            changesets.First!.Value.Revisions.Should().HaveCount(2);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace Hpdi.Vss2Git.Tests
 
             // Assert: different files → no conflict → one changeset
             changesets.Should().HaveCount(1);
-            changesets.First.Value.Revisions.Should().HaveCount(2);
+            changesets.First!.Value.Revisions.Should().HaveCount(2);
         }
 
         #endregion
