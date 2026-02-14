@@ -65,6 +65,15 @@ namespace Hpdi.Vss2Git
 
         public void SetConfig(string name, string value)
         {
+            // LibGit2Sharp always writes UTF-8 commits — skip non-UTF-8 commitencoding
+            // to prevent git from misinterpreting the stored bytes (L3 fix).
+            if (name == "i18n.commitencoding" &&
+                !value.Equals("utf-8", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.WriteLine("LibGit2Sharp: skipping config {0} = {1} (always UTF-8)", name, value);
+                return;
+            }
+
             stopwatch.Start();
             try
             {

@@ -1,3 +1,4 @@
+using System.Text;
 using FluentAssertions;
 using LibGit2Sharp;
 using Xunit;
@@ -242,6 +243,55 @@ namespace Hpdi.Vss2Git.Tests
             files.Should().NotContain("proj/file1.txt", "old file path should be gone");
             files.Should().Contain("proj/renamed.txt");
             files.Should().Contain("proj/file2.txt", "other file should remain");
+        }
+
+        #endregion
+
+        #region L3: CommitEncoding and i18n.commitencoding
+
+        [Fact]
+        public void SetConfig_SkipsCommitEncoding_SoGitLogShowsUtf8()
+        {
+            // Arrange: simulate what GitExporter does for --transcode=false --encoding 1251
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var cp1251 = Encoding.GetEncoding(1251);
+            _repo.CommitEncoding = cp1251;
+            _repo.SetConfig("i18n.commitencoding", cp1251.WebName);
+
+            var f1 = CreateFile("test.txt", "content");
+            _repo.AddAll(new[] { f1 });
+            _repo.Commit("Иван Петров", "ivan@test.com", "Промяна на файл", DateTime.Now);
+
+            // Assert via git log: git uses i18n.commitencoding to interpret stored bytes.
+            // If commitencoding=windows-1251 but bytes are UTF-8, git log shows garbled text.
+            var psi = new System.Diagnostics.ProcessStartInfo("git", "log --format=%s -1")
+            {
+                WorkingDirectory = _repoDir,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                StandardOutputEncoding = Encoding.UTF8
+            };
+            using var proc = System.Diagnostics.Process.Start(psi)!;
+            var subject = proc.StandardOutput.ReadToEnd().Trim();
+            proc.WaitForExit();
+
+            subject.Should().Be("Промяна на файл",
+                "i18n.commitencoding should not be set to non-UTF-8 for LibGit2Sharp backend");
+        }
+
+        [Fact]
+        public void Commit_WithNonAsciiMessage_PreservesUnicodeCharacters()
+        {
+            // Arrange: default UTF-8 encoding (normal --transcode=true case)
+            var f1 = CreateFile("test.txt", "content");
+            _repo.AddAll(new[] { f1 });
+            _repo.Commit("René Müller", "rene@test.com", "Ändere Datei für Qualität", DateTime.Now);
+
+            // Assert
+            using var gitRepo = new Repository(_repoDir);
+            var commit = gitRepo.Head.Tip;
+            commit.Message.Should().Contain("Ändere Datei für Qualität");
+            commit.Author.Name.Should().Be("René Müller");
         }
 
         #endregion
