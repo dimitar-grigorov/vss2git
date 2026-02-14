@@ -67,6 +67,7 @@ namespace Hpdi.Vss2Git
                 ? Logger.Null
                 : new Logger(config.LogFile);
 
+            var queueOwnsLogger = false;
             try
             {
                 logger.WriteLine("VSS2Git version {0}", Assembly.GetExecutingAssembly().GetName().Version);
@@ -148,13 +149,14 @@ namespace Hpdi.Vss2Git
                     gitExporter.ExportToGit(outDir);
                 }
 
-                // Wait for completion
+                // Wait for completion — queue takes ownership of logger disposal
                 workQueue.Idle += delegate
                 {
                     logger.Dispose();
                     logger = Logger.Null;
                     statusReporter.Stop();
                 };
+                queueOwnsLogger = true;
 
                 statusReporter.Start();
 
@@ -162,10 +164,16 @@ namespace Hpdi.Vss2Git
             }
             catch (Exception ex)
             {
-                logger?.Dispose();
-                logger = Logger.Null;
                 userInteraction.ShowFatalError("Unhandled exception during migration", ex);
                 return false;
+            }
+            finally
+            {
+                if (!queueOwnsLogger)
+                {
+                    logger?.Dispose();
+                    logger = Logger.Null;
+                }
             }
         }
 
