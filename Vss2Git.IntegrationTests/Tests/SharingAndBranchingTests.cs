@@ -74,10 +74,10 @@ public class SharingAndBranchingTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        commits.Should().HaveCountGreaterThanOrEqualTo(4);
+        commits.Should().HaveCount(7);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(3);
+        withMessage.Should().Be(5);
     }
 
     public void Dispose() => _runner.Dispose();

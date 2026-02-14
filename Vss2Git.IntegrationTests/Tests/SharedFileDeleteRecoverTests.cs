@@ -74,13 +74,10 @@ public class SharedFileDeleteRecoverTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Operations: add, share B, share C, edit v2, delete B, edit v3,
-        // recover B, edit v4, destroy C, edit v5 = ~10 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(9);
+        commits.Should().HaveCount(9);
 
-        // Most edits have comments
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(5);
+        withMessage.Should().Be(5);
     }
 
     public void Dispose() => _runner.Dispose();

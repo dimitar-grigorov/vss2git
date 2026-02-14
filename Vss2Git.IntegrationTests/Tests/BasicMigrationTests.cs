@@ -55,8 +55,7 @@ public class BasicMigrationTests : IDisposable
     {
         var inspector = _runner.Inspector!;
 
-        inspector.GetTags().Should().Contain(t =>
-            t.Contains("v1") || t.Contains("1_0") || t.Contains("1.0"));
+        inspector.GetTags().Should().Equal("v1_0");
 
         inspector.GetCommits().Should().AllSatisfy(c =>
             c.Email.Should().EndWith("@test.local"));
@@ -67,12 +66,10 @@ public class BasicMigrationTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Each 1.1s-separated operation → separate commit
-        commits.Should().HaveCountGreaterThanOrEqualTo(7);
+        commits.Should().HaveCount(8);
 
-        // Commented operations preserve their messages; commentless ops have empty subject
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(5);
+        withMessage.Should().Be(7);
     }
 
     [Fact]

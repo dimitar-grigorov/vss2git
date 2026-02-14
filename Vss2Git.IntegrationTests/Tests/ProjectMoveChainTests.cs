@@ -78,11 +78,10 @@ public class ProjectMoveChainTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Operations: add file1, add file2, move1, edit, move2, edit, rename, edit = ~8 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(7);
+        commits.Should().HaveCount(8);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(3);
+        withMessage.Should().Be(5);
     }
 
     public void Dispose() => _runner.Dispose();

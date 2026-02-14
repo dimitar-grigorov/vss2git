@@ -85,12 +85,10 @@ public class SharedFilePinDuringShareTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Operations: add data, share B, share C, edit v2, pin B (no-op),
-        // edit v3, edit v4, unpin B + add solo = ~7 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(7);
+        commits.Should().HaveCount(7);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(5);
+        withMessage.Should().Be(5);
     }
 
     public void Dispose() => _runner.Dispose();

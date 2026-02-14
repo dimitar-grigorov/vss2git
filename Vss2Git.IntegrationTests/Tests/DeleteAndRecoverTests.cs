@@ -50,8 +50,7 @@ public class DeleteAndRecoverTests : IDisposable
     [Fact]
     public void Migration_TagExists()
     {
-        _runner.Inspector!.GetTags().Should().Contain(t =>
-            t.Contains("after") && t.Contains("deletion"));
+        _runner.Inspector!.GetTags().Should().Equal("after-deletions");
     }
 
     [Fact]
@@ -67,10 +66,10 @@ public class DeleteAndRecoverTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        commits.Should().HaveCountGreaterThanOrEqualTo(5);
+        commits.Should().HaveCount(10);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(4);
+        withMessage.Should().Be(7);
     }
 
     public void Dispose() => _runner.Dispose();

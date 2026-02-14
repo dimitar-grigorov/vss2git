@@ -81,10 +81,10 @@ public class RenameAndMoveTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        commits.Should().HaveCountGreaterThanOrEqualTo(7);
+        commits.Should().HaveCount(10);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(4);
+        withMessage.Should().Be(6);
     }
 
     public void Dispose() => _runner.Dispose();

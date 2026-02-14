@@ -75,11 +75,10 @@ public class TimestampCollisionTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Multiple operations, some may merge into same changeset due to same timestamp
-        commits.Should().HaveCountGreaterThanOrEqualTo(4);
+        commits.Should().HaveCount(6);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(3);
+        withMessage.Should().Be(6);
     }
 
     public void Dispose() => _runner.Dispose();

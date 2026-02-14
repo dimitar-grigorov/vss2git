@@ -63,13 +63,10 @@ public class DeleteRecoverProjectTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // Operations: add file1, add inner, add root, edit file1, edit inner,
-        // delete project, edit root, recover project, edit file1, edit inner,
-        // delete file1, recover file1, edit file1 = ~13 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(10);
+        commits.Should().HaveCount(13);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(6);
+        withMessage.Should().Be(9);
     }
 
     public void Dispose() => _runner.Dispose();

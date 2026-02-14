@@ -91,10 +91,9 @@ public class DateRangeMigrationTests : IDisposable
         inspector.GetFileContent("ChunkTest/file2.txt")
             .Should().Contain("Phase 3 updated content");
 
-        // All 3 labels should become tags
-        _fullTags.Should().Contain(t => t.Contains("Phase1_Release"));
-        _fullTags.Should().Contain(t => t.Contains("Phase2_Release"));
-        _fullTags.Should().Contain(t => t.Contains("Phase3_Release"));
+        _fullTags.Should().Contain("Phase1_Release");
+        _fullTags.Should().Contain("Phase2_Release");
+        _fullTags.Should().Contain("Phase3_Release");
     }
 
     [Fact]
@@ -126,9 +125,9 @@ public class DateRangeMigrationTests : IDisposable
 
         // Only Phase1 tag
         var tags = inspector.GetTags();
-        tags.Should().Contain(t => t.Contains("Phase1_Release"));
-        tags.Should().NotContain(t => t.Contains("Phase2_Release"));
-        tags.Should().NotContain(t => t.Contains("Phase3_Release"));
+        tags.Should().Contain("Phase1_Release");
+        tags.Should().NotContain("Phase2_Release");
+        tags.Should().NotContain("Phase3_Release");
     }
 
     [Fact]
@@ -176,9 +175,9 @@ public class DateRangeMigrationTests : IDisposable
 
         // Phase1 + Phase2 tags
         var tags = inspector.GetTags();
-        tags.Should().Contain(t => t.Contains("Phase1_Release"));
-        tags.Should().Contain(t => t.Contains("Phase2_Release"));
-        tags.Should().NotContain(t => t.Contains("Phase3_Release"));
+        tags.Should().Contain("Phase1_Release");
+        tags.Should().Contain("Phase2_Release");
+        tags.Should().NotContain("Phase3_Release");
     }
 
     [Fact]

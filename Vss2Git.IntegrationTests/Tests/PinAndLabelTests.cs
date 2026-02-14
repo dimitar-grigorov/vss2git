@@ -35,11 +35,7 @@ public class PinAndLabelTests : IDisposable
     {
         var tags = _runner.Inspector!.GetTags();
 
-        tags.Should().HaveCountGreaterThanOrEqualTo(4);
-        tags.Should().Contain(t => t.Contains("v3") || t.Contains("3_0"));
-        tags.Should().Contain(t => t.Contains("v4") || t.Contains("4_0"));
-        tags.Should().Contain(t => t.Contains("release") && t.Contains("candidate"));
-        tags.Should().Contain(t => t.Contains("final"));
+        tags.Should().BeEquivalentTo(new[] { "final-release", "release-candidate", "v3_0", "v4_0" });
     }
 
     [Fact]
@@ -53,7 +49,7 @@ public class PinAndLabelTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        commits.Should().HaveCountGreaterThanOrEqualTo(4);
+        commits.Should().HaveCount(5);
 
         // All ops in this scenario have explicit comments
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));

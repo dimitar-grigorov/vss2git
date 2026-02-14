@@ -78,12 +78,10 @@ public class UnmappedProjectRevisionTests : IDisposable
     {
         var commits = _runner.Inspector!.GetCommits();
 
-        // add readme, MoveFrom Worker (writeProject), edit config, edit code,
-        // add new-after-move = 5 commits
-        commits.Should().HaveCountGreaterThanOrEqualTo(5);
+        commits.Should().HaveCount(5);
 
         var withMessage = commits.Count(c => !string.IsNullOrWhiteSpace(c.Subject));
-        withMessage.Should().BeGreaterThanOrEqualTo(4);
+        withMessage.Should().Be(4);
     }
 
     public void Dispose() => _runner.Dispose();
