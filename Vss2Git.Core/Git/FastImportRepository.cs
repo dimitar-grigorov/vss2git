@@ -747,6 +747,38 @@ namespace Hpdi.Vss2Git
             return Convert.ToHexString(hash);
         }
 
+        public IList<string> FinalizeRepository()
+        {
+            stopwatch.Start();
+            try
+            {
+                // git fast-import doesn't create the index - we must do it explicitly
+                logger.WriteLine("Creating git index from HEAD");
+                RunGitCommand("reset HEAD");
+
+                // Check for files in HEAD that are missing from working tree
+                var deletedFiles = new List<string>();
+                var output = RunGitCommandOutput("diff --name-only HEAD");
+                if (!string.IsNullOrWhiteSpace(output))
+                {
+                    foreach (var line in output.Split('\n'))
+                    {
+                        var file = line.Trim();
+                        if (!string.IsNullOrEmpty(file))
+                        {
+                            deletedFiles.Add(file);
+                        }
+                    }
+                }
+
+                return deletedFiles;
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
         private void ClearPendingOperations()
         {
             pendingModify.Clear();

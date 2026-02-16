@@ -268,6 +268,21 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("Git tags: {0}", tagCount);
                     logger.WriteLine("Empty directories removed: {0}", emptyDirsRemoved);
 
+                    // Finalize repository (creates index for FastImport/LibGit2Sharp)
+                    var missingFiles = git.FinalizeRepository();
+                    if (missingFiles.Count > 0)
+                    {
+                        logger.WriteLine("Warning: {0} files in history but missing from disk", missingFiles.Count);
+                        foreach (var file in missingFiles.Take(5))
+                        {
+                            logger.WriteLine("  {0}", file);
+                        }
+                        if (missingFiles.Count > 5)
+                        {
+                            logger.WriteLine("  ... ({0} more files)", missingFiles.Count - 5);
+                        }
+                    }
+
                     perfTracker?.WriteSummary(logger, stopwatch.Elapsed);
                 } // Dispose git repository (CRITICAL: finalizes fast-import)
             });

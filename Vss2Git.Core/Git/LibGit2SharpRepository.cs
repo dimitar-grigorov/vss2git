@@ -436,6 +436,41 @@ namespace Hpdi.Vss2Git
             }
         }
 
+        public IList<string> FinalizeRepository()
+        {
+            stopwatch.Start();
+            try
+            {
+                // LibGit2Sharp uses TreeDefinition which bypasses index - create it now
+                logger.WriteLine("Creating git index from HEAD");
+
+                // Reset index to HEAD without touching working tree
+                repo.Reset(ResetMode.Mixed, repo.Head.Tip);
+
+                // Check for files in HEAD that are missing from working tree
+                var deletedFiles = new List<string>();
+                var statusOptions = new StatusOptions
+                {
+                    DetectRenamesInIndex = false,
+                    DetectRenamesInWorkDir = false
+                };
+
+                foreach (var item in repo.RetrieveStatus(statusOptions))
+                {
+                    if (item.State == FileStatus.DeletedFromWorkdir)
+                    {
+                        deletedFiles.Add(item.FilePath);
+                    }
+                }
+
+                return deletedFiles;
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
         public void Dispose()
         {
             repo?.Dispose();

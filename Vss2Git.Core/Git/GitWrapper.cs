@@ -518,6 +518,41 @@ namespace Hpdi.Vss2Git
             // so explicit compaction adds overhead without benefit.
         }
 
+        public IList<string> FinalizeRepository()
+        {
+            stopwatch.Start();
+            try
+            {
+                // GitWrapper maintains index via git add/commit, but reset defensively
+                logger.WriteLine("Updating git index from HEAD");
+                using (perfTracker?.Start("Git:reset"))
+                    GitExec("reset HEAD");
+
+                // Check for missing files
+                var deletedFiles = new List<string>();
+                string stdout, stderr;
+                var startInfo = GetStartInfo("diff --name-only HEAD");
+                int exitCode = Execute(startInfo, out stdout, out stderr);
+                if (exitCode == 0 && !string.IsNullOrWhiteSpace(stdout))
+                {
+                    foreach (var line in stdout.Split('\n'))
+                    {
+                        var file = line.Trim();
+                        if (!string.IsNullOrEmpty(file))
+                        {
+                            deletedFiles.Add(file);
+                        }
+                    }
+                }
+
+                return deletedFiles;
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
+        }
+
         public void Dispose()
         {
             // GitWrapper doesn't hold any resources that need disposal

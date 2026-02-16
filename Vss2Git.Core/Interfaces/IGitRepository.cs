@@ -49,5 +49,12 @@ namespace Hpdi.Vss2Git
         void Tag(string name, string taggerName, string taggerEmail, string comment, DateTime localTime);
 
         void Compact();
+
+        /// <summary>
+        /// Finalizes the repository after migration by creating the git index from HEAD.
+        /// Required for FastImport/LibGit2Sharp backends which bypass the index for performance.
+        /// </summary>
+        /// <returns>List of files in HEAD that are missing from working tree (if any)</returns>
+        IList<string> FinalizeRepository();
     }
 }
