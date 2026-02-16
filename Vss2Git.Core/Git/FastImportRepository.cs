@@ -287,6 +287,21 @@ namespace Hpdi.Vss2Git
                     // directories (deletes entire subtree for directory paths).
                     pendingDelete.Add(relativePath);
 
+                    // Purge any pending modifications under the deleted path so
+                    // the D→R→M emission order doesn't re-create them.
+                    if (recursive)
+                    {
+                        var prefix = relativePath.TrimEnd('/') + "/";
+                        pendingModify.RemoveAll(m =>
+                            m.RelativePath.Equals(relativePath, StringComparison.OrdinalIgnoreCase) ||
+                            m.RelativePath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                    }
+                    else
+                    {
+                        pendingModify.RemoveAll(m =>
+                            m.RelativePath.Equals(relativePath, StringComparison.OrdinalIgnoreCase));
+                    }
+
                     // Delete from filesystem (matches LibGit2Sharp behavior —
                     // GitExporter expects the filesystem to reflect the state)
                     if (recursive && Directory.Exists(path))
@@ -398,23 +413,23 @@ namespace Hpdi.Vss2Git
                         WriteCommand("from :" + lastCommitMark + "\n");
                     }
 
-                    // Emit renames first (order: R before M before D)
+                    // Emit deletions first, then renames, then modifications.
+                    // D before R ensures stale destination entries are cleared
+                    // before a rename overwrites them (e.g. MoveFrom cleanup).
+                    foreach (var path in pendingDelete)
+                    {
+                        WriteCommand("D " + QuotePath(path) + "\n");
+                    }
+
                     foreach (var (source, dest) in pendingRename)
                     {
                         WriteCommand("R " + QuotePath(source) + " " + QuotePath(dest) + "\n");
                     }
 
-                    // Emit file modifications with inline data
                     foreach (var mod in pendingModify)
                     {
                         WriteCommand("M 100644 inline " + QuotePath(mod.RelativePath) + "\n");
                         WriteDataBlock(mod.Content);
-                    }
-
-                    // Emit deletions
-                    foreach (var path in pendingDelete)
-                    {
-                        WriteCommand("D " + QuotePath(path) + "\n");
                     }
 
                     // Trailing LF to end the commit
@@ -423,7 +438,23 @@ namespace Hpdi.Vss2Git
 
                     lastCommitMark = commitMark;
 
-                    // Update tree state to reflect the committed changes
+                    // Update tree state to reflect the committed changes (D→R→M order)
+                    foreach (var path in pendingDelete)
+                    {
+                        // Could be a directory delete — remove all matching prefixes
+                        var prefix = path.TrimEnd('/') + "/";
+                        var toRemove = new List<string>();
+                        foreach (var key in treeState.Keys)
+                        {
+                            if (key.Equals(path, StringComparison.OrdinalIgnoreCase) ||
+                                key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                            {
+                                toRemove.Add(key);
+                            }
+                        }
+                        foreach (var key in toRemove)
+                            treeState.Remove(key);
+                    }
                     foreach (var (source, dest) in pendingRename)
                     {
                         // For directory renames, move all matching prefixes
@@ -455,22 +486,6 @@ namespace Hpdi.Vss2Git
                     foreach (var mod in pendingModify)
                     {
                         treeState[mod.RelativePath] = ComputeHash(mod.Content);
-                    }
-                    foreach (var path in pendingDelete)
-                    {
-                        // Could be a directory delete — remove all matching prefixes
-                        var prefix = path.TrimEnd('/') + "/";
-                        var toRemove = new List<string>();
-                        foreach (var key in treeState.Keys)
-                        {
-                            if (key.Equals(path, StringComparison.OrdinalIgnoreCase) ||
-                                key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                            {
-                                toRemove.Add(key);
-                            }
-                        }
-                        foreach (var key in toRemove)
-                            treeState.Remove(key);
                     }
 
                     ClearPendingOperations();

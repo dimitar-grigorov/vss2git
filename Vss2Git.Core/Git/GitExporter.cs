@@ -476,6 +476,18 @@ namespace Hpdi.Vss2Git
                                 project, target, moveFromAction.OriginalProject);
                             if (!skipGitOperations && targetPath != null && !projectInfo.Destroyed)
                             {
+                                // Clean up destination if it already exists to prevent stale files.
+                                // This can happen when pathMapper resolves a different name than
+                                // what's on disk, causing the source check below to fail and
+                                // writeProject to re-create files without removing the old ones.
+                                if (Directory.Exists(targetPath) &&
+                                    !string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    logger.WriteLine("NOTE: MoveFrom destination already exists, removing: {0}", targetPath);
+                                    git.Remove(targetPath, true);
+                                    needCommit = true;
+                                }
+
                                 if (sourcePath != null && Directory.Exists(sourcePath))
                                 {
                                     if (projectInfo.ContainsFiles())

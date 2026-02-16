@@ -96,6 +96,35 @@ public class GitRepoInspector
             .ToList();
     }
 
+    /// <summary>
+    /// Returns true if the working directory and index match HEAD exactly
+    /// (no untracked, modified, or deleted files).
+    /// </summary>
+    public bool HasCleanWorkingDirectory()
+    {
+        var output = RunGit("status --porcelain").Trim();
+        return string.IsNullOrEmpty(output);
+    }
+
+    /// <summary>
+    /// Returns files/directories shown as untracked by git status.
+    /// Detects stale working directory files left behind after migration.
+    /// </summary>
+    public List<string> GetUntrackedFiles()
+    {
+        var output = RunGit("status --porcelain");
+        var untracked = new List<string>();
+        foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (line.StartsWith("??"))
+            {
+                var path = line.Substring(3).Trim().Trim('"');
+                untracked.Add(path);
+            }
+        }
+        return untracked;
+    }
+
     private string RunGit(string arguments)
     {
         var psi = new ProcessStartInfo

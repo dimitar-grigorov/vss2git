@@ -528,6 +528,11 @@ namespace Hpdi.Vss2Git
 
             var parentInfo = GetOrCreateProject(project);
             var subprojectInfo = GetOrCreateProject(subproject);
+            // Use the name from the action record rather than the current VSS name.
+            // GetOrCreateProject may have stored the current name (e.g. "SLDepotSW")
+            // from earlier revisions, but the action record has the historical name
+            // (e.g. "OfficeMgr 1.3"). Subsequent Rename actions will update it.
+            subprojectInfo.LogicalName = subproject.LogicalName;
             subprojectInfo.Parent = parentInfo;
             return subprojectInfo;
         }
