@@ -44,6 +44,7 @@ var scenarios = new ITestScenario[]
     new Scenario10_SharedFilePinDuringShare(),
     new Scenario11_UnmappedProjectRevisions(),
     new Scenario12_TimestampCollision(),
+    new Scenario13_MoveProjectWithDelete(),
 };
 
 var passed = 0;

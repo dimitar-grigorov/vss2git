@@ -32,6 +32,7 @@ public class CrossBackendValidationTests
         ("10_SharedFilePinDuringShare", "$", null),
         ("11_UnmappedProjectRevisions", "$/Target", null),
         ("12_TimestampCollision", "$", null),
+        ("13_MoveProjectWithDelete", "$", null),
     };
 
     public static IEnumerable<object[]> ScenarioBackendCombinations()

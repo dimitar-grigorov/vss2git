@@ -380,6 +380,60 @@ namespace Hpdi.Vss2Git.Tests
             files.Should().Contain("newdir/file2.txt");
         }
 
+        /// <summary>
+        /// Simulates GitExporter's MoveFrom destination cleanup:
+        /// Remove existing destination, then Move source into it.
+        /// Verifies no stale destination files remain in the tree.
+        /// </summary>
+        [Fact]
+        public void Remove_ThenMove_CleansDestination()
+        {
+            // Commit initial state: dest/ has old files, source/ has files to move
+            var d1 = CreateFile("dest/old1.txt", "old content 1");
+            var d2 = CreateFile("dest/old2.txt", "old content 2");
+            var s1 = CreateFile("source/new1.txt", "new content 1");
+            var s2 = CreateFile("source/sub/new2.txt", "new content 2");
+            _repo.AddAll(new[] { d1, d2, s1, s2 });
+            _repo.Commit("test", "test@test", "initial", DateTime.Now);
+
+            // MoveFrom pattern: clean destination, then move source into it
+            _repo.Remove(Path.Combine(_repoDir, "dest"), recursive: true);
+            _repo.Move(Path.Combine(_repoDir, "source"), Path.Combine(_repoDir, "dest"));
+            _repo.Commit("test", "test@test", "move with cleanup", DateTime.Now);
+
+            var files = GetHeadFileList();
+            files.Should().NotContain("dest/old1.txt", "stale destination file should be removed");
+            files.Should().NotContain("dest/old2.txt", "stale destination file should be removed");
+            files.Should().Contain("dest/new1.txt", "moved file should exist at destination");
+            files.Should().Contain("dest/sub/new2.txt", "moved file should exist at destination");
+            files.Should().NotContain(f => f.StartsWith("source"), "source should be gone");
+        }
+
+        /// <summary>
+        /// Simulates the writeProject fallback in MoveFrom: destination is removed,
+        /// then new files are written directly (no Move) and staged via AddAll.
+        /// </summary>
+        [Fact]
+        public void Remove_ThenRewrite_CleansDestination()
+        {
+            // Commit initial state: dest/ has old files
+            var d1 = CreateFile("dest/old1.txt", "old content 1");
+            var d2 = CreateFile("dest/sub/old2.txt", "old content 2");
+            _repo.AddAll(new[] { d1, d2 });
+            _repo.Commit("test", "test@test", "initial", DateTime.Now);
+
+            // Remove destination, then write new files (writeProject fallback)
+            _repo.Remove(Path.Combine(_repoDir, "dest"), recursive: true);
+            var n1 = CreateFile("dest/new1.txt", "new content 1");
+            _repo.AddAll(new[] { n1 });
+            _repo.Commit("test", "test@test", "remove and rewrite", DateTime.Now);
+
+            var files = GetHeadFileList();
+            files.Should().NotContain("dest/old1.txt", "old file should be removed");
+            files.Should().NotContain("dest/sub/old2.txt", "old file should be removed");
+            files.Should().Contain("dest/new1.txt", "new file should exist");
+        }
+
         #endregion
 
         #region Tags
