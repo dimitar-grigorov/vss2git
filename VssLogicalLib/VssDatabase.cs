@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Hpdi.VssPhysicalLib;
@@ -39,6 +40,7 @@ namespace Hpdi.VssLogicalLib
         private readonly VssProject rootProject;
         private readonly Encoding encoding;
         private readonly Dictionary<string, VssItem> itemCache = new Dictionary<string, VssItem>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ItemFile> itemFileCache = new Dictionary<string, ItemFile>(StringComparer.OrdinalIgnoreCase);
 
         public string BasePath
         {
@@ -116,7 +118,7 @@ namespace Hpdi.VssLogicalLib
             }
 
             var physicalPath = GetDataPath(physicalName);
-            var itemFile = new ItemFile(physicalPath, encoding);
+            var itemFile = GetItemFile(physicalName);
             var isProject = (itemFile.Header.ItemType == ItemType.Project);
             var logicalName = GetFullName(itemFile.Header.Name);
             var itemName = new VssItemName(logicalName, physicalName, isProject);
@@ -180,6 +182,18 @@ namespace Hpdi.VssLogicalLib
             return (parent != null) ? parent.Path + ProjectSeparator + logicalName : logicalName;
         }
 
+        internal ItemFile GetItemFile(string physicalName)
+        {
+            physicalName = physicalName.ToUpperInvariant();
+            if (!itemFileCache.TryGetValue(physicalName, out var itemFile))
+            {
+                var physicalPath = GetDataPath(physicalName);
+                itemFile = new ItemFile(physicalPath, encoding);
+                itemFileCache[physicalName] = itemFile;
+            }
+            return itemFile;
+        }
+
         internal string GetDataPath(string physicalName)
         {
             return Path.Combine(Path.Combine(dataPath, physicalName.Substring(0, 1)), physicalName);
@@ -195,6 +209,8 @@ namespace Hpdi.VssLogicalLib
                 {
                     return nameRecord.GetName(nameIndex);
                 }
+                Trace.TraceWarning("Name record at offset {0} missing {1} entry; falling back to short name '{2}'",
+                    name.NameFileOffset, name.IsProject ? "Project" : "Long", name.ShortName);
             }
             return name.ShortName;
         }

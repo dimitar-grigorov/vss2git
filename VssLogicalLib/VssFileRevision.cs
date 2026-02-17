@@ -47,8 +47,7 @@ namespace Hpdi.VssLogicalLib
                         if (branchRev != null)
                         {
                             var branchRevId = branchRev.Revision;
-                            var itemPath = item.Database.GetDataPath(branchRev.BranchFile);
-                            itemFile = new ItemFile(itemPath, item.Database.Encoding);
+                            itemFile = item.Database.GetItemFile(branchRev.BranchFile);
                             lastRev = itemFile.GetLastRevision();
                             while (lastRev != null && lastRev.Revision >= branchRevId)
                             {

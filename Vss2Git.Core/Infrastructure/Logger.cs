@@ -123,7 +123,6 @@ namespace Hpdi.Vss2Git
             if (baseStream != null && value != null)
             {
                 WriteInternal(value);
-                baseStream.Flush();
             }
         }
 
@@ -156,7 +155,6 @@ namespace Hpdi.Vss2Git
             if (baseStream != null && buffer != null)
             {
                 WriteInternal(buffer, index, count);
-                baseStream.Flush();
             }
         }
 
@@ -294,6 +292,15 @@ namespace Hpdi.Vss2Git
         public void WriteSectionSeparator()
         {
             WriteLine(sectionSeparator);
+            Flush();
+        }
+
+        public void Flush()
+        {
+            if (baseStream != null)
+            {
+                baseStream.Flush();
+            }
         }
 
         /// <summary>
