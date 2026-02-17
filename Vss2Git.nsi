@@ -2,7 +2,7 @@
 ; Per-user install (no admin required), supports GUI and CLI component selection
 
 !define PRODUCT_NAME "Vss2Git"
-!define PRODUCT_VERSION "1.1.0"
+!define PRODUCT_VERSION "1.1.1"
 !define PRODUCT_PUBLISHER "Dimitar Grigorov"
 !define PRODUCT_WEB_SITE "https://github.com/dimitar-grigorov/vss2git"
 !define PRODUCT_REGISTRY_KEY "Software\Vss2Git"

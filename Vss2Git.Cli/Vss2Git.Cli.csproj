@@ -13,9 +13,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Hpdi.Vss2Git.Cli</RootNamespace>
     <AssemblyName>Vss2Git.Cli</AssemblyName>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.1</Version>
     <Company>HPDI, LLC</Company>
     <Product>Vss2Git CLI</Product>
     <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
