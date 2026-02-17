@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Hpdi.Vss2Git</RootNamespace>
-    <AssemblyVersion>1.0.20.0</AssemblyVersion>
-    <FileVersion>1.0.20.0</FileVersion>
-    <Version>1.0.20</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
     <Company>HPDI, LLC</Company>
     <Product>Vss2Git.Core</Product>
     <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
