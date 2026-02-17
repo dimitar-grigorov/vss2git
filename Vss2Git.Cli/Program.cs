@@ -93,6 +93,13 @@ namespace Hpdi.Vss2Git.Cli
                     + "-" + timestamp;
 
                 Console.Error.WriteLine($"Output directory is not empty: {options.GitDirectory}");
+
+                if (Console.IsInputRedirected)
+                {
+                    Console.Error.WriteLine("Non-interactive mode: use --force to overwrite or --from-date to continue.");
+                    return 1;
+                }
+
                 Console.Write($"Rename it to \"{renamedDir}\" and continue? [y/N] ");
                 var key = Console.ReadLine()?.Trim();
                 if (!string.Equals(key, "y", StringComparison.OrdinalIgnoreCase))

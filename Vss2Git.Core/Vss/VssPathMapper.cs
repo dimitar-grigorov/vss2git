@@ -165,7 +165,7 @@ namespace Hpdi.Vss2Git
         {
             foreach (var item in items)
             {
-                if (item.LogicalName.Equals(logicalName))
+                if (item.LogicalName.Equals(logicalName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -274,6 +274,11 @@ namespace Hpdi.Vss2Git
             get { return projects; }
         }
 
+        // Per-project logical name for shared files that may have different names
+        // in different projects (e.g., due to the order of Add/Share actions in replay)
+        private readonly Dictionary<VssProjectInfo, string> projectLogicalNames =
+            new Dictionary<VssProjectInfo, string>();
+
         private int version = 1;
         public int Version
         {
@@ -286,14 +291,39 @@ namespace Hpdi.Vss2Git
         {
         }
 
-        public void AddProject(VssProjectInfo project)
+        public void AddProject(VssProjectInfo project, string logicalName)
         {
-            projects.Add(project);
+            if (!projects.Contains(project))
+            {
+                projects.Add(project);
+            }
+            projectLogicalNames[project] = logicalName;
         }
 
         public bool RemoveProject(VssProjectInfo project)
         {
+            projectLogicalNames.Remove(project);
             return projects.Remove(project);
+        }
+
+        /// <summary>
+        /// Returns the logical name of this file as seen in the given project.
+        /// Falls back to the base LogicalName if no per-project name is tracked.
+        /// </summary>
+        public string GetLogicalNameForProject(VssProjectInfo project)
+        {
+            return projectLogicalNames.TryGetValue(project, out var name) ? name : LogicalName;
+        }
+
+        /// <summary>
+        /// Updates the logical name in all projects (VSS renames propagate to all sharing projects).
+        /// </summary>
+        public void RenameInAllProjects(string newLogicalName)
+        {
+            foreach (var project in projects)
+            {
+                projectLogicalNames[project] = newLogicalName;
+            }
         }
     }
 
@@ -344,7 +374,7 @@ namespace Hpdi.Vss2Git
             {
                 return projectInfo.GetAllFiles();
             }
-            return null;
+            return Enumerable.Empty<VssFileInfo>();
         }
 
         public IEnumerable<VssProjectInfo> GetAllProjects(string project)
@@ -354,7 +384,7 @@ namespace Hpdi.Vss2Git
             {
                 return projectInfo.GetAllProjects();
             }
-            return null;
+            return Enumerable.Empty<VssProjectInfo>();
         }
 
         public IEnumerable<string> GetFilePaths(string file, string underProject)
@@ -379,7 +409,7 @@ namespace Hpdi.Vss2Git
                         var projectPath = project.GetPath();
                         if (projectPath != null)
                         {
-                            var path = Path.Combine(projectPath, fileInfo.LogicalName);
+                            var path = Path.Combine(projectPath, fileInfo.GetLogicalNameForProject(project));
                             result.AddLast(path);
                         }
                     }
@@ -413,7 +443,7 @@ namespace Hpdi.Vss2Git
             else
             {
                 var fileInfo = GetOrCreateFile(name);
-                fileInfo.AddProject(parentInfo);
+                fileInfo.AddProject(parentInfo, name.LogicalName);
                 parentInfo.AddItem(fileInfo);
                 itemInfo = fileInfo;
             }
@@ -434,7 +464,10 @@ namespace Hpdi.Vss2Git
             }
             else
             {
-                itemInfo = GetOrCreateFile(name);
+                var fileInfo = GetOrCreateFile(name);
+                // VSS renames propagate to all sharing projects
+                fileInfo.RenameInAllProjects(name.LogicalName);
+                itemInfo = fileInfo;
             }
             itemInfo.LogicalName = name.LogicalName;
             return itemInfo;
@@ -473,7 +506,7 @@ namespace Hpdi.Vss2Git
             else
             {
                 var fileInfo = GetOrCreateFile(name);
-                fileInfo.AddProject(parentInfo);
+                fileInfo.AddProject(parentInfo, name.LogicalName);
                 parentInfo.AddItem(fileInfo);
                 itemInfo = fileInfo;
             }
@@ -513,7 +546,7 @@ namespace Hpdi.Vss2Git
 
             // add filename to new project
             var newFile = GetOrCreateFile(newName);
-            newFile.AddProject(parentInfo);
+            newFile.AddProject(parentInfo, newName.LogicalName);
             parentInfo.AddItem(newFile);
 
             // preserve branch point version if already set by file-level Branch
@@ -628,7 +661,7 @@ namespace Hpdi.Vss2Git
                         foreach (var item in projectInfo.Items)
                         {
                             var subprojectInfo = item as VssProjectInfo;
-                            if (subprojectInfo != null && subprojectInfo.LogicalName == subprojectName)
+                            if (subprojectInfo != null && string.Equals(subprojectInfo.LogicalName, subprojectName, StringComparison.OrdinalIgnoreCase))
                             {
                                 projectInfo = subprojectInfo;
                                 found = true;

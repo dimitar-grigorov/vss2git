@@ -34,50 +34,57 @@ namespace Hpdi.VssLogicalLib
         {
             Stream dataFile = new FileStream(item.DataPath,
                 FileMode.Open, FileAccess.Read, FileShare.Read);
-
-            var itemFile = item.ItemFile;
-            var lastRev = itemFile.GetLastRevision();
-            if (lastRev != null)
+            try
             {
-                IEnumerable<DeltaOperation> deltaOps = null;
-                while (lastRev != null && lastRev.Revision > this.Version)
+                var itemFile = item.ItemFile;
+                var lastRev = itemFile.GetLastRevision();
+                if (lastRev != null)
                 {
-                    var branchRev = lastRev as BranchRevisionRecord;
-                    if (branchRev != null)
+                    IEnumerable<DeltaOperation> deltaOps = null;
+                    while (lastRev != null && lastRev.Revision > this.Version)
                     {
-                        var branchRevId = branchRev.Revision;
-                        var itemPath = item.Database.GetDataPath(branchRev.BranchFile);
-                        itemFile = new ItemFile(itemPath, item.Database.Encoding);
-                        lastRev = itemFile.GetLastRevision();
-                        while (lastRev != null && lastRev.Revision >= branchRevId)
+                        var branchRev = lastRev as BranchRevisionRecord;
+                        if (branchRev != null)
                         {
+                            var branchRevId = branchRev.Revision;
+                            var itemPath = item.Database.GetDataPath(branchRev.BranchFile);
+                            itemFile = new ItemFile(itemPath, item.Database.Encoding);
+                            lastRev = itemFile.GetLastRevision();
+                            while (lastRev != null && lastRev.Revision >= branchRevId)
+                            {
+                                lastRev = itemFile.GetPreviousRevision(lastRev);
+                            }
+                        }
+                        else
+                        {
+                            var editRev = lastRev as EditRevisionRecord;
+                            if (editRev != null)
+                            {
+                                var delta = itemFile.GetPreviousDelta(editRev);
+                                if (delta != null)
+                                {
+                                    var curDeltaOps = delta.Operations;
+                                    deltaOps = (deltaOps == null) ? curDeltaOps :
+                                        DeltaUtil.Merge(deltaOps, curDeltaOps);
+                                }
+                            }
                             lastRev = itemFile.GetPreviousRevision(lastRev);
                         }
                     }
-                    else
+
+                    if (deltaOps != null)
                     {
-                        var editRev = lastRev as EditRevisionRecord;
-                        if (editRev != null)
-                        {
-                            var delta = itemFile.GetPreviousDelta(editRev);
-                            if (delta != null)
-                            {
-                                var curDeltaOps = delta.Operations;
-                                deltaOps = (deltaOps == null) ? curDeltaOps :
-                                    DeltaUtil.Merge(deltaOps, curDeltaOps);
-                            }
-                        }
-                        lastRev = itemFile.GetPreviousRevision(lastRev);
+                        dataFile = new DeltaStream(dataFile, deltaOps);
                     }
                 }
 
-                if (deltaOps != null)
-                {
-                    dataFile = new DeltaStream(dataFile, deltaOps);
-                }
+                return dataFile;
             }
-
-            return dataFile;
+            catch
+            {
+                dataFile.Dispose();
+                throw;
+            }
         }
 
         internal VssFileRevision(VssItem item, RevisionRecord revision, CommentRecord comment)
