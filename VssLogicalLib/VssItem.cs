@@ -117,7 +117,7 @@ namespace Hpdi.VssLogicalLib
             {
                 if (itemFile == null)
                 {
-                    itemFile = database.GetItemFile(itemName.PhysicalName);
+                    itemFile = new ItemFile(physicalPath, database.Encoding);
                 }
                 return itemFile;
             }
