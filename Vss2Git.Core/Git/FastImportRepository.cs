@@ -562,6 +562,11 @@ namespace Hpdi.Vss2Git
 
         public void Dispose()
         {
+            CloseFastImportProcess();
+        }
+
+        private void CloseFastImportProcess()
+        {
             if (fastImportProcess != null)
             {
                 try
@@ -752,7 +757,10 @@ namespace Hpdi.Vss2Git
             stopwatch.Start();
             try
             {
-                // git fast-import doesn't create the index - we must do it explicitly
+                // Close fast-import process first so it updates HEAD
+                CloseFastImportProcess();
+
+                // Now HEAD is up to date - create the index
                 logger.WriteLine("Creating git index from HEAD");
                 RunGitCommand("reset HEAD");
 
