@@ -516,8 +516,9 @@ namespace Hpdi.Vss2Git
             newFile.AddProject(parentInfo);
             parentInfo.AddItem(newFile);
 
-            // retain version number from old file
-            newFile.Version = oldFile.Version;
+            // preserve branch point version if already set by file-level Branch
+            if (newFile.Version <= 1)
+                newFile.Version = oldFile.Version;
 
             return newFile;
         }
