@@ -178,5 +178,41 @@ namespace Hpdi.Vss2Git.Properties {
                 this["DefaultComment"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Process")]
+        public string GitBackend {
+            get {
+                return ((string)(this["GitBackend"]));
+            }
+            set {
+                this["GitBackend"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FromDate {
+            get {
+                return ((string)(this["FromDate"]));
+            }
+            set {
+                this["FromDate"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ToDate {
+            get {
+                return ((string)(this["ToDate"]));
+            }
+            set {
+                this["ToDate"] = value;
+            }
+        }
     }
 }

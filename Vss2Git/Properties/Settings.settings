@@ -41,5 +41,14 @@
     <Setting Name="DefaultComment" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="GitBackend" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Process</Value>
+    </Setting>
+    <Setting Name="FromDate" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ToDate" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

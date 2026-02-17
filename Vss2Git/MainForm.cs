@@ -71,6 +71,8 @@ namespace Hpdi.Vss2Git
 
             // Override with current UI state for non-persisted fields
             config.IgnoreErrors = ignoreErrorsCheckBox.Checked;
+            config.FromDate = fromDateCheckBox.Checked ? fromDatePicker.Value.Date : null;
+            config.ToDate = toDateCheckBox.Checked ? toDatePicker.Value.Date : null;
 
             // Create UI abstractions
             var userInteraction = new MessageBoxUserInteraction(this);
@@ -239,6 +241,22 @@ namespace Hpdi.Vss2Git
             exportProjectToGitRootCheckBox.Checked = settings.ExportProjectToGitRoot;
             anyCommentUpDown.Value = settings.AnyCommentSeconds;
             sameCommentUpDown.Value = settings.SameCommentSeconds;
+
+            // Git backend
+            var backendIndex = gitBackendComboBox.Items.IndexOf(settings.GitBackend);
+            gitBackendComboBox.SelectedIndex = backendIndex >= 0 ? backendIndex : 0;
+
+            // Date filters
+            if (DateTime.TryParse(settings.FromDate, out var fromDate))
+            {
+                fromDateCheckBox.Checked = true;
+                fromDatePicker.Value = fromDate;
+            }
+            if (DateTime.TryParse(settings.ToDate, out var toDate))
+            {
+                toDateCheckBox.Checked = true;
+                toDatePicker.Value = toDate;
+            }
         }
 
         private void WriteSettings()
@@ -256,6 +274,9 @@ namespace Hpdi.Vss2Git
             settings.ExportProjectToGitRoot = exportProjectToGitRootCheckBox.Checked;
             settings.AnyCommentSeconds = (int)anyCommentUpDown.Value;
             settings.SameCommentSeconds = (int)sameCommentUpDown.Value;
+            settings.GitBackend = gitBackendComboBox.SelectedItem?.ToString() ?? "Process";
+            settings.FromDate = fromDateCheckBox.Checked ? fromDatePicker.Value.Date.ToString("yyyy-MM-dd") : "";
+            settings.ToDate = toDateCheckBox.Checked ? toDatePicker.Value.Date.ToString("yyyy-MM-dd") : "";
             settings.Save();
         }
 
@@ -286,6 +307,16 @@ namespace Hpdi.Vss2Git
         private void outDirBrowseButton_Click(object sender, EventArgs e)
         {
             BrowseForFolder(outDirTextBox, "Select Git Output Directory");
+        }
+
+        private void fromDateCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            fromDatePicker.Enabled = fromDateCheckBox.Checked;
+        }
+
+        private void toDateCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            toDatePicker.Enabled = toDateCheckBox.Checked;
         }
     }
 }

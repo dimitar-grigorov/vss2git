@@ -49,6 +49,11 @@
             changeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             timeLabel = new System.Windows.Forms.ToolStripStatusLabel();
             outputGroupBox = new System.Windows.Forms.GroupBox();
+            label4 = new System.Windows.Forms.Label();
+            sameCommentUpDown = new System.Windows.Forms.NumericUpDown();
+            label2 = new System.Windows.Forms.Label();
+            label1 = new System.Windows.Forms.Label();
+            anyCommentUpDown = new System.Windows.Forms.NumericUpDown();
             exportProjectToGitRootCheckBox = new System.Windows.Forms.CheckBox();
             outDirBrowseButton = new System.Windows.Forms.Button();
             ignoreErrorsCheckBox = new System.Windows.Forms.CheckBox();
@@ -62,18 +67,16 @@
             outDirLabel = new System.Windows.Forms.Label();
             logTextBox = new System.Windows.Forms.TextBox();
             logLabel = new System.Windows.Forms.Label();
+            fromDateCheckBox = new System.Windows.Forms.CheckBox();
+            fromDatePicker = new System.Windows.Forms.DateTimePicker();
+            toDateCheckBox = new System.Windows.Forms.CheckBox();
+            toDatePicker = new System.Windows.Forms.DateTimePicker();
             cancelButton = new System.Windows.Forms.Button();
-            changesetGroupBox = new System.Windows.Forms.GroupBox();
-            label4 = new System.Windows.Forms.Label();
-            label3 = new System.Windows.Forms.Label();
-            sameCommentUpDown = new System.Windows.Forms.NumericUpDown();
-            label2 = new System.Windows.Forms.Label();
-            label1 = new System.Windows.Forms.Label();
-            anyCommentUpDown = new System.Windows.Forms.NumericUpDown();
+            gitBackendLabel = new System.Windows.Forms.Label();
+            gitBackendComboBox = new System.Windows.Forms.ComboBox();
             vssGroupBox.SuspendLayout();
             statusStrip.SuspendLayout();
             outputGroupBox.SuspendLayout();
-            changesetGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)sameCommentUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)anyCommentUpDown).BeginInit();
             SuspendLayout();
@@ -126,10 +129,10 @@
             encodingComboBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             encodingComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             encodingComboBox.FormattingEnabled = true;
-            encodingComboBox.Location = new System.Drawing.Point(110, 112);
+            encodingComboBox.Location = new System.Drawing.Point(112, 112);
             encodingComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             encodingComboBox.Name = "encodingComboBox";
-            encodingComboBox.Size = new System.Drawing.Size(584, 23);
+            encodingComboBox.Size = new System.Drawing.Size(582, 23);
             encodingComboBox.TabIndex = 7;
             // 
             // excludeTextBox
@@ -192,7 +195,7 @@
             // goButton
             // 
             goButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            goButton.Location = new System.Drawing.Point(533, 432);
+            goButton.Location = new System.Drawing.Point(533, 377);
             goButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             goButton.Name = "goButton";
             goButton.Size = new System.Drawing.Size(88, 27);
@@ -208,7 +211,7 @@
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusLabel, fileLabel, revisionLabel, changeLabel, timeLabel });
-            statusStrip.Location = new System.Drawing.Point(0, 466);
+            statusStrip.Location = new System.Drawing.Point(0, 411);
             statusStrip.Name = "statusStrip";
             statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
             statusStrip.Size = new System.Drawing.Size(729, 22);
@@ -250,6 +253,13 @@
             // outputGroupBox
             // 
             outputGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            outputGroupBox.Controls.Add(gitBackendLabel);
+            outputGroupBox.Controls.Add(gitBackendComboBox);
+            outputGroupBox.Controls.Add(label4);
+            outputGroupBox.Controls.Add(sameCommentUpDown);
+            outputGroupBox.Controls.Add(label2);
+            outputGroupBox.Controls.Add(label1);
+            outputGroupBox.Controls.Add(anyCommentUpDown);
             outputGroupBox.Controls.Add(exportProjectToGitRootCheckBox);
             outputGroupBox.Controls.Add(outDirBrowseButton);
             outputGroupBox.Controls.Add(ignoreErrorsCheckBox);
@@ -263,14 +273,66 @@
             outputGroupBox.Controls.Add(outDirLabel);
             outputGroupBox.Controls.Add(logTextBox);
             outputGroupBox.Controls.Add(logLabel);
+            outputGroupBox.Controls.Add(fromDateCheckBox);
+            outputGroupBox.Controls.Add(fromDatePicker);
+            outputGroupBox.Controls.Add(toDateCheckBox);
+            outputGroupBox.Controls.Add(toDatePicker);
             outputGroupBox.Location = new System.Drawing.Point(14, 166);
             outputGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             outputGroupBox.Name = "outputGroupBox";
             outputGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            outputGroupBox.Size = new System.Drawing.Size(701, 167);
+            outputGroupBox.Size = new System.Drawing.Size(701, 205);
             outputGroupBox.TabIndex = 1;
             outputGroupBox.TabStop = false;
             outputGroupBox.Text = "Output Settings";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(462, 174);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(146, 15);
+            label4.TabIndex = 21;
+            label4.Text = "seconds if same comment";
+            // 
+            // sameCommentUpDown
+            // 
+            sameCommentUpDown.Location = new System.Drawing.Point(404, 170);
+            sameCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            sameCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
+            sameCommentUpDown.Name = "sameCommentUpDown";
+            sameCommentUpDown.Size = new System.Drawing.Size(50, 23);
+            sameCommentUpDown.TabIndex = 20;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(207, 175);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(192, 15);
+            label2.TabIndex = 19;
+            label2.Text = "seconds regardless of comment, or";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(7, 174);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(144, 15);
+            label1.TabIndex = 17;
+            label1.Text = "Combine revisions within ";
+            // 
+            // anyCommentUpDown
+            // 
+            anyCommentUpDown.Location = new System.Drawing.Point(153, 171);
+            anyCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            anyCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
+            anyCommentUpDown.Name = "anyCommentUpDown";
+            anyCommentUpDown.Size = new System.Drawing.Size(50, 23);
+            anyCommentUpDown.TabIndex = 18;
             // 
             // exportProjectToGitRootCheckBox
             // 
@@ -394,10 +456,10 @@
             // logTextBox
             // 
             logTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            logTextBox.Location = new System.Drawing.Point(444, 52);
+            logTextBox.Location = new System.Drawing.Point(422, 52);
             logTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             logTextBox.Name = "logTextBox";
-            logTextBox.Size = new System.Drawing.Size(250, 23);
+            logTextBox.Size = new System.Drawing.Size(272, 23);
             logTextBox.TabIndex = 5;
             // 
             // logLabel
@@ -410,11 +472,55 @@
             logLabel.TabIndex = 4;
             logLabel.Text = "Log file";
             // 
+            // fromDateCheckBox
+            // 
+            fromDateCheckBox.AutoSize = true;
+            fromDateCheckBox.Location = new System.Drawing.Point(8, 142);
+            fromDateCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            fromDateCheckBox.Name = "fromDateCheckBox";
+            fromDateCheckBox.Size = new System.Drawing.Size(80, 19);
+            fromDateCheckBox.TabIndex = 13;
+            fromDateCheckBox.Text = "From date";
+            fromDateCheckBox.UseVisualStyleBackColor = true;
+            fromDateCheckBox.CheckedChanged += fromDateCheckBox_CheckedChanged;
+            // 
+            // fromDatePicker
+            // 
+            fromDatePicker.Enabled = false;
+            fromDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            fromDatePicker.Location = new System.Drawing.Point(92, 140);
+            fromDatePicker.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            fromDatePicker.Name = "fromDatePicker";
+            fromDatePicker.Size = new System.Drawing.Size(95, 23);
+            fromDatePicker.TabIndex = 14;
+            // 
+            // toDateCheckBox
+            // 
+            toDateCheckBox.AutoSize = true;
+            toDateCheckBox.Location = new System.Drawing.Point(205, 142);
+            toDateCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            toDateCheckBox.Name = "toDateCheckBox";
+            toDateCheckBox.Size = new System.Drawing.Size(65, 19);
+            toDateCheckBox.TabIndex = 15;
+            toDateCheckBox.Text = "To date";
+            toDateCheckBox.UseVisualStyleBackColor = true;
+            toDateCheckBox.CheckedChanged += toDateCheckBox_CheckedChanged;
+            // 
+            // toDatePicker
+            // 
+            toDatePicker.Enabled = false;
+            toDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            toDatePicker.Location = new System.Drawing.Point(272, 140);
+            toDatePicker.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            toDatePicker.Name = "toDatePicker";
+            toDatePicker.Size = new System.Drawing.Size(95, 23);
+            toDatePicker.TabIndex = 16;
+            // 
             // cancelButton
             // 
             cancelButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            cancelButton.Location = new System.Drawing.Point(628, 432);
+            cancelButton.Location = new System.Drawing.Point(628, 377);
             cancelButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new System.Drawing.Size(88, 27);
@@ -423,81 +529,26 @@
             cancelButton.UseVisualStyleBackColor = true;
             cancelButton.Click += cancelButton_Click;
             // 
-            // changesetGroupBox
+            // gitBackendLabel
             // 
-            changesetGroupBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            changesetGroupBox.Controls.Add(label4);
-            changesetGroupBox.Controls.Add(label3);
-            changesetGroupBox.Controls.Add(sameCommentUpDown);
-            changesetGroupBox.Controls.Add(label2);
-            changesetGroupBox.Controls.Add(label1);
-            changesetGroupBox.Controls.Add(anyCommentUpDown);
-            changesetGroupBox.Location = new System.Drawing.Point(14, 339);
-            changesetGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            changesetGroupBox.Name = "changesetGroupBox";
-            changesetGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            changesetGroupBox.Size = new System.Drawing.Size(701, 87);
-            changesetGroupBox.TabIndex = 2;
-            changesetGroupBox.TabStop = false;
-            changesetGroupBox.Text = "Changeset Building";
+            gitBackendLabel.AutoSize = true;
+            gitBackendLabel.Location = new System.Drawing.Point(501, 143);
+            gitBackendLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            gitBackendLabel.Name = "gitBackendLabel";
+            gitBackendLabel.Size = new System.Drawing.Size(70, 15);
+            gitBackendLabel.TabIndex = 22;
+            gitBackendLabel.Text = "Git backend";
             // 
-            // label4
+            // gitBackendComboBox
             // 
-            label4.AutoSize = true;
-            label4.Location = new System.Drawing.Point(226, 54);
-            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(213, 15);
-            label4.TabIndex = 5;
-            label4.Text = "seconds, if the comments are the same";
-            // 
-            // label3
-            // 
-            label3.Location = new System.Drawing.Point(7, 54);
-            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(142, 15);
-            label3.TabIndex = 3;
-            label3.Text = "or within";
-            label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // sameCommentUpDown
-            // 
-            sameCommentUpDown.Location = new System.Drawing.Point(156, 52);
-            sameCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            sameCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
-            sameCommentUpDown.Name = "sameCommentUpDown";
-            sameCommentUpDown.Size = new System.Drawing.Size(63, 23);
-            sameCommentUpDown.TabIndex = 4;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(226, 24);
-            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(201, 15);
-            label2.TabIndex = 2;
-            label2.Text = "seconds, regardless of the comment,";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(7, 24);
-            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(141, 15);
-            label1.TabIndex = 0;
-            label1.Text = "Combine revisions within";
-            // 
-            // anyCommentUpDown
-            // 
-            anyCommentUpDown.Location = new System.Drawing.Point(156, 22);
-            anyCommentUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            anyCommentUpDown.Maximum = new decimal(new int[] { 86400, 0, 0, 0 });
-            anyCommentUpDown.Name = "anyCommentUpDown";
-            anyCommentUpDown.Size = new System.Drawing.Size(63, 23);
-            anyCommentUpDown.TabIndex = 1;
+            gitBackendComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            gitBackendComboBox.FormattingEnabled = true;
+            gitBackendComboBox.Items.AddRange(new object[] { "Process", "LibGit2Sharp", "FastImport" });
+            gitBackendComboBox.Location = new System.Drawing.Point(575, 140);
+            gitBackendComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            gitBackendComboBox.Name = "gitBackendComboBox";
+            gitBackendComboBox.Size = new System.Drawing.Size(116, 23);
+            gitBackendComboBox.TabIndex = 23;
             // 
             // MainForm
             // 
@@ -505,8 +556,7 @@
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             CancelButton = cancelButton;
-            ClientSize = new System.Drawing.Size(729, 488);
-            Controls.Add(changesetGroupBox);
+            ClientSize = new System.Drawing.Size(729, 433);
             Controls.Add(cancelButton);
             Controls.Add(outputGroupBox);
             Controls.Add(goButton);
@@ -515,7 +565,7 @@
             Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 204);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            MinimumSize = new System.Drawing.Size(532, 477);
+            MinimumSize = new System.Drawing.Size(532, 470);
             Name = "MainForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "VSS2Git";
@@ -527,8 +577,6 @@
             statusStrip.PerformLayout();
             outputGroupBox.ResumeLayout(false);
             outputGroupBox.PerformLayout();
-            changesetGroupBox.ResumeLayout(false);
-            changesetGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)sameCommentUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)anyCommentUpDown).EndInit();
             ResumeLayout(false);
@@ -561,13 +609,6 @@
         private System.Windows.Forms.TextBox excludeTextBox;
         private System.Windows.Forms.Label excludeLabel;
         private System.Windows.Forms.Button cancelButton;
-        private System.Windows.Forms.GroupBox changesetGroupBox;
-        private System.Windows.Forms.NumericUpDown anyCommentUpDown;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.NumericUpDown sameCommentUpDown;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label encodingLabel;
         private System.Windows.Forms.ComboBox encodingComboBox;
         private System.Windows.Forms.CheckBox transcodeCheckBox;
@@ -578,6 +619,17 @@
         private System.Windows.Forms.Button vssDirBrowseButton;
         private System.Windows.Forms.Button outDirBrowseButton;
         private System.Windows.Forms.CheckBox exportProjectToGitRootCheckBox;
+        private System.Windows.Forms.CheckBox fromDateCheckBox;
+        private System.Windows.Forms.DateTimePicker fromDatePicker;
+        private System.Windows.Forms.CheckBox toDateCheckBox;
+        private System.Windows.Forms.DateTimePicker toDatePicker;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown sameCommentUpDown;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown anyCommentUpDown;
+        private System.Windows.Forms.Label gitBackendLabel;
+        private System.Windows.Forms.ComboBox gitBackendComboBox;
     }
 }
 

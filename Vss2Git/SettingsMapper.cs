@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Text;
 using Mapster;
 
@@ -29,7 +30,10 @@ namespace Hpdi.Vss2Git
             TypeAdapterConfig<Properties.Settings, MigrationConfiguration>.NewConfig()
                 .Ignore(dest => dest.VssEncoding)
                 .Ignore(dest => dest.Force)
-                .Ignore(dest => dest.IgnoreErrors);
+                .Ignore(dest => dest.IgnoreErrors)
+                .Ignore(dest => dest.FromDate)
+                .Ignore(dest => dest.ToDate)
+                .Ignore(dest => dest.GitBackend);
         }
 
         /// <summary>
@@ -42,9 +46,11 @@ namespace Hpdi.Vss2Git
             // Use Mapster for basic mapping
             var config = settings.Adapt<MigrationConfiguration>();
 
-            // Set properties that aren't persisted
+            // Set properties that aren't persisted or need special mapping
             config.VssEncoding = encoding;
             config.IgnoreErrors = false; // Not persisted, always starts as false
+            config.GitBackend = Enum.TryParse<GitBackend>(settings.GitBackend, out var backend)
+                ? backend : GitBackend.Process;
 
             return config;
         }
