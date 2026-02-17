@@ -1,31 +1,63 @@
-> **This fork is actively being improved.** The original project by Trevor Robinson was abandoned, but this fork modernizes it and adds significant new features. This is still a work in progress and may contain bugs or inconsistencies — always manually inspect the resulting Git repository and its history before relying on it.
+# Vss2Git
 
-### What's new in this fork
+> **Actively maintained fork** of the [original vss2git](https://github.com/trevorr/vss2git) by Trevor Robinson (abandoned since 2016). This fork has been substantially reworked with 94+ commits — the core migration engine was refactored into a shared library, two new high-performance git backends were added, and dozens of correctness bugs were fixed. Always inspect the resulting Git repository before relying on it.
 
+## What's new in this fork
+
+### Architecture & platform
 - **Targets .NET 8.0** (upgraded from .NET Framework 4.5.2)
+- **Core library extracted** (`Vss2Git.Core`) — the migration engine is no longer coupled to WinForms, enabling the CLI and future integrations
+- **Windows installer** (`Vss2GitSetup.exe`) — GUI/CLI component selection, .NET 8 runtime detection, per-user install (no admin required)
+
+### New features
 - **Command-line interface** (`Vss2Git.Cli`) for scripted/unattended migrations
 - **Three git backends** with identical output:
   - `Process` (default) — spawns git.exe per command
   - `LibGit2Sharp` — managed library, ~6x faster
   - `FastImport` — streaming via `git fast-import`, ~19x faster
 - **Date range migration** (`--from-date`, `--to-date`) for incremental/chunked exports
-- **Directory comparison tool** (`compare-dirs.cmd`) to verify migration results against VSS working copies
-- **237 automated tests** — unit tests, CLI tests, 13 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all backends produce identical output
-- **Bug fixes**: timestamp collision ordering, directory deletion, comment deduplication, case-only renames, shared file branching validation, and more
+- **Built-in directory verification** (`Vss2Git.Cli verify`) to compare migration results against VSS working copies
+- **VSS database repair tool** (`vss_analyze.cmd`) — automated diagnostic scan and multi-pass repair
+- **Performance instrumentation** (`--perf` flag) and VssItem caching for faster VSS reads
 
-## What is it? ##
+### Bug fixes
+- **Project move corruption** — MoveFrom/MoveTo ordering caused source path corruption
+- **Stale files after move** — destination not cleaned up, leaving orphaned files in git
+- **Timestamp collision ordering** — same-second revisions now use causal priority (create before edit before delete)
+- **Directory deletion** — `git rm -rf` for projects with staged files
+- **Comment deduplication** — exact line matching replaces broken substring check; whitespace handling fixed
+- **Changeset false conflicts** — incorrect conflict detection between unrelated file actions
+- **Case-only renames** — proper two-step `git mv` workaround
+- **Shared file branching** — validation when removing shared project references
+- **Shell metacharacter quoting** — added missing characters (`!`, `'`, `` ` ``) to git argument escaping
+- **LibGit2Sharp fixes** — recursive remove on uncommitted subtrees, directory move, commit degradation, non-UTF-8 encoding skip
+- **Logger file handle leak** — fixed on early exit from migration pipeline
+- And many more (see commit history for the full list)
 
-The Vss2Git project contains several components:
+### Testing
+- **251 automated tests** — unit tests (including cross-backend common tests), CLI tests, 13 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all 3 backends produce identical output
 
-  * **Vss2Git** is a Windows GUI application that exports all or parts of an existing [Microsoft](http://www.microsoft.com/) [Visual SourceSafe 6.0](http://msdn.microsoft.com/en-us/library/ms950420.aspx) (VSS) ([Wikipedia](http://en.wikipedia.org/wiki/Visual_SourceSafe)) repository to a new [Git](http://git-scm.com/) repository. It attempts to construct meaningful changesets (i.e. [Git commits](http://www.kernel.org/pub/software/scm/git/docs/user-manual.html#commit-object)) based on chronologically grouping individual project/file revisions.
-  * **VssDump** is a console-based diagnostic tool that prints a plain-text dump of the contents of a VSS repository.
-  * **VssLogicalLib** provides a .NET API for reading the contents and history of a VSS repository.
-  * **VssPhysicalLib** is a set of low-level classes for reading the various data files that make up a VSS database.
-  * **HashLib** is a generic stateless hashing API that currently provides 16- and 32-bit [CRC](http://en.wikipedia.org/wiki/Cyclic_redundancy_check) generation.
+## What is it?
+
+Vss2Git exports [Visual SourceSafe 6.0](https://en.wikipedia.org/wiki/Visual_SourceSafe) repositories to [Git](https://git-scm.com/), constructing meaningful commits by chronologically grouping individual file revisions into changesets.
+
+Components:
+
+  * **Vss2Git** — Windows GUI for interactive migration
+  * **Vss2Git.Cli** — Command-line interface for scripted migration
+  * **Vss2Git.Core** — Shared migration engine (RevisionAnalyzer, ChangesetBuilder, GitExporter)
+  * **VssLogicalLib / VssPhysicalLib / HashLib** — Low-level VSS database reading libraries
+  * **VssDump** — Diagnostic tool for inspecting VSS repositories
 
 All components are written in C# targeting .NET 8.0.
 
-## Building ##
+## Installation
+
+**Windows Installer:** Download `Vss2GitSetup-x.x.x.exe` from the [Releases](https://github.com/dimitar-grigorov/vss2git/releases) page. Choose to install GUI, CLI, or both. Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
+
+**Portable ZIP:** Extract and run directly. Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (for GUI) or .NET 8.0 Runtime (for CLI only), and Git in PATH (for Process backend).
+
+## Building
 
 **Prerequisites:** [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
@@ -34,55 +66,13 @@ dotnet build Vss2Git.sln --configuration Debug
 dotnet test Vss2Git.sln --configuration Debug
 ```
 
-## How is it licensed? ##
+## Usage
 
-Vss2Git is open-source software, licensed under the [Apache License, Version 2.0](License.md). Accordingly, **any use of the software is at your own risk**. Always back up your VSS database regularly, and especially before attempting to use this software with it.
+### GUI
 
-## What are its goals? ##
+Run `Vss2Git.exe`, configure the VSS database path and Git output directory, then click Start.
 
-Several key features not found in other VSS migration tools inspired this project:
-
-  * **Preserving as much history as possible from the VSS database**, including deleted and renamed files. Vss2Git replays the history of the VSS database from the very beginning, so it is possible to reconstruct any prior version of the tree. Only explicitly destroyed or externally archived (but not restored) history should be lost. Ideally, a migrated VSS database should never need to be consulted again.
-  * **Making historical changes easily comprehensible**. Migration tools that simply do a one-pass traversal of the files currently in the repository, replaying all the revisions of each file as it is encountered, generate version history that is difficult to correlate among multiple files. Vss2Git scans the entire repository for revisions, sorts them chronologically, and groups them into conceptual changesets, which are then committed in chronological order. The resulting repository should appear as if it were maintained in Git right from the beginning.
-  * **Robustness, recoverability, and minimal user intervention**. Vss2Git aims to be robust against common VSS database inconsistencies, such as missing data files, so that migration can proceed unattended. However, serious errors, such as Git reporting an error during commit, necessarily suspend migration. In such cases, the user is presented with an Abort/Retry/Ignore dialog, so that manual intervention is an option.
-  * **Speed**. With the FastImport backend, a 19,358-file VSS database with 148,260 revisions migrates in about 21 seconds. LibGit2Sharp takes about 1 minute, and the Process backend about 7 minutes. Revision scanning and changeset building take only a few seconds regardless of backend.
-
-Admittedly, some potentially interesting features are currently outside the scope of the project, such as:
-
-  * **Handling of corrupt databases**. Vss2Git will fail to process VSS data files with CRC errors. If you encounter such errors, run the VSS Analyze.exe tool with the "-f" option. Make sure to back up your database first.
-
-## How well tested is it? ##
-
-This fork has **237 automated tests**: 120 unit tests (including 51 cross-backend common tests verifying all 3 git backends produce identical results), 22 CLI tests, and 95 integration tests covering 13 migration scenarios with pre-built VSS databases. Cross-backend validation tests confirm that Process, LibGit2Sharp, and FastImport backends produce byte-for-byte identical file content, matching commits, tags, and authors.
-
-That said, VSS databases can vary widely. **Always inspect the resulting Git repository manually** — check file content, commit history, and tags against your VSS database before considering the migration complete.
-
-## Usage tips ##
-
-  * Run Vss2Git on a local **backup copy** of your repository. Not only will this avoid jeopardizing your production repository, the migration will run much faster accessing a local copy than one on a network share.
-  * Real-time virus/malware scanners, including Windows Defender, can interfere with Git updating its index file, causing it to fail with errors like "fatal: Unable to write new index file". You may need to configure these tools to exclude scanning the output Git repository path if possible, or temporarily disable them if not.
-  * Generally, the Git output directory should be empty or non-existent. When re-running the migration, you should delete everything in the directory, including the .git subdirectory. (Vss2Git doesn't do this for you for two reasons: 1) to avoid accidental data loss, and 2) to allow merging of repositories.) Vss2Git currently uses "git add -A" when committing changes, so any untracked files that happen to be present will be included in the first commit.
-  * Migration can start at any project in the VSS database and includes all subprojects. VSS paths start with "$" as the root project, with subproject names separated by forward slashes (e.g. "$/ProjectA/Subproject1").
-  * You can exclude files by name from the migration by listing patterns in the dialog box. The patterns are separated by semicolons and may include the following wildcards:
-    * "?" matches any single character except a slash or backslash.
-    * "`*`" matches zero or more characters except slash or backslash.
-    * "`**`" matches zero or more characters (including slash and backslash).
-  * VSS has some features that have no analogous feature in Git. For instance:
-    * Branched files are simply copied. While Git will avoid storing a redundant copy of the file in its database (since the content hash will be identical), Git does not track that the file was copied. (However, "git log -C", and especially, "git log --find-copies-harder", can be used to locate copies after the fact.)
-    * Similarly, shared files are not directly supported. Vss2Git will write each revision of a shared file to each directory it is shared in, but once migration is complete, future changes must be kept in sync by the user. Git technically supports using symlinks to achieve a similar effect, but by default on Windows, they are checked out as plain files containing a text link.
-    * Directories are not first-class objects in Git, as they are in VSS. They are simply tracked as part of the path of the files they contain. Consequently, actions on empty directories are not tracked.
-    * VSS labels are applied to specific projects. Vss2Git translates these as Git tags, which are global to the repository.
-
-## Known issues ##
-
-  * The Git executable needs to be on the Windows search path (i.e. the PATH environment variable).
-  * Currently, only one VSS project path is supported. To include disjoint subtrees of your database, you'll need to run Vss2Git multiple times. Unfortunately, this means that the commits won't be in chronological order overall, and that commits containing files from separately migrated projects will never be combined.
-  * Vss2Git includes a simplistic algorithm for generating author email addresses from VSS user names: it converts the name to lower case, replaces spaces with periods, and appends the domain name specified in the dialog box. For example, "John Doe" becomes "john.doe@localhost". This is adequate for many cases, but obviously not all. For now, you may wish to hack GitExporter.GetEmail().
-  * Git has difficulty dealing with changing the case of a filename on a case-insensitive file system (e.g. Windows). Vss2Git does contain a workaround for this, which involves executing "git mv" twice, once to rename to a temporary name, and then to rename to the final name. This worked for me with msysgit 1.6.2, but there's no guarantee it will work in all cases or with all versions.
-
-## Can I script it? ##
-
-Yes! **Vss2Git.Cli** provides a command-line interface for automated migrations.
+### CLI
 
 ```bash
 # Basic migration
@@ -100,121 +90,57 @@ Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" \
   --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1252
 ```
 
-Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`--to-date` (incremental migration), `--vss-project` (VSS path), `--exclude` (patterns), `--ignore-errors` (unattended mode), `--perf` (performance tracking). Run `Vss2Git.Cli --help` for all options.
+Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`--to-date`, `--vss-project`, `--exclude`, `--ignore-errors`, `--perf`. Run `Vss2Git.Cli --help` for all options.
 
-## Testing ##
+## Goals
+
+  * **Preserve as much history as possible** — replays the VSS database from the beginning, including deleted and renamed files. Only destroyed or archived-but-not-restored history is lost.
+  * **Meaningful changesets** — scans all revisions, sorts chronologically, and groups them into commits. The result looks as if the project was maintained in Git from the start.
+  * **Robustness** — handles common VSS database inconsistencies so migration can proceed unattended. Serious errors present Abort/Retry/Ignore options.
+  * **Speed** — a 19K-file VSS database (148K revisions) migrates in ~21s (FastImport), ~1min (LibGit2Sharp), or ~7min (Process).
+
+## Usage tips
+
+  * Run on a **local backup copy** of your VSS database — faster and safer than a network share.
+  * **Antivirus software** (especially Windows Defender) can cause `"fatal: Unable to write new index file"` errors. Exclude the Git output path from real-time scanning.
+  * The Git output directory should be **empty or non-existent**. Delete everything including `.git` when re-running.
+  * Migration starts at any VSS project path (e.g. `$/ProjectA/Subproject1`) and includes all subprojects.
+  * Exclude patterns use semicolons and wildcards: `?` (single char), `*` (within directory), `**` (recursive).
+  * VSS features without Git equivalents: branched/shared files become copies, empty directories are not tracked, VSS labels become Git tags (global scope).
+  * Corrupt VSS databases with CRC errors must be repaired first with `Analyze.exe -f` or `vss_analyze.cmd`. Always back up before running it.
+
+## Known issues
+
+  * Git must be in PATH (not required for LibGit2Sharp/FastImport backends).
+  * Only one VSS project path per run. Disjoint subtrees need separate runs (commits won't interleave).
+  * Email addresses are auto-generated from VSS usernames (e.g. "John Doe" becomes `john.doe@localhost`). Customize via `--email-domain` or edit `GitExporter.GetEmail()`.
+
+## Extra Tools
+
+| Tool | Description |
+|------|-------------|
+| `Vss2Git.Cli verify -s <source> -t <target> -x ".vs;.git"` | Compare a VSS working directory against Git output — reports missing and extra files |
+| `compare-dirs.cmd <source> <target>` | Standalone batch script for the same comparison (no CLI required) |
+| `vss_analyze.cmd <vss-database>` | Automated `Analyze.exe` wrapper — diagnostic scan, multi-pass repair, verification (requires admin + VSS tools) |
+
+## Testing
 
 ```bash
 dotnet test Vss2Git.sln --configuration Debug
 ```
 
-237 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
+251 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
-## Screenshot ##
+> **Note:** Integration tests that build VSS test databases require `ss.exe` and `mkss.exe` from [Microsoft Visual SourceSafe](https://archive.org/details/X08-65726) installed at `C:\Program Files (x86)\Microsoft Visual SourceSafe\`. These tests are skipped automatically when the tools are not present.
 
-![http://vss2git.googlecode.com/files/Vss2Git.png](https://raw.githubusercontent.com/trevorr/vss2git/master/Vss2Git.png)
+## Screenshot
 
-## Resources ##
+![Vss2Git GUI](Vss2Git.png)
 
-The following links may be useful to anyone migrating from VSS and/or to Git. If Vss2Git does not meet your needs, perhaps one of the other migration tools listed will.
+## Support
 
-  * Primary Git sites: [git.or.cz](http://git.or.cz/index.html) or [git-scm.com](http://git-scm.com/)
-  * [Git User's Manual](http://www.kernel.org/pub/software/scm/git/docs/user-manual.html)
-  * [msysgit: Git on Windows](http://code.google.com/p/msysgit/)
-  * ~~Brett Wooldridge's [VSS-to-Subversion Conversion](http://www.riseup.com/~brettw/dev/VSS2Subversion.html) page~~
-  * Power Admin's [Visual Source Safe (VSS) to Subversion (SVN) Migration](http://www.poweradmin.com/sourcecode/vssmigrate.aspx) page
-  * [Vss2Svn](http://www.pumacode.org/projects/vss2svn/wiki) project at [PumaCode.org](http://www.pumacode.org/)
-  * Alexander Gavrilov's [git-vss](http://github.com/angavrilov/git-vss/) ("incremental exchange of simple changes between Git and VSS")
+Report bugs and feature requests at [GitHub Issues](https://github.com/dimitar-grigorov/vss2git/issues).
 
-## Release Notes ##
+## License
 
-**1.0.11 (11 Sep 2016)**
-
-  * Option to ignore Git errors (thanks to David E. Smith)
-  * Allow and preserve empty commit messages (thanks to Maxim Degtyarev)
-  * Fix installer to also detect .NET 4.0 and later
-  * Upgrade project files to Visual Studio 2015
-  * Fix some URLs that still referred to old home on Google Code
-
-**1.0.10 (6 Sep 2010)**
-
-Bug fixes based on patches from Matthias Luescher:
-
-  * Format commit date/time according to ISO 8601 to avoid locale issues
-  * Set committer environment variables on commit, in addition to author
-  * Add option to force usage of annotated tags
-  * Naming and initial version fixes for branched files
-  * (Re)write target file if a branching action is applied to a project
-  * Do not delete files that have already been replaced by a new file with the same logical name
-  * Do not try to rename files that have already been deleted
-
-Also, support .Net 4 by disambiguating reference to VssPhysicalLib.Action
-
-**1.0.9 (18 Aug 2009)**
-
-  * Suppress all actions against destroyed items (e.g. fixes "bad source" error from "git mv")
-  * Remove (empty) directory when a project is moved to a (subsequently) destroyed project
-  * Quote shell operators (& | < > ^ %) when running git.cmd via cmd.exe
-  * Use a temporary file for comments containing newlines
-  * Skip "git add" and "git commit" for destroyed files
-  * Made "transcode comments" setting persistent
-
-**1.0.8 (14 Aug 2009)**
-
-  * Fixed handling of projects restored from an archive
-  * Fixed handling of labels that differ only in case
-  * Fixed handling of label comments (implemented incorrectly in 1.0.7)
-  * Fixed FormatException in reporting unexpected record signature
-  * Improved reporting of errors during revision analysis
-  * Added RecordException base class to VssPhysicalLib
-  * Added RecordTruncatedException, which wraps EndOfBufferException while reading records
-  * Added commit date/time and user for tags
-  * Added VSS2Git version in log output
-
-**1.0.7 (22 Jul 2009)**
-
-  * Fixed reading comments for labels
-  * Ignore empty labels
-  * Added support for labels and filenames that start with dashes
-  * Create all subdirectories for a project when it becomes rooted
-  * Explicitly add files to Git as they are created, to make them visible to subsequent directory operations
-
-**1.0.6 (22 Jul 2009)**
-
-  * Quote temporary file path on Git command line if it includes spaces
-  * Support case-only renames for empty and parent projects
-
-**1.0.5 (17 Jun 2009)**
-
-  * Ensure tag names are globally unique by appending a number
-
-**1.0.4 (16 Jun 2009)**
-
-  * Configurable VSS database text encoding
-  * Optionally transcode Git comments to UTF-8
-  * Automatically configure Git repository for non-UTF-8 encoding
-  * Added output encoding support to VssDump
-  * Improved changeset building to include file/project creation comments
-
-**1.0.3 (14 Jun 2009)**
-
-  * Ignore file edits to unrooted projects (fixes "Value cannot be null. Parameter name: path1" error)
-  * Ignore tags before initial commit (fixes "Failed to resolve 'HEAD' as a valid ref" error)
-  * Write VSS label names to log if they differ from the tag name
-
-**1.0.2 (5 Jun 2009)**
-
-  * Log full exception dumps
-  * Log root project and exclusion list
-  * Log changeset ID when dumping each changeset
-  * Save settings before migration
-
-**1.0.1 (4 Jun 2009)**
-
-  * Search PATH variable for git.exe or git.cmd
-  * Strip illegal characters from tag names
-  * Improved error reporting
-
-**1.0 (22 Apr 2009)**
-
-  * Initial release
+Vss2Git is open-source software, licensed under the [Apache License, Version 2.0](License.md). **Any use of the software is at your own risk.** Always back up your VSS database before using this tool.
