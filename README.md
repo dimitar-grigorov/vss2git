@@ -2,6 +2,8 @@
 
 > **Actively maintained fork** of the [original vss2git](https://github.com/trevorr/vss2git) by Trevor Robinson (abandoned since 2016). This fork has been substantially reworked with 94+ commits — the core migration engine was refactored into a shared library, two new high-performance git backends were added, and dozens of correctness bugs were fixed. Always inspect the resulting Git repository before relying on it.
 
+![Vss2Git GUI](Vss2Git.png)
+
 ## What's new in this fork
 
 ### Architecture & platform
@@ -132,10 +134,6 @@ dotnet test Vss2Git.sln --configuration Debug
 251 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
 > **Note:** Integration tests that build VSS test databases require `ss.exe` and `mkss.exe` from [Microsoft Visual SourceSafe](https://archive.org/details/X08-65726) installed at `C:\Program Files (x86)\Microsoft Visual SourceSafe\`. These tests are skipped automatically when the tools are not present.
-
-## Screenshot
-
-![Vss2Git GUI](Vss2Git.png)
 
 ## Support
 
