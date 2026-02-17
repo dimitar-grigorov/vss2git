@@ -1,39 +1,39 @@
 using System;
 using System.Globalization;
 using System.Text;
-using Mapster;
 
 namespace Hpdi.Vss2Git.Cli
 {
     /// <summary>
-    /// Maps between CliOptions and MigrationConfiguration using Mapster
+    /// Maps between CliOptions and MigrationConfiguration
     /// </summary>
     public static class CliOptionsMapper
     {
-        static CliOptionsMapper()
-        {
-            // Configure mapping from CliOptions to MigrationConfiguration
-            TypeAdapterConfig<CliOptions, MigrationConfiguration>.NewConfig()
-                .Ignore(dest => dest.VssEncoding)    // Set separately based on EncodingCodePage
-                .Ignore(dest => dest.FromDate)       // Parsed manually from string
-                .Ignore(dest => dest.ToDate);        // Parsed manually from string
-
-            // Configure mapping from MigrationConfiguration to CliOptions
-            TypeAdapterConfig<MigrationConfiguration, CliOptions>.NewConfig()
-                .Ignore(dest => dest.EncodingCodePage)  // Derived from VssEncoding
-                .Ignore(dest => dest.Interactive)        // Not part of MigrationConfiguration
-                .Ignore(dest => dest.FromDate)           // Formatted manually from DateTime
-                .Ignore(dest => dest.ToDate);            // Formatted manually from DateTime
-        }
-
         /// <summary>
         /// Create MigrationConfiguration from CLI options
         /// </summary>
         public static MigrationConfiguration FromOptions(CliOptions options, Encoding encoding)
         {
-            var config = options.Adapt<MigrationConfiguration>();
-
-            config.VssEncoding = encoding;
+            var config = new MigrationConfiguration
+            {
+                VssDirectory = options.VssDirectory,
+                GitDirectory = options.GitDirectory,
+                VssProject = options.VssProject,
+                VssExcludePaths = options.VssExcludePaths,
+                DefaultEmailDomain = options.DefaultEmailDomain,
+                DefaultComment = options.DefaultComment,
+                LogFile = options.LogFile,
+                IgnoreErrors = options.IgnoreErrors,
+                Force = options.Force,
+                AnyCommentSeconds = options.AnyCommentSeconds,
+                SameCommentSeconds = options.SameCommentSeconds,
+                TranscodeComments = options.TranscodeComments,
+                ForceAnnotatedTags = options.ForceAnnotatedTags,
+                ExportProjectToGitRoot = options.ExportProjectToGitRoot,
+                EnablePerformanceTracking = options.EnablePerformanceTracking,
+                GitBackend = options.GitBackend,
+                VssEncoding = encoding,
+            };
 
             if (!string.IsNullOrEmpty(options.FromDate))
             {
@@ -61,7 +61,25 @@ namespace Hpdi.Vss2Git.Cli
         /// </summary>
         public static CliOptions ToOptions(MigrationConfiguration config)
         {
-            var options = config.Adapt<CliOptions>();
+            var options = new CliOptions
+            {
+                VssDirectory = config.VssDirectory,
+                GitDirectory = config.GitDirectory,
+                VssProject = config.VssProject,
+                VssExcludePaths = config.VssExcludePaths,
+                DefaultEmailDomain = config.DefaultEmailDomain,
+                DefaultComment = config.DefaultComment,
+                LogFile = config.LogFile,
+                IgnoreErrors = config.IgnoreErrors,
+                Force = config.Force,
+                AnyCommentSeconds = config.AnyCommentSeconds,
+                SameCommentSeconds = config.SameCommentSeconds,
+                TranscodeComments = config.TranscodeComments,
+                ForceAnnotatedTags = config.ForceAnnotatedTags,
+                ExportProjectToGitRoot = config.ExportProjectToGitRoot,
+                EnablePerformanceTracking = config.EnablePerformanceTracking,
+                GitBackend = config.GitBackend,
+            };
 
             if (config.VssEncoding != null)
             {

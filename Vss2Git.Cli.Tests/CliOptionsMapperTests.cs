@@ -39,6 +39,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
                 Force = true,
+                EnablePerformanceTracking = true,
+                GitBackend = GitBackend.FastImport,
                 Interactive = true         // Should be ignored
             };
             var encoding = Encoding.UTF8;
@@ -61,6 +63,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
             config.ForceAnnotatedTags.Should().BeFalse();
             config.ExportProjectToGitRoot.Should().BeTrue();
             config.Force.Should().BeTrue();
+            config.EnablePerformanceTracking.Should().BeTrue();
+            config.GitBackend.Should().Be(GitBackend.FastImport);
         }
 
         [Fact]
@@ -153,6 +157,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 TranscodeComments = false,
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
+                EnablePerformanceTracking = true,
+                GitBackend = GitBackend.LibGit2Sharp,
                 VssEncoding = Encoding.GetEncoding(1252)
             };
 
@@ -173,6 +179,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
             options.TranscodeComments.Should().BeFalse();
             options.ForceAnnotatedTags.Should().BeFalse();
             options.ExportProjectToGitRoot.Should().BeTrue();
+            options.EnablePerformanceTracking.Should().BeTrue();
+            options.GitBackend.Should().Be(GitBackend.LibGit2Sharp);
         }
 
         [Fact]
@@ -287,6 +295,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
                 TranscodeComments = false,
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
+                EnablePerformanceTracking = true,
+                GitBackend = GitBackend.FastImport,
                 EncodingCodePage = 1252
             };
             var encoding = Encoding.GetEncoding(1252);
@@ -295,7 +305,7 @@ namespace Hpdi.Vss2Git.Cli.Tests
             var config = CliOptionsMapper.FromOptions(originalOptions, encoding);
             var resultOptions = CliOptionsMapper.ToOptions(config);
 
-            // Assert - all properties except Force and Interactive should be preserved
+            // Assert - all properties except Interactive should be preserved
             resultOptions.VssDirectory.Should().Be(originalOptions.VssDirectory);
             resultOptions.GitDirectory.Should().Be(originalOptions.GitDirectory);
             resultOptions.VssProject.Should().Be(originalOptions.VssProject);
@@ -310,6 +320,8 @@ namespace Hpdi.Vss2Git.Cli.Tests
             resultOptions.ForceAnnotatedTags.Should().Be(originalOptions.ForceAnnotatedTags);
             resultOptions.ExportProjectToGitRoot.Should().Be(originalOptions.ExportProjectToGitRoot);
             resultOptions.EncodingCodePage.Should().Be(originalOptions.EncodingCodePage);
+            resultOptions.EnablePerformanceTracking.Should().Be(originalOptions.EnablePerformanceTracking);
+            resultOptions.GitBackend.Should().Be(originalOptions.GitBackend);
         }
 
         [Fact]
@@ -502,7 +514,7 @@ namespace Hpdi.Vss2Git.Cli.Tests
             // Act
             var config = CliOptionsMapper.FromOptions(options, encoding);
 
-            // Assert - Mapster maps nulls as nulls (doesn't apply target defaults for explicit nulls)
+            // Assert - nulls are mapped as-is (target defaults are not applied for explicit nulls)
             config.VssDirectory.Should().BeNull();
             config.GitDirectory.Should().BeNull();
             config.VssProject.Should().BeNull();

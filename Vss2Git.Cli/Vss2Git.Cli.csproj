@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Mapster" Version="7.4.0" />
   </ItemGroup>
 
   <PropertyGroup>

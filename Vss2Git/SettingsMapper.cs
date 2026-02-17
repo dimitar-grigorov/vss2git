@@ -15,27 +15,14 @@
 
 using System;
 using System.Text;
-using Mapster;
 
 namespace Hpdi.Vss2Git
 {
     /// <summary>
-    /// Maps between Properties.Settings and MigrationConfiguration using Mapster
+    /// Maps between Properties.Settings and MigrationConfiguration
     /// </summary>
     public static class SettingsMapper
     {
-        static SettingsMapper()
-        {
-            // From Settings to MigrationConfiguration
-            TypeAdapterConfig<Properties.Settings, MigrationConfiguration>.NewConfig()
-                .Ignore(dest => dest.VssEncoding)
-                .Ignore(dest => dest.Force)
-                .Ignore(dest => dest.IgnoreErrors)
-                .Ignore(dest => dest.FromDate)
-                .Ignore(dest => dest.ToDate)
-                .Ignore(dest => dest.GitBackend);
-        }
-
         /// <summary>
         /// Create MigrationConfiguration from persisted settings and current encoding
         /// </summary>
@@ -43,16 +30,24 @@ namespace Hpdi.Vss2Git
         {
             var settings = Properties.Settings.Default;
 
-            // Use Mapster for basic mapping
-            var config = settings.Adapt<MigrationConfiguration>();
-
-            // Set properties that aren't persisted or need special mapping
-            config.VssEncoding = encoding;
-            config.IgnoreErrors = false; // Not persisted, always starts as false
-            config.GitBackend = Enum.TryParse<GitBackend>(settings.GitBackend, out var backend)
-                ? backend : GitBackend.Process;
-
-            return config;
+            return new MigrationConfiguration
+            {
+                VssDirectory = settings.VssDirectory,
+                GitDirectory = settings.GitDirectory,
+                VssProject = settings.VssProject,
+                VssExcludePaths = settings.VssExcludePaths,
+                DefaultEmailDomain = settings.DefaultEmailDomain,
+                DefaultComment = settings.DefaultComment,
+                LogFile = settings.LogFile,
+                TranscodeComments = settings.TranscodeComments,
+                ForceAnnotatedTags = settings.ForceAnnotatedTags,
+                ExportProjectToGitRoot = settings.ExportProjectToGitRoot,
+                AnyCommentSeconds = settings.AnyCommentSeconds,
+                SameCommentSeconds = settings.SameCommentSeconds,
+                VssEncoding = encoding,
+                GitBackend = Enum.TryParse<GitBackend>(settings.GitBackend, out var backend)
+                    ? backend : GitBackend.Process,
+            };
         }
 
         /// <summary>
@@ -62,7 +57,21 @@ namespace Hpdi.Vss2Git
         {
             var settings = Properties.Settings.Default;
 
-            config.Adapt(settings);
+            settings.VssDirectory = config.VssDirectory;
+            settings.GitDirectory = config.GitDirectory;
+            settings.VssProject = config.VssProject;
+            settings.VssExcludePaths = config.VssExcludePaths;
+            settings.DefaultEmailDomain = config.DefaultEmailDomain;
+            settings.DefaultComment = config.DefaultComment;
+            settings.LogFile = config.LogFile;
+            settings.TranscodeComments = config.TranscodeComments;
+            settings.ForceAnnotatedTags = config.ForceAnnotatedTags;
+            settings.ExportProjectToGitRoot = config.ExportProjectToGitRoot;
+            settings.AnyCommentSeconds = config.AnyCommentSeconds;
+            settings.SameCommentSeconds = config.SameCommentSeconds;
+            settings.GitBackend = config.GitBackend.ToString();
+            settings.FromDate = config.FromDate?.ToString("yyyy-MM-dd") ?? "";
+            settings.ToDate = config.ToDate?.ToString("yyyy-MM-dd") ?? "";
 
             settings.Save();
         }

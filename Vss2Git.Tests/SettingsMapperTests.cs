@@ -47,6 +47,9 @@ namespace Hpdi.Vss2Git.Tests
         private readonly bool _originalExportProjectToGitRoot;
         private readonly int _originalAnyCommentSeconds;
         private readonly int _originalSameCommentSeconds;
+        private readonly string _originalGitBackend;
+        private readonly string _originalFromDate;
+        private readonly string _originalToDate;
 
         public SettingsMapperTests()
         {
@@ -63,6 +66,9 @@ namespace Hpdi.Vss2Git.Tests
             _originalExportProjectToGitRoot = Settings.Default.ExportProjectToGitRoot;
             _originalAnyCommentSeconds = Settings.Default.AnyCommentSeconds;
             _originalSameCommentSeconds = Settings.Default.SameCommentSeconds;
+            _originalGitBackend = Settings.Default.GitBackend;
+            _originalFromDate = Settings.Default.FromDate;
+            _originalToDate = Settings.Default.ToDate;
         }
 
         public void Dispose()
@@ -80,6 +86,9 @@ namespace Hpdi.Vss2Git.Tests
             Settings.Default.ExportProjectToGitRoot = _originalExportProjectToGitRoot;
             Settings.Default.AnyCommentSeconds = _originalAnyCommentSeconds;
             Settings.Default.SameCommentSeconds = _originalSameCommentSeconds;
+            Settings.Default.GitBackend = _originalGitBackend;
+            Settings.Default.FromDate = _originalFromDate;
+            Settings.Default.ToDate = _originalToDate;
         }
 
         #region FromSettings Tests
@@ -100,6 +109,7 @@ namespace Hpdi.Vss2Git.Tests
             Settings.Default.TranscodeComments = false;
             Settings.Default.ForceAnnotatedTags = false;
             Settings.Default.ExportProjectToGitRoot = true;
+            Settings.Default.GitBackend = "FastImport";
 
             var encoding = Encoding.UTF8;
 
@@ -119,6 +129,7 @@ namespace Hpdi.Vss2Git.Tests
             config.TranscodeComments.Should().BeFalse();
             config.ForceAnnotatedTags.Should().BeFalse();
             config.ExportProjectToGitRoot.Should().BeTrue();
+            config.GitBackend.Should().Be(GitBackend.FastImport);
         }
 
         [Fact]
@@ -224,6 +235,9 @@ namespace Hpdi.Vss2Git.Tests
                 TranscodeComments = false,
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
+                GitBackend = GitBackend.LibGit2Sharp,
+                FromDate = new DateTime(2005, 3, 15),
+                ToDate = new DateTime(2006, 12, 31),
                 VssEncoding = Encoding.UTF8,
                 IgnoreErrors = true  // Should not be saved
             };
@@ -244,6 +258,9 @@ namespace Hpdi.Vss2Git.Tests
             Settings.Default.TranscodeComments.Should().BeFalse();
             Settings.Default.ForceAnnotatedTags.Should().BeFalse();
             Settings.Default.ExportProjectToGitRoot.Should().BeTrue();
+            Settings.Default.GitBackend.Should().Be("LibGit2Sharp");
+            Settings.Default.FromDate.Should().Be("2005-03-15");
+            Settings.Default.ToDate.Should().Be("2006-12-31");
         }
 
         [Fact]
@@ -311,6 +328,7 @@ namespace Hpdi.Vss2Git.Tests
                 TranscodeComments = false,
                 ForceAnnotatedTags = false,
                 ExportProjectToGitRoot = true,
+                GitBackend = GitBackend.FastImport,
                 VssEncoding = Encoding.GetEncoding(1252)
             };
 
@@ -331,6 +349,7 @@ namespace Hpdi.Vss2Git.Tests
             resultConfig.TranscodeComments.Should().Be(originalConfig.TranscodeComments);
             resultConfig.ForceAnnotatedTags.Should().Be(originalConfig.ForceAnnotatedTags);
             resultConfig.ExportProjectToGitRoot.Should().Be(originalConfig.ExportProjectToGitRoot);
+            resultConfig.GitBackend.Should().Be(originalConfig.GitBackend);
             resultConfig.VssEncoding.CodePage.Should().Be(originalConfig.VssEncoding.CodePage);
         }
 

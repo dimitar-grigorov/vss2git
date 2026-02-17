@@ -105,8 +105,6 @@ Section "-Common Libraries" SEC_COMMON
   File "${CLI_BUILD_DIR}\Hpdi.VssPhysicalLib.dll"
   File "${CLI_BUILD_DIR}\Hpdi.HashLib.dll"
   File "${CLI_BUILD_DIR}\LibGit2Sharp.dll"
-  File "${CLI_BUILD_DIR}\Mapster.dll"
-  File "${CLI_BUILD_DIR}\Mapster.Core.dll"
   File "${CLI_BUILD_DIR}\System.Text.Encoding.CodePages.dll"
 
   ; Native runtimes for LibGit2Sharp (Windows platforms only)
@@ -257,8 +255,6 @@ Section Uninstall
   Delete "$INSTDIR\Hpdi.VssPhysicalLib.dll"
   Delete "$INSTDIR\Hpdi.HashLib.dll"
   Delete "$INSTDIR\LibGit2Sharp.dll"
-  Delete "$INSTDIR\Mapster.dll"
-  Delete "$INSTDIR\Mapster.Core.dll"
   Delete "$INSTDIR\System.Text.Encoding.CodePages.dll"
 
   ; Native runtimes
