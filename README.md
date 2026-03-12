@@ -33,11 +33,12 @@
 - **Shared file branching** — validation when removing shared project references
 - **Shell metacharacter quoting** — added missing characters (`!`, `'`, `` ` ``) to git argument escaping
 - **LibGit2Sharp fixes** — recursive remove on uncommitted subtrees, directory move, commit degradation, non-UTF-8 encoding skip
+- **Archive/restore actions** — archive now correctly removes files/projects from git; restore re-adds them; version-only archive is a no-op; `SeedProjectTree` handles `ssarc -v` stripping Add actions from history
 - **Logger file handle leak** — fixed on early exit from migration pipeline
 - And many more (see commit history for the full list)
 
 ### Testing
-- **251 automated tests** — unit tests (including cross-backend common tests), CLI tests, 13 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all 3 backends produce identical output
+- **309 automated tests** — unit tests (including cross-backend common tests), CLI tests, 15 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all 3 backends produce identical output
 
 ## What is it?
 
@@ -131,7 +132,7 @@ Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`-
 dotnet test Vss2Git.sln --configuration Debug
 ```
 
-251 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
+309 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
 > **Note:** Integration tests that build VSS test databases require `ss.exe` and `mkss.exe` from [Microsoft Visual SourceSafe](https://archive.org/details/X08-65726) installed at `C:\Program Files (x86)\Microsoft Visual SourceSafe\`. These tests are skipped automatically when the tools are not present.
 
