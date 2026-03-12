@@ -45,6 +45,7 @@ var scenarios = new ITestScenario[]
     new Scenario11_UnmappedProjectRevisions(),
     new Scenario12_TimestampCollision(),
     new Scenario13_MoveProjectWithDelete(),
+    new Scenario14_ArchiveAndRestore(),
 };
 
 var passed = 0;
