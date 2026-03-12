@@ -1,6 +1,10 @@
 # Vss2Git
 
-> **Actively maintained fork** of the [original vss2git](https://github.com/trevorr/vss2git) by Trevor Robinson (abandoned since 2016). This fork has been substantially reworked with 94+ commits — the core migration engine was refactored into a shared library, two new high-performance git backends were added, and dozens of correctness bugs were fixed. Always inspect the resulting Git repository before relying on it.
+[![Latest Release](https://img.shields.io/github/v/release/dimitar-grigorov/vss2git)](https://github.com/dimitar-grigorov/vss2git/releases/latest)
+[![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![License](https://img.shields.io/github/license/dimitar-grigorov/vss2git)](License.md)
+
+> **Actively maintained fork** of the [original vss2git](https://github.com/trevorr/vss2git) by Trevor Robinson (abandoned since 2016). This fork has been substantially reworked with 100+ commits — the core migration engine was refactored into a shared library, two new high-performance git backends were added, and dozens of correctness bugs were fixed. Always inspect the resulting Git repository before relying on it.
 
 ![Vss2Git GUI](Vss2Git.png)
 
@@ -34,11 +38,12 @@
 - **Shell metacharacter quoting** — added missing characters (`!`, `'`, `` ` ``) to git argument escaping
 - **LibGit2Sharp fixes** — recursive remove on uncommitted subtrees, directory move, commit degradation, non-UTF-8 encoding skip
 - **Archive/restore actions** — archive now correctly removes files/projects from git; restore re-adds them; version-only archive is a no-op; `SeedProjectTree` handles `ssarc -v` stripping Add actions from history
+- **CLI exit code** — now returns non-zero (exit 2) on migration errors instead of always succeeding
 - **Logger file handle leak** — fixed on early exit from migration pipeline
 - And many more (see commit history for the full list)
 
 ### Testing
-- **309 automated tests** — unit tests (including cross-backend common tests), CLI tests, 15 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all 3 backends produce identical output
+- **313 automated tests** — unit tests (including cross-backend common tests), CLI tests, 15 integration scenarios with pre-built VSS databases, and cross-backend validation ensuring all 3 backends produce identical output
 
 ## What is it?
 
@@ -132,9 +137,13 @@ Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`-
 dotnet test Vss2Git.sln --configuration Debug
 ```
 
-309 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
+313 tests across 3 suites: unit tests (cross-backend common + backend-specific), CLI option mapping tests, and integration tests using pre-built VSS databases. See [Vss2Git.IntegrationTests/README.md](Vss2Git.IntegrationTests/README.md) for details.
 
 > **Note:** Integration tests that build VSS test databases require `ss.exe` and `mkss.exe` from [Microsoft Visual SourceSafe](https://archive.org/details/X08-65726) installed at `C:\Program Files (x86)\Microsoft Visual SourceSafe\`. These tests are skipped automatically when the tools are not present.
+
+## Changelog
+
+See [Releases](https://github.com/dimitar-grigorov/vss2git/releases) for downloads and full details.
 
 ## Support
 
