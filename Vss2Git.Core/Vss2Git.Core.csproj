@@ -5,9 +5,9 @@
     <AssemblyVersion>1.1.2.0</AssemblyVersion>
     <FileVersion>1.1.2.0</FileVersion>
     <Version>1.1.2</Version>
-    <Company>HPDI, LLC</Company>
+    <Company>Dimitar Grigorov</Company>
     <Product>Vss2Git.Core</Product>
-    <Copyright>Copyright © 2009 HPDI, LLC</Copyright>
+    <Copyright>Copyright © 2026 Dimitar Grigorov</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
