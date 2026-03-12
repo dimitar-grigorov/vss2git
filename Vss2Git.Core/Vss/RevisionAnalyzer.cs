@@ -66,6 +66,12 @@ namespace Hpdi.Vss2Git
             get { return destroyedFiles; }
         }
 
+        private bool hasArchiveActions;
+        public bool HasArchiveActions
+        {
+            get { return hasArchiveActions; }
+        }
+
         private int projectCount;
         public int ProjectCount
         {
@@ -197,6 +203,11 @@ namespace Hpdi.Vss2Git
                             // (note that Destroy actions on shared files simply delete
                             // that copy, so destroyed files can't be completely ignored)
                             destroyedFiles.Add(namedAction.Name.PhysicalName);
+                        }
+
+                        if (actionType == VssActionType.Archive || actionType == VssActionType.Restore)
+                        {
+                            hasArchiveActions = true;
                         }
 
                         var targetPath = path + VssDatabase.ProjectSeparator + namedAction.Name.LogicalName;

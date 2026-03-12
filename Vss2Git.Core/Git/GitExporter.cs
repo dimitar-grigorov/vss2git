@@ -100,6 +100,20 @@ namespace Hpdi.Vss2Git
                         pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
                     }
 
+                    // Restore parent-child links stripped by ssarc -v
+                    if (revisionAnalyzer.HasArchiveActions)
+                    {
+                        var seededProjects = 0;
+                        foreach (var rootProject in revisionAnalyzer.RootProjects)
+                        {
+                            seededProjects += SeedProjectTree(pathMapper, rootProject);
+                        }
+                        if (seededProjects > 0)
+                        {
+                            logger.WriteLine("Seeded {0} sub-projects from current VSS project tree", seededProjects);
+                        }
+                    }
+
                     // replay each changeset
                     var changesetId = 1;
                     var changesets = changesetBuilder.Changesets;
@@ -960,6 +974,26 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("Using git.exe process backend");
                     return new GitWrapper(repoPath, logger, perfTracker);
             }
+        }
+
+        private int SeedProjectTree(VssPathMapper pathMapper, VssProject parentProject)
+        {
+            int count = 0;
+            try
+            {
+                foreach (var subProject in parentProject.Projects)
+                {
+                    pathMapper.AddItem(parentProject.ItemName, subProject.ItemName);
+                    ++count;
+                    count += SeedProjectTree(pathMapper, subProject);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.WriteLine("WARNING: Error seeding project tree under {0}: {1}",
+                    parentProject.Path, e.Message);
+            }
+            return count;
         }
 
         private int RemoveEmptyDirectories(string rootPath)
