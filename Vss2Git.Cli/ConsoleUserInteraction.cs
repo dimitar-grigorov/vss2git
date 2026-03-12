@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Threading;
 
 namespace Hpdi.Vss2Git.Cli
 {
@@ -27,6 +28,11 @@ namespace Hpdi.Vss2Git.Cli
         private readonly object consoleLock;
         private readonly Action pauseStatus;
         private readonly Action resumeStatus;
+        private int errorCount;
+        private int fatalErrorCount;
+
+        public int ErrorCount => errorCount;
+        public int FatalErrorCount => fatalErrorCount;
 
         public ConsoleUserInteraction(bool ignoreErrors, bool interactive,
             object consoleLock, Action pauseStatus = null, Action resumeStatus = null)
@@ -40,6 +46,7 @@ namespace Hpdi.Vss2Git.Cli
 
         public ErrorAction ReportError(string message, ErrorActionOptions options)
         {
+            Interlocked.Increment(ref errorCount);
             pauseStatus?.Invoke();
 
             lock (consoleLock)
@@ -104,6 +111,7 @@ namespace Hpdi.Vss2Git.Cli
 
         public void ShowFatalError(string message, Exception exception)
         {
+            Interlocked.Increment(ref fatalErrorCount);
             pauseStatus?.Invoke();
 
             lock (consoleLock)

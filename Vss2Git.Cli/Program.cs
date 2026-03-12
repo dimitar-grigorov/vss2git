@@ -177,10 +177,19 @@ namespace Hpdi.Vss2Git.Cli
             workQueue.WaitIdle();
             statusReporter.Stop();
 
+            // Check for unhandled exceptions from the work queue
+            var exceptions = workQueue.FetchExceptions();
+            var exceptionCount = exceptions?.Count ?? 0;
+            var errorCount = userInteraction.ErrorCount;
+            var fatalCount = userInteraction.FatalErrorCount;
+            var hasErrors = exceptionCount > 0 || errorCount > 0 || fatalCount > 0;
+
             // Display final statistics
             Console.WriteLine();
             Console.WriteLine("========================================");
-            Console.WriteLine("Migration completed successfully!");
+            Console.WriteLine(hasErrors
+                ? "Migration completed with errors."
+                : "Migration completed successfully!");
             Console.WriteLine("========================================");
             Console.WriteLine();
             Console.WriteLine("Statistics:");
@@ -188,8 +197,12 @@ namespace Hpdi.Vss2Git.Cli
             Console.WriteLine($"  Revisions:  {orchestrator.RevisionAnalyzer?.RevisionCount ?? 0}");
             Console.WriteLine($"  Changesets: {orchestrator.ChangesetBuilder?.Changesets.Count ?? 0}");
             Console.WriteLine($"  Duration:   {workQueue.ActiveTime:hh\\:mm\\:ss}");
+            if (hasErrors)
+            {
+                Console.WriteLine($"  Errors:     {errorCount} reported, {fatalCount} fatal, {exceptionCount} unhandled");
+            }
 
-            return 0;
+            return hasErrors ? 2 : 0;
         }
 
         static int RunVerify(VerifyOptions options)
