@@ -396,11 +396,9 @@ namespace Hpdi.VssLogicalLib
     /// </summary>
     public enum VssRestoreSubType
     {
-        /// <summary>Restore a file to the project.</summary>
+        /// <summary>Restore a file to the project (from RestoreFile action).</summary>
         File,
-        /// <summary>Restore old versions only (no visible change).</summary>
-        Versions,
-        /// <summary>Restore an entire project.</summary>
+        /// <summary>Restore an entire project (from RestoreProject action).</summary>
         Project
     }
 
@@ -460,8 +458,8 @@ namespace Hpdi.VssLogicalLib
             get { return subType; }
         }
 
-        /// <summary>Whether this restore adds a visible item to the project.</summary>
-        public bool AddsItem => subType != VssRestoreSubType.Versions;
+        /// <summary>Both RestoreFile and RestoreProject add a visible item to the project.</summary>
+        public bool AddsItem => true;
 
         public VssRestoreAction(VssItemName name, string archivePath, VssRestoreSubType subType)
             : base(name)

@@ -181,9 +181,12 @@ namespace Hpdi.VssLogicalLib
                     }
                 case Hpdi.VssPhysicalLib.Action.RestoreVersions:
                     {
+                        // Despite the name, RestoreVersions(22) is recorded by ssarc -d on a file.
+                        // VSS means "restore/export versions to archive file" — the file IS removed.
+                        // Map to Archive(File) so GitExporter correctly deletes it.
                         var archive = (ArchiveRevisionRecord)revision;
-                        return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssRestoreSubType.Versions);
+                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath, VssArchiveSubType.File);
                     }
                 case Hpdi.VssPhysicalLib.Action.RestoreProject:
                     {
