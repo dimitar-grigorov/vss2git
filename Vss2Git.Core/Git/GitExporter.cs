@@ -100,6 +100,21 @@ namespace Hpdi.Vss2Git
                         pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
                     }
 
+                    // Pre-seed project tree for databases with archive actions so that
+                    // projects predating revision history have valid pathMapper entries.
+                    if (revisionAnalyzer.HasArchiveActions)
+                    {
+                        var seededProjects = 0;
+                        foreach (var rootProject in revisionAnalyzer.RootProjects)
+                        {
+                            seededProjects += SeedProjectTree(pathMapper, rootProject);
+                        }
+                        if (seededProjects > 0)
+                        {
+                            logger.WriteLine("Seeded {0} sub-projects from current VSS project tree", seededProjects);
+                        }
+                    }
+
                     // replay each changeset
                     var changesetId = 1;
                     var changesets = changesetBuilder.Changesets;
@@ -330,7 +345,7 @@ namespace Hpdi.Vss2Git
             VssActionType.Pin     => 5,
             VssActionType.Edit    => 6,
             VssActionType.Rename  => 7,
-            VssActionType.Archive => 8,  // currently ignored
+            VssActionType.Archive => 8,  // removes item (like delete) or no-op for versions-only
             VssActionType.MoveTo  => 9,  // cleanup after MoveFrom
             VssActionType.Delete  => 10,
             VssActionType.Destroy => 11,
@@ -570,21 +585,82 @@ namespace Hpdi.Vss2Git
                         break;
 
                     case VssActionType.Archive:
-                        // currently ignored
                         {
                             var archiveAction = (VssArchiveAction)revision.Action;
-                            logger.WriteLine("{0}: Archive {1} to {2} (ignored)",
-                                projectDesc, target.LogicalName, archiveAction.ArchivePath);
+                            logger.WriteLine("{0}: Archive({1}) {2} to {3}",
+                                projectDesc, archiveAction.SubType, target.LogicalName, archiveAction.ArchivePath);
+                            if (archiveAction.RemovesItem)
+                            {
+                                // Like Delete: remove item from project and git
+                                itemInfo = pathMapper.DeleteItem(project, target);
+
+                                // Guard: self-referencing archives have wrong targetPath
+                                var removePath = (target.PhysicalName == project.PhysicalName)
+                                    ? projectPath : targetPath;
+
+                                if (!skipGitOperations && removePath != null && !itemInfo.Destroyed)
+                                {
+                                    if (target.IsProject)
+                                    {
+                                        if (Directory.Exists(removePath))
+                                        {
+                                            var archiveProjectInfo = (VssProjectInfo)itemInfo;
+                                            if (archiveProjectInfo.ContainsFiles())
+                                            {
+                                                git.Remove(removePath, true);
+                                                needCommit = true;
+                                                logger.WriteLine("  Archived project removed: {0}", removePath);
+                                            }
+                                            else
+                                            {
+                                                try { Directory.Delete(removePath, true); }
+                                                catch (IOException) { /* locked by fast-import */ }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (File.Exists(removePath))
+                                        {
+                                            if (pathMapper.ProjectContainsLogicalName(project, target))
+                                            {
+                                                logger.WriteLine("NOTE: {0} has another file named {1}; skipping archive delete",
+                                                    projectDesc, target.LogicalName);
+                                            }
+                                            else
+                                            {
+                                                File.Delete(removePath);
+                                                pendingChangedPaths.Add(removePath);
+                                                needCommit = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // ArchiveVersions/All: no git change, only old history exported
+                                logger.WriteLine("  ArchiveVersions: old history archived, current file unchanged");
+                            }
                         }
                         break;
 
                     case VssActionType.Restore:
                         {
                             var restoreAction = (VssRestoreAction)revision.Action;
-                            logger.WriteLine("{0}: Restore {1} from archive {2}",
-                                projectDesc, target.LogicalName, restoreAction.ArchivePath);
-                            itemInfo = pathMapper.AddItem(project, target);
-                            isAddAction = true;
+                            logger.WriteLine("{0}: Restore({1}) {2} from archive {3}",
+                                projectDesc, restoreAction.SubType, target.LogicalName, restoreAction.ArchivePath);
+                            if (restoreAction.AddsItem)
+                            {
+                                // Like Recover: re-add item from archive
+                                itemInfo = pathMapper.RecoverItem(project, target);
+                                isAddAction = true;
+                            }
+                            else
+                            {
+                                // RestoreVersions: no git change, only old history restored
+                                logger.WriteLine("  RestoreVersions: old history restored, current file unchanged");
+                            }
                         }
                         break;
                 }
@@ -913,6 +989,26 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("Using git.exe process backend");
                     return new GitWrapper(repoPath, logger, perfTracker);
             }
+        }
+
+        private int SeedProjectTree(VssPathMapper pathMapper, VssProject parentProject)
+        {
+            int count = 0;
+            try
+            {
+                foreach (var subProject in parentProject.Projects)
+                {
+                    pathMapper.AddItem(parentProject.ItemName, subProject.ItemName);
+                    ++count;
+                    count += SeedProjectTree(pathMapper, subProject);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.WriteLine("WARNING: Error seeding project tree under {0}: {1}",
+                    parentProject.Path, e.Message);
+            }
+            return count;
         }
 
         private int RemoveEmptyDirectories(string rootPath)

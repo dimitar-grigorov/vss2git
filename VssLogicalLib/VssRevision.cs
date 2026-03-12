@@ -153,23 +153,43 @@ namespace Hpdi.VssLogicalLib
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath);
+                            archive.ArchivePath, VssArchiveSubType.Project);
                     }
                 case Hpdi.VssPhysicalLib.Action.ArchiveFile:
+                    {
+                        var archive = (ArchiveRevisionRecord)revision;
+                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath, VssArchiveSubType.File);
+                    }
                 case Hpdi.VssPhysicalLib.Action.ArchiveVersions:
+                    {
+                        var archive = (ArchiveRevisionRecord)revision;
+                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath, VssArchiveSubType.Versions);
+                    }
                 case Hpdi.VssPhysicalLib.Action.ArchiveAll:
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath);
+                            archive.ArchivePath, VssArchiveSubType.All);
                     }
-                case Hpdi.VssPhysicalLib.Action.RestoreVersions:
-                case Hpdi.VssPhysicalLib.Action.RestoreProject:
                 case Hpdi.VssPhysicalLib.Action.RestoreFile:
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath);
+                            archive.ArchivePath, VssRestoreSubType.File);
+                    }
+                case Hpdi.VssPhysicalLib.Action.RestoreVersions:
+                    {
+                        var archive = (ArchiveRevisionRecord)revision;
+                        return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath, VssRestoreSubType.Versions);
+                    }
+                case Hpdi.VssPhysicalLib.Action.RestoreProject:
+                    {
+                        var archive = (ArchiveRevisionRecord)revision;
+                        return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
+                            archive.ArchivePath, VssRestoreSubType.Project);
                     }
                 default:
                     throw new ArgumentException("Unknown revision action: " + revision.Action);
