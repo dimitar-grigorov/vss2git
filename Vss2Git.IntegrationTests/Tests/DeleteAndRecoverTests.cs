@@ -1,4 +1,3 @@
-using System.Linq;
 using FluentAssertions;
 using Hpdi.Vss2Git.IntegrationTests.Helpers;
 

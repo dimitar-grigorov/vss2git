@@ -40,7 +40,7 @@ namespace Hpdi.Vss2Git
         public VssItemName Item
         {
             get { return item; }
-        } 
+        }
 
         private readonly int version;
         public int Version

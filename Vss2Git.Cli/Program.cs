@@ -37,8 +37,11 @@ namespace Hpdi.Vss2Git.Cli
             return parsed.MapResult(
                 (CliOptions o) => RunMigration(o),
                 (VerifyOptions o) => RunVerify(o),
-                _ => { Console.Error.WriteLine(HelpText.AutoBuild(parsed, h =>
-                    { h.AdditionalNewLineAfterOption = false; return h; })); return 1; });
+                _ =>
+                {
+                    Console.Error.WriteLine(HelpText.AutoBuild(parsed, h =>
+                    { h.AdditionalNewLineAfterOption = false; return h; })); return 1;
+                });
         }
 
         static int RunMigration(CliOptions options)

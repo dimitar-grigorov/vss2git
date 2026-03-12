@@ -36,7 +36,7 @@ namespace Hpdi.VssPhysicalLib
         public IEnumerable<DeltaOperation> Operations
         {
             get { return operations; }
-        } 
+        }
 
         public int Offset
         {

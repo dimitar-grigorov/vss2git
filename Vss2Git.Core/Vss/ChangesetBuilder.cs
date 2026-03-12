@@ -56,7 +56,7 @@ namespace Hpdi.Vss2Git
 
         public void BuildChangesets()
         {
-            workQueue.AddLast(delegate(object work)
+            workQueue.AddLast(delegate (object work)
             {
                 logger.WriteSectionSeparator();
                 LogStatus(work, "Building changesets");

@@ -83,7 +83,7 @@ namespace Hpdi.VssPhysicalLib
         {
             int bytesRead = 0;
             simulator.Read(count,
-                delegate(byte[] opData, int opOffset, int opCount)
+                delegate (byte[] opData, int opOffset, int opCount)
                 {
                     Buffer.BlockCopy(opData, opOffset, buffer, offset, opCount);
                     offset += opCount;
@@ -91,7 +91,7 @@ namespace Hpdi.VssPhysicalLib
                     bytesRead += opCount;
                     return opCount;
                 },
-                delegate(int opOffset, int opCount)
+                delegate (int opOffset, int opCount)
                 {
                     baseStream.Seek(opOffset, SeekOrigin.Begin);
                     var opBytesRead = baseStream.Read(buffer, offset, opCount);

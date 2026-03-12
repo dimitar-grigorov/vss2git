@@ -16,7 +16,6 @@
 using System.Text;
 using FluentAssertions;
 using Hpdi.Vss2Git.Properties;
-using Xunit;
 
 namespace Hpdi.Vss2Git.Tests
 {

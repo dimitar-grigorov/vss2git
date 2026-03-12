@@ -69,7 +69,7 @@ namespace Hpdi.VssPhysicalLib
         public override void Read(BufferReader reader, RecordHeader header)
         {
             base.Read(reader, header);
-            
+
             kindCount = reader.ReadInt16();
             reader.Skip(2); // unknown
             kinds = new NameKind[kindCount];

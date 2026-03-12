@@ -122,7 +122,7 @@ namespace Hpdi.Vss2Git
                 exclusionMatcher = new PathMatcher(excludeFileArray);
             }
 
-            workQueue.AddLast(delegate(object work)
+            workQueue.AddLast(delegate (object work)
             {
                 logger.WriteSectionSeparator();
                 LogStatus(work, "Building revision list");
@@ -134,7 +134,7 @@ namespace Hpdi.Vss2Git
                 int excludedFiles = 0;
                 var stopwatch = Stopwatch.StartNew();
                 VssUtil.RecurseItems(project,
-                    delegate(VssProject subproject)
+                    delegate (VssProject subproject)
                     {
                         if (workQueue.IsAborting)
                         {
@@ -153,7 +153,7 @@ namespace Hpdi.Vss2Git
                         ++projectCount;
                         return RecursionStatus.Continue;
                     },
-                    delegate(VssProject subproject, VssFile file)
+                    delegate (VssProject subproject, VssFile file)
                     {
                         if (workQueue.IsAborting)
                         {

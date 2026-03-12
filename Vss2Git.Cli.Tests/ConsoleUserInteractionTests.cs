@@ -1,6 +1,4 @@
 using FluentAssertions;
-using Hpdi.Vss2Git;
-using Hpdi.Vss2Git.Cli;
 
 namespace Hpdi.Vss2Git.Cli.Tests;
 

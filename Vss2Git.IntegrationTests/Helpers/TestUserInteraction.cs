@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Hpdi.Vss2Git.IntegrationTests.Helpers;
 
 /// <summary>

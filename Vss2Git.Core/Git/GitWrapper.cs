@@ -235,9 +235,9 @@ namespace Hpdi.Vss2Git
                     comment.Contains('\n') ||
                     comment.Any(c => c > 127))
                 {
-                        logger.WriteLine("Generating temp file for comment: {0}", comment);
-                        tempFile = new TempFile();
-                        tempFile.Write(comment, commitEncoding);
+                    logger.WriteLine("Generating temp file for comment: {0}", comment);
+                    tempFile = new TempFile();
+                    tempFile.Write(comment, commitEncoding);
 
                     // temporary path might contain spaces (e.g. "Documents and Settings")
                     args += " -F " + Quote(tempFile.Name);

@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Hpdi.VssPhysicalLib
 {
     /// <summary>

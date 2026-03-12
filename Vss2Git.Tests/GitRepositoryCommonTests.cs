@@ -1,7 +1,5 @@
-using System.Text;
 using FluentAssertions;
 using LibGit2Sharp;
-using Xunit;
 
 namespace Hpdi.Vss2Git.Tests
 {

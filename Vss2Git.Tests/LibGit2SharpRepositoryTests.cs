@@ -1,6 +1,5 @@
 using System.Text;
 using FluentAssertions;
-using Xunit;
 
 namespace Hpdi.Vss2Git.Tests
 {

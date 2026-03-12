@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Hpdi.VssLogicalLib;
-using Xunit;
 
 namespace Hpdi.Vss2Git.Tests
 {

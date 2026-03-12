@@ -41,12 +41,12 @@ namespace Hpdi.VssPhysicalLib
                         case DeltaCommand.WriteSuccessor:
                             merger.Seek(operation.Offset);
                             merger.Read(operation.Length,
-                                delegate(byte[] data, int offset, int count)
+                                delegate (byte[] data, int offset, int count)
                                 {
                                     result.AddLast(DeltaOperation.WriteLog(data, offset, count));
                                     return count;
                                 },
-                                delegate(int offset, int count)
+                                delegate (int offset, int count)
                                 {
                                     result.AddLast(DeltaOperation.WriteSuccessor(offset, count));
                                     return count;

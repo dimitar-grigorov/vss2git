@@ -58,7 +58,7 @@ namespace Hpdi.Vss2Git
 
         public void ExportToGit(string repoPath)
         {
-            workQueue.AddLast(delegate(object work)
+            workQueue.AddLast(delegate (object work)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -333,22 +333,22 @@ namespace Hpdi.Vss2Git
         /// </summary>
         private static int GetActionPriority(VssActionType actionType) => actionType switch
         {
-            VssActionType.Create  => 0,  // ignored but logically first
-            VssActionType.Label   => 1,  // deferred to after commit
-            VssActionType.Add     => 2,  // structural: adds items
-            VssActionType.Share   => 2,
+            VssActionType.Create => 0,  // ignored but logically first
+            VssActionType.Label => 1,  // deferred to after commit
+            VssActionType.Add => 2,  // structural: adds items
+            VssActionType.Share => 2,
             VssActionType.Recover => 2,
             VssActionType.Restore => 2,
             VssActionType.MoveFrom => 3, // must come before MoveTo
-            VssActionType.Branch  => 4,  // must come after Share
-            VssActionType.Pin     => 5,
-            VssActionType.Edit    => 6,
-            VssActionType.Rename  => 7,
+            VssActionType.Branch => 4,  // must come after Share
+            VssActionType.Pin => 5,
+            VssActionType.Edit => 6,
+            VssActionType.Rename => 7,
             VssActionType.Archive => 8,  // removes item (like delete) or no-op for versions-only
-            VssActionType.MoveTo  => 9,  // cleanup after MoveFrom
-            VssActionType.Delete  => 10,
+            VssActionType.MoveTo => 9,  // cleanup after MoveFrom
+            VssActionType.Delete => 10,
             VssActionType.Destroy => 11,
-            _                     => 6,
+            _ => 6,
         };
 
         private bool ReplayRevision(VssPathMapper pathMapper, Revision revision,
@@ -681,7 +681,7 @@ namespace Hpdi.Vss2Git
                         {
                             logger.WriteLine("{0}: Creating subdirectory {1}",
                                 projectDesc, projectInfo.LogicalName);
-                                    Directory.CreateDirectory(projectInfo.GetPath());
+                            Directory.CreateDirectory(projectInfo.GetPath());
                         }
 
                         // write current rev of all contained files
