@@ -125,6 +125,8 @@ namespace Hpdi.Vss2Git.Cli
             Console.WriteLine($"  Log File:          {config.LogFile}");
             Console.WriteLine($"  Git Backend:       {config.GitBackend}");
             Console.WriteLine($"  Ignore Errors:     {config.IgnoreErrors}");
+            if (config.IncludeArchiveActions)
+                Console.WriteLine($"  Archive Actions:   enabled (experimental)");
             Console.WriteLine($"  Interactive:       {options.Interactive}");
             if (!string.IsNullOrEmpty(config.VssExcludePaths))
             {

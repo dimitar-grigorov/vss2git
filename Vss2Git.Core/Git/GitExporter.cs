@@ -40,7 +40,10 @@ namespace Hpdi.Vss2Git
         private readonly HashSet<string> tagsUsed = new HashSet<string>();
         private readonly PerformanceTracker perfTracker;
         private readonly List<string> pendingChangedPaths = new List<string>();
-        private const int GcCommitInterval = 1000;
+        private const int GcCommitIntervalMin = 1000;
+        private const int GcCommitIntervalMax = 10000;
+        private int gcCommitInterval = GcCommitIntervalMin;
+        private double lastCompactSeconds;
         private bool skipGitOperations;
 
         public GitExporter(WorkQueue workQueue, Logger logger,
@@ -101,7 +104,7 @@ namespace Hpdi.Vss2Git
                     }
 
                     // Restore parent-child links stripped by ssarc -v
-                    if (revisionAnalyzer.HasArchiveActions)
+                    if (revisionAnalyzer.HasArchiveActions && config.IncludeArchiveActions)
                     {
                         var seededProjects = 0;
                         foreach (var rootProject in revisionAnalyzer.RootProjects)
@@ -192,13 +195,13 @@ namespace Hpdi.Vss2Git
                             {
                                 ++commitCount;
 
-                                // Periodically compact the git object database to
-                                // prevent loose object accumulation from degrading
-                                // performance (especially with LibGit2Sharp backend).
-                                if (commitCount % GcCommitInterval == 0)
+                                if (commitCount % gcCommitInterval == 0)
                                 {
                                     LogStatus(work, "Compacting git repository");
+                                    var gcWatch = Stopwatch.StartNew();
                                     AbortRetryIgnore(delegate { git.Compact(); });
+                                    gcWatch.Stop();
+                                    AdjustGcInterval(gcWatch.Elapsed.TotalSeconds);
                                 }
                             }
                         }
@@ -588,6 +591,11 @@ namespace Hpdi.Vss2Git
                             var archiveAction = (VssArchiveAction)revision.Action;
                             logger.WriteLine("{0}: Archive({1}) {2} to {3}",
                                 projectDesc, archiveAction.SubType, target.LogicalName, archiveAction.ArchivePath);
+                            if (!config.IncludeArchiveActions)
+                            {
+                                logger.WriteLine("  Skipped (use --include-archive-actions to enable)");
+                                break;
+                            }
                             if (archiveAction.RemovesItem)
                             {
                                 // Like Delete: remove item from project and git
@@ -640,10 +648,14 @@ namespace Hpdi.Vss2Git
 
                     case VssActionType.Restore:
                         {
-                            // RestoreFile/RestoreProject — re-add item from archive (like Recover)
                             var restoreAction = (VssRestoreAction)revision.Action;
                             logger.WriteLine("{0}: Restore({1}) {2} from archive {3}",
                                 projectDesc, restoreAction.SubType, target.LogicalName, restoreAction.ArchivePath);
+                            if (!config.IncludeArchiveActions)
+                            {
+                                logger.WriteLine("  Skipped (use --include-archive-actions to enable)");
+                                break;
+                            }
                             itemInfo = pathMapper.RecoverItem(project, target);
                             isAddAction = true;
                         }
@@ -857,6 +869,23 @@ namespace Hpdi.Vss2Git
                 }
             }
             return needCommit;
+        }
+
+        private void AdjustGcInterval(double elapsedSeconds)
+        {
+            if (lastCompactSeconds > 0)
+            {
+                var prev = gcCommitInterval;
+                var ratio = elapsedSeconds / lastCompactSeconds;
+                gcCommitInterval = Math.Clamp(
+                    (int)(gcCommitInterval * ratio), GcCommitIntervalMin, GcCommitIntervalMax);
+                if (gcCommitInterval != prev)
+                {
+                    logger.WriteLine("GC interval adjusted: {0} -> {1} (compact took {2:F1}s, prev {3:F1}s)",
+                        prev, gcCommitInterval, elapsedSeconds, lastCompactSeconds);
+                }
+            }
+            lastCompactSeconds = elapsedSeconds;
         }
 
         private bool WriteRevisionTo(string physical, int version, string destPath)

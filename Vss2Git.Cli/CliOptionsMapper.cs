@@ -31,6 +31,7 @@ namespace Hpdi.Vss2Git.Cli
                 ForceAnnotatedTags = options.ForceAnnotatedTags,
                 ExportProjectToGitRoot = options.ExportProjectToGitRoot,
                 EnablePerformanceTracking = options.EnablePerformanceTracking,
+                IncludeArchiveActions = options.IncludeArchiveActions,
                 GitBackend = options.GitBackend,
                 VssEncoding = encoding,
             };
@@ -78,6 +79,7 @@ namespace Hpdi.Vss2Git.Cli
                 ForceAnnotatedTags = config.ForceAnnotatedTags,
                 ExportProjectToGitRoot = config.ExportProjectToGitRoot,
                 EnablePerformanceTracking = config.EnablePerformanceTracking,
+                IncludeArchiveActions = config.IncludeArchiveActions,
                 GitBackend = config.GitBackend,
             };
 
