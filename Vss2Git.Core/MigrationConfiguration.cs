@@ -41,9 +41,6 @@ namespace Hpdi.Vss2Git
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
 
-        // Archive actions
-        public bool IncludeArchiveActions { get; set; } = false;
-
         // Diagnostics
         public bool EnablePerformanceTracking { get; set; } = false;
 

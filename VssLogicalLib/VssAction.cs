@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
+
 namespace Hpdi.VssLogicalLib
 {
     /// <summary>
@@ -374,32 +377,6 @@ namespace Hpdi.VssLogicalLib
     }
 
     /// <summary>
-    /// Sub-types of VSS archive actions.
-    /// </summary>
-    public enum VssArchiveSubType
-    {
-        /// <summary>Archive entire file and remove from project.</summary>
-        File,
-        /// <summary>Archive old versions only (file stays in project).</summary>
-        Versions,
-        /// <summary>Archive all version history (item stays in project).</summary>
-        All,
-        /// <summary>Archive entire project and remove from parent.</summary>
-        Project
-    }
-
-    /// <summary>
-    /// Sub-types of VSS restore actions.
-    /// </summary>
-    public enum VssRestoreSubType
-    {
-        /// <summary>Restore a file to the project (from RestoreFile action).</summary>
-        File,
-        /// <summary>Restore an entire project (from RestoreProject action).</summary>
-        Project
-    }
-
-    /// <summary>
     /// Represents a VSS archive action.
     /// </summary>
     /// <author>Trevor Robinson</author>
@@ -413,25 +390,15 @@ namespace Hpdi.VssLogicalLib
             get { return archivePath; }
         }
 
-        private readonly VssArchiveSubType subType;
-        public VssArchiveSubType SubType
-        {
-            get { return subType; }
-        }
-
-        /// <summary>Whether this archive removes the item from the project.</summary>
-        public bool RemovesItem => subType == VssArchiveSubType.File || subType == VssArchiveSubType.Project;
-
-        public VssArchiveAction(VssItemName name, string archivePath, VssArchiveSubType subType)
+        public VssArchiveAction(VssItemName name, string archivePath)
             : base(name)
         {
             this.archivePath = archivePath;
-            this.subType = subType;
         }
 
         public override string ToString()
         {
-            return string.Format("Archive({0}) {1} to {2}", subType, Name, archivePath);
+            return string.Format("Archive {0} to {1}", Name, archivePath);
         }
     }
 
@@ -449,25 +416,15 @@ namespace Hpdi.VssLogicalLib
             get { return archivePath; }
         }
 
-        private readonly VssRestoreSubType subType;
-        public VssRestoreSubType SubType
-        {
-            get { return subType; }
-        }
-
-        /// <summary>Both RestoreFile and RestoreProject add a visible item to the project.</summary>
-        public bool AddsItem => true;
-
-        public VssRestoreAction(VssItemName name, string archivePath, VssRestoreSubType subType)
+        public VssRestoreAction(VssItemName name, string archivePath)
             : base(name)
         {
             this.archivePath = archivePath;
-            this.subType = subType;
         }
 
         public override string ToString()
         {
-            return string.Format("Restore({0}) {1} from archive {2}", subType, Name, archivePath);
+            return string.Format("Restore {0} from archive {1}", Name, archivePath);
         }
     }
 }

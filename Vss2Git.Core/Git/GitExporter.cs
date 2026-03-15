@@ -61,7 +61,7 @@ namespace Hpdi.Vss2Git
 
         public void ExportToGit(string repoPath)
         {
-            workQueue.AddLast(delegate (object work)
+            workQueue.AddLast(delegate(object work)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -101,20 +101,6 @@ namespace Hpdi.Vss2Git
                     {
                         var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, config.ExportProjectToGitRoot);
                         pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
-                    }
-
-                    // Restore parent-child links stripped by ssarc -v
-                    if (revisionAnalyzer.HasArchiveActions && config.IncludeArchiveActions)
-                    {
-                        var seededProjects = 0;
-                        foreach (var rootProject in revisionAnalyzer.RootProjects)
-                        {
-                            seededProjects += SeedProjectTree(pathMapper, rootProject);
-                        }
-                        if (seededProjects > 0)
-                        {
-                            logger.WriteLine("Seeded {0} sub-projects from current VSS project tree", seededProjects);
-                        }
                     }
 
                     // replay each changeset
@@ -269,6 +255,9 @@ namespace Hpdi.Vss2Git
                         }
 
                         ++changesetId;
+
+                        // periodic log flush so output is visible during long runs
+                        logger.Flush();
                     }
 
                     // Clean up empty directories
@@ -336,22 +325,22 @@ namespace Hpdi.Vss2Git
         /// </summary>
         private static int GetActionPriority(VssActionType actionType) => actionType switch
         {
-            VssActionType.Create => 0,  // ignored but logically first
-            VssActionType.Label => 1,  // deferred to after commit
-            VssActionType.Add => 2,  // structural: adds items
-            VssActionType.Share => 2,
+            VssActionType.Create  => 0,  // ignored but logically first
+            VssActionType.Label   => 1,  // deferred to after commit
+            VssActionType.Add     => 2,  // structural: adds items
+            VssActionType.Share   => 2,
             VssActionType.Recover => 2,
             VssActionType.Restore => 2,
             VssActionType.MoveFrom => 3, // must come before MoveTo
-            VssActionType.Branch => 4,  // must come after Share
-            VssActionType.Pin => 5,
-            VssActionType.Edit => 6,
-            VssActionType.Rename => 7,
-            VssActionType.Archive => 8,  // removes item (like delete) or no-op for versions-only
-            VssActionType.MoveTo => 9,  // cleanup after MoveFrom
-            VssActionType.Delete => 10,
+            VssActionType.Branch  => 4,  // must come after Share
+            VssActionType.Pin     => 5,
+            VssActionType.Edit    => 6,
+            VssActionType.Rename  => 7,
+            VssActionType.Archive => 8,  // currently ignored
+            VssActionType.MoveTo  => 9,  // cleanup after MoveFrom
+            VssActionType.Delete  => 10,
             VssActionType.Destroy => 11,
-            _ => 6,
+            _                     => 6,
         };
 
         private bool ReplayRevision(VssPathMapper pathMapper, Revision revision,
@@ -587,76 +576,20 @@ namespace Hpdi.Vss2Git
                         break;
 
                     case VssActionType.Archive:
+                        // currently ignored
                         {
                             var archiveAction = (VssArchiveAction)revision.Action;
-                            logger.WriteLine("{0}: Archive({1}) {2} to {3}",
-                                projectDesc, archiveAction.SubType, target.LogicalName, archiveAction.ArchivePath);
-                            if (!config.IncludeArchiveActions)
-                            {
-                                logger.WriteLine("  Skipped (use --include-archive-actions to enable)");
-                                break;
-                            }
-                            if (archiveAction.RemovesItem)
-                            {
-                                // Like Delete: remove item from project and git
-                                itemInfo = pathMapper.DeleteItem(project, target);
-                                if (!skipGitOperations && targetPath != null && !itemInfo.Destroyed)
-                                {
-                                    if (target.IsProject)
-                                    {
-                                        if (Directory.Exists(targetPath))
-                                        {
-                                            if (((VssProjectInfo)itemInfo).ContainsFiles())
-                                            {
-                                                git.Remove(targetPath, true);
-                                                needCommit = true;
-                                            }
-                                            else
-                                            {
-                                                try { Directory.Delete(targetPath, true); }
-                                                catch (IOException) { /* locked by fast-import */ }
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (File.Exists(targetPath))
-                                        {
-                                            if (pathMapper.ProjectContainsLogicalName(project, target))
-                                            {
-                                                logger.WriteLine("NOTE: {0} has another file named {1}; skipping archive delete",
-                                                    projectDesc, target.LogicalName);
-                                            }
-                                            else
-                                            {
-                                                File.Delete(targetPath);
-                                                pendingChangedPaths.Add(targetPath);
-                                                needCommit = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                // ArchiveVersions/All: no git change, only old history exported
-                                logger.WriteLine("  Archive({0}): old history archived, current file unchanged",
-                                    archiveAction.SubType);
-                            }
+                            logger.WriteLine("{0}: Archive {1} to {2} (ignored)",
+                                projectDesc, target.LogicalName, archiveAction.ArchivePath);
                         }
                         break;
 
                     case VssActionType.Restore:
                         {
                             var restoreAction = (VssRestoreAction)revision.Action;
-                            logger.WriteLine("{0}: Restore({1}) {2} from archive {3}",
-                                projectDesc, restoreAction.SubType, target.LogicalName, restoreAction.ArchivePath);
-                            if (!config.IncludeArchiveActions)
-                            {
-                                logger.WriteLine("  Skipped (use --include-archive-actions to enable)");
-                                break;
-                            }
-                            itemInfo = pathMapper.RecoverItem(project, target);
+                            logger.WriteLine("{0}: Restore {1} from archive {2}",
+                                projectDesc, target.LogicalName, restoreAction.ArchivePath);
+                            itemInfo = pathMapper.AddItem(project, target);
                             isAddAction = true;
                         }
                         break;
@@ -693,7 +626,7 @@ namespace Hpdi.Vss2Git
                         {
                             logger.WriteLine("{0}: Creating subdirectory {1}",
                                 projectDesc, projectInfo.LogicalName);
-                            Directory.CreateDirectory(projectInfo.GetPath());
+                                    Directory.CreateDirectory(projectInfo.GetPath());
                         }
 
                         // write current rev of all contained files
@@ -871,23 +804,6 @@ namespace Hpdi.Vss2Git
             return needCommit;
         }
 
-        private void AdjustGcInterval(double elapsedSeconds)
-        {
-            if (lastCompactSeconds > 0)
-            {
-                var prev = gcCommitInterval;
-                var ratio = elapsedSeconds / lastCompactSeconds;
-                gcCommitInterval = Math.Clamp(
-                    (int)(gcCommitInterval * ratio), GcCommitIntervalMin, GcCommitIntervalMax);
-                if (gcCommitInterval != prev)
-                {
-                    logger.WriteLine("GC interval adjusted: {0} -> {1} (compact took {2:F1}s, prev {3:F1}s)",
-                        prev, gcCommitInterval, elapsedSeconds, lastCompactSeconds);
-                }
-            }
-            lastCompactSeconds = elapsedSeconds;
-        }
-
         private bool WriteRevisionTo(string physical, int version, string destPath)
         {
             VssFile item;
@@ -953,6 +869,23 @@ namespace Hpdi.Vss2Git
             }
         }
 
+        private void AdjustGcInterval(double elapsedSeconds)
+        {
+            if (lastCompactSeconds > 0)
+            {
+                var prev = gcCommitInterval;
+                var ratio = elapsedSeconds / lastCompactSeconds;
+                gcCommitInterval = Math.Clamp(
+                    (int)(gcCommitInterval * ratio), GcCommitIntervalMin, GcCommitIntervalMax);
+                if (gcCommitInterval != prev)
+                {
+                    logger.WriteLine("GC interval adjusted: {0} -> {1} (compact took {2:F1}s, prev {3:F1}s)",
+                        prev, gcCommitInterval, elapsedSeconds, lastCompactSeconds);
+                }
+            }
+            lastCompactSeconds = elapsedSeconds;
+        }
+
         private delegate void RenameDelegate(string sourcePath, string destPath);
 
         private void CaseSensitiveRename(string sourcePath, string destPath, RenameDelegate renamer)
@@ -1003,26 +936,6 @@ namespace Hpdi.Vss2Git
                     logger.WriteLine("Using git.exe process backend");
                     return new GitWrapper(repoPath, logger, perfTracker);
             }
-        }
-
-        private int SeedProjectTree(VssPathMapper pathMapper, VssProject parentProject)
-        {
-            int count = 0;
-            try
-            {
-                foreach (var subProject in parentProject.Projects)
-                {
-                    pathMapper.AddItem(parentProject.ItemName, subProject.ItemName);
-                    ++count;
-                    count += SeedProjectTree(pathMapper, subProject);
-                }
-            }
-            catch (Exception e)
-            {
-                logger.WriteLine("WARNING: Error seeding project tree under {0}: {1}",
-                    parentProject.Path, e.Message);
-            }
-            return count;
         }
 
         private int RemoveEmptyDirectories(string rootPath)

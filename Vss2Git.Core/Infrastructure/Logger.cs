@@ -22,7 +22,7 @@ namespace Hpdi.Vss2Git
         public Logger(string filename)
             : this(new BufferedStream(
                 new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.Read),
-                bufferSize: 65536)) // 64KB buffer for much better performance
+                bufferSize: 65536))
         {
         }
 
@@ -42,8 +42,14 @@ namespace Hpdi.Vss2Git
         {
             if (baseStream != null)
             {
+                baseStream.Flush();
                 baseStream.Dispose();
             }
+        }
+
+        public void Flush()
+        {
+            baseStream?.Flush();
         }
 
         public void Write(bool value)
@@ -123,7 +129,6 @@ namespace Hpdi.Vss2Git
             if (baseStream != null && value != null)
             {
                 WriteInternal(value);
-                baseStream.Flush();
             }
         }
 
@@ -156,7 +161,6 @@ namespace Hpdi.Vss2Git
             if (baseStream != null && buffer != null)
             {
                 WriteInternal(buffer, index, count);
-                baseStream.Flush();
             }
         }
 

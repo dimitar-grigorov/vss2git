@@ -65,9 +65,6 @@ namespace Hpdi.Vss2Git.Cli
         [Option("perf", Default = false, HelpText = "Enable performance tracking and print summary at end")]
         public bool EnablePerformanceTracking { get; set; }
 
-        [Option("include-archive-actions", Default = false, HelpText = "Enable archive/restore action handling (experimental)")]
-        public bool IncludeArchiveActions { get; set; }
-
         [Option("git-backend", Default = GitBackend.Process, HelpText = "Git backend: Process (git.exe, default), LibGit2Sharp (managed), or FastImport (streaming, fastest)")]
         public GitBackend GitBackend { get; set; }
     }

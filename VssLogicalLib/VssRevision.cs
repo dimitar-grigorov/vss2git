@@ -153,46 +153,23 @@ namespace Hpdi.VssLogicalLib
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssArchiveSubType.Project);
+                            archive.ArchivePath);
                     }
                 case Hpdi.VssPhysicalLib.Action.ArchiveFile:
-                    {
-                        var archive = (ArchiveRevisionRecord)revision;
-                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssArchiveSubType.File);
-                    }
                 case Hpdi.VssPhysicalLib.Action.ArchiveVersions:
-                    {
-                        var archive = (ArchiveRevisionRecord)revision;
-                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssArchiveSubType.Versions);
-                    }
                 case Hpdi.VssPhysicalLib.Action.ArchiveAll:
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssArchiveSubType.All);
+                            archive.ArchivePath);
                     }
+                case Hpdi.VssPhysicalLib.Action.RestoreVersions:
+                case Hpdi.VssPhysicalLib.Action.RestoreProject:
                 case Hpdi.VssPhysicalLib.Action.RestoreFile:
                     {
                         var archive = (ArchiveRevisionRecord)revision;
                         return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssRestoreSubType.File);
-                    }
-                case Hpdi.VssPhysicalLib.Action.RestoreVersions:
-                    {
-                        // Despite the name, RestoreVersions(22) is recorded by ssarc -d on a file.
-                        // VSS means "restore/export versions to archive file" — the file IS removed.
-                        // Map to Archive(File) so GitExporter correctly deletes it.
-                        var archive = (ArchiveRevisionRecord)revision;
-                        return new VssArchiveAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssArchiveSubType.File);
-                    }
-                case Hpdi.VssPhysicalLib.Action.RestoreProject:
-                    {
-                        var archive = (ArchiveRevisionRecord)revision;
-                        return new VssRestoreAction(db.GetItemName(archive.Name, archive.Physical),
-                            archive.ArchivePath, VssRestoreSubType.Project);
+                            archive.ArchivePath);
                     }
                 default:
                     throw new ArgumentException("Unknown revision action: " + revision.Action);

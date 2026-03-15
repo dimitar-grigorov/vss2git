@@ -11,8 +11,6 @@ public class VssCommandRunner : IDisposable
 {
     private readonly string ssExePath;
     private readonly string mkssExePath;
-    private readonly string ssarcExePath;
-    private readonly string ssrestorExePath;
     private readonly string databasePath;
     private readonly string workingDirectory;
     private bool disposed;
@@ -33,8 +31,6 @@ public class VssCommandRunner : IDisposable
     {
         ssExePath = Path.Combine(vssInstallDir, "ss.exe");
         mkssExePath = Path.Combine(vssInstallDir, "mkss.exe");
-        ssarcExePath = Path.Combine(vssInstallDir, "ssarc.exe");
-        ssrestorExePath = Path.Combine(vssInstallDir, "ssrestor.exe");
         this.databasePath = Path.GetFullPath(databasePath);
         this.workingDirectory = Path.GetFullPath(workingDirectory);
 
@@ -42,10 +38,6 @@ public class VssCommandRunner : IDisposable
             throw new FileNotFoundException($"ss.exe not found at: {ssExePath}");
         if (!File.Exists(mkssExePath))
             throw new FileNotFoundException($"mkss.exe not found at: {mkssExePath}");
-        if (!File.Exists(ssarcExePath))
-            throw new FileNotFoundException($"ssarc.exe not found at: {ssarcExePath}");
-        if (!File.Exists(ssrestorExePath))
-            throw new FileNotFoundException($"ssrestor.exe not found at: {ssrestorExePath}");
     }
 
     #region Database Management
@@ -290,89 +282,6 @@ public class VssCommandRunner : IDisposable
         RunSs($"Rollback \"{itemPath}\" -V{version} -I-Y", "Rollback");
         Console.WriteLine($"  Rolled back: {itemPath} to version {version}");
         ApplyRevisionDelay();
-    }
-
-    #endregion
-
-    #region Archive and Restore (ssarc.exe / ssrestor.exe)
-
-    /// <summary>
-    /// Archive a file or project using ssarc.exe.
-    /// </summary>
-    public void Archive(string itemPath, string archiveFileName, bool deleteAfterArchive = false,
-        int? upToVersion = null, string? comment = null)
-    {
-        var archivePath = Path.Combine(workingDirectory, archiveFileName);
-
-        var args = new StringBuilder();
-        if (deleteAfterArchive) args.Append("-d ");
-        if (upToVersion.HasValue) args.Append($"-v{upToVersion.Value} ");
-        args.Append("-i- ");
-        args.Append("-yAdmin ");
-        args.Append(comment != null ? $"-c\"{comment}\" " : "-c- ");
-        args.Append($"\"{archivePath}\" \"{itemPath}\"");
-
-        // ssarc.exe uses SSDIR env var to locate the database (same as ss.exe)
-        var result = RunProcess(ssarcExePath, args.ToString(), databasePath);
-        if (result.exitCode != 0)
-        {
-            throw new VssCommandException("Archive",
-                $"ssarc.exe failed (exit code {result.exitCode})\n" +
-                $"  Args: {args}\n" +
-                $"  Stdout: {result.stdout}\n" +
-                $"  Stderr: {result.stderr}");
-        }
-        Console.WriteLine($"  Archived: {itemPath} -> {archiveFileName}" +
-            (deleteAfterArchive ? " (deleted)" : "") +
-            (upToVersion.HasValue ? $" (up to v{upToVersion.Value})" : ""));
-        ApplyRevisionDelay();
-    }
-
-    /// <summary>
-    /// Restore a file or project from an .ssa archive using ssrestor.exe.
-    /// </summary>
-    public void Restore(string archiveFileName, string itemPath, string? targetProject = null)
-    {
-        var archivePath = Path.Combine(workingDirectory, archiveFileName);
-
-        var args = new StringBuilder();
-        if (targetProject != null) args.Append($"-p\"{targetProject}\" ");
-        args.Append("-i- ");
-        args.Append("-yAdmin ");
-        args.Append("-c- ");
-        args.Append($"\"{archivePath}\" \"{itemPath}\"");
-
-        // ssrestor.exe uses SSDIR env var to locate the database (same as ss.exe)
-        var result = RunProcess(ssrestorExePath, args.ToString(), databasePath);
-        if (result.exitCode != 0)
-        {
-            throw new VssCommandException("Restore",
-                $"ssrestor.exe failed (exit code {result.exitCode})\n" +
-                $"  Args: {args}\n" +
-                $"  Stdout: {result.stdout}\n" +
-                $"  Stderr: {result.stderr}");
-        }
-        Console.WriteLine($"  Restored: {itemPath} from {archiveFileName}" +
-            (targetProject != null ? $" into {targetProject}" : ""));
-        ApplyRevisionDelay();
-    }
-
-    /// <summary>
-    /// List contents of an archive file using ssrestor.exe -l.
-    /// </summary>
-    public string ListArchive(string archiveFileName)
-    {
-        var archivePath = Path.Combine(workingDirectory, archiveFileName);
-
-        var result = RunProcess(ssrestorExePath, $"-la -yAdmin \"{archivePath}\"", databasePath);
-        if (result.exitCode != 0)
-        {
-            throw new VssCommandException("ListArchive",
-                $"ssrestor.exe -l failed (exit code {result.exitCode})\n" +
-                $"  Stdout: {result.stdout}\n" +
-                $"  Stderr: {result.stderr}");
-        }
-        return result.stdout;
     }
 
     #endregion

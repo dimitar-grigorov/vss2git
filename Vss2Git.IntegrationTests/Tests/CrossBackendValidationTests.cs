@@ -30,8 +30,6 @@ public class CrossBackendValidationTests
         ("11_UnmappedProjectRevisions", "$/Target", null),
         ("12_TimestampCollision", "$", null),
         ("13_MoveProjectWithDelete", "$", null),
-        ("14_ArchiveAndRestore", "$", null),
-        ("15_ArchiveVersionsStripsAddActions", "$", null),
     };
 
     public static IEnumerable<object[]> ScenarioBackendCombinations()
