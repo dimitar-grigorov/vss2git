@@ -31,6 +31,10 @@ namespace Hpdi.Vss2Git.Cli
             int width;
             try { width = Console.WindowWidth; } catch { width = 80; }
 
+            // No args → show migrate help directly (it's the default verb)
+            if (args.Length == 0)
+                args = new[] { "migrate", "--help" };
+
             var parser = new Parser(s => { s.HelpWriter = null; s.MaximumDisplayWidth = width; });
             var parsed = parser.ParseArguments<CliOptions, VerifyOptions>(args);
 
