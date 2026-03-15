@@ -763,6 +763,9 @@ namespace Hpdi.Vss2Git
                 logger.WriteLine("Creating git index from HEAD");
                 RunGitCommand("reset HEAD");
 
+                // Remove untracked files/dirs left by Directory.Move on empty projects
+                RunGitCommand("clean -fd");
+
                 // Check for files in HEAD that are missing from working tree
                 var deletedFiles = new List<string>();
                 var output = RunGitCommandOutput("diff --name-only HEAD");

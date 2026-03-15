@@ -459,6 +459,17 @@ namespace Hpdi.Vss2Git
                             if (!skipGitOperations && targetPath != null && !itemInfo.Destroyed)
                             {
                                 var sourcePath = Path.Combine(projectPath, renameAction.OriginalName);
+                                // Clean up destination if it already exists (e.g. files were
+                                // committed under the new name via Share before the rename)
+                                bool sourceExists = target.IsProject ? Directory.Exists(sourcePath) : File.Exists(sourcePath);
+                                bool targetExists = target.IsProject ? Directory.Exists(targetPath) : File.Exists(targetPath);
+                                if (sourceExists && targetExists &&
+                                    !string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    logger.WriteLine("NOTE: Rename destination already exists, removing: {0}", targetPath);
+                                    git.Remove(targetPath, target.IsProject);
+                                    needCommit = true;
+                                }
                                 if (target.IsProject ? Directory.Exists(sourcePath) : File.Exists(sourcePath))
                                 {
                                     // renaming a file or a project that contains files?
