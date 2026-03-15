@@ -122,6 +122,7 @@ Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`-
   * Git must be in PATH (not required for LibGit2Sharp/FastImport backends).
   * Only one VSS project path per run. Disjoint subtrees need separate runs (commits won't interleave).
   * Email addresses are auto-generated from VSS usernames (e.g. "John Doe" becomes `john.doe@localhost`). Customize via `--email-domain` or edit `GitExporter.GetEmail()`.
+  * **Cloaked directories appear as "extra" files when comparing.** VSS allows users to cloak (hide) projects per-user via their `ss.ini` file. Cloaked items are active in the database but excluded from `Get Latest Version`. Vss2git reads physical files directly and migrates **all** items regardless of cloaking — this is correct behavior. If your comparison shows extra files in the Git output, check `<VSS database>\users\<username>\ss.ini` for `Cloak = Yes` entries before assuming a migration bug.
 
 ## Extra Tools
 
