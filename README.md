@@ -82,6 +82,12 @@ Run `Vss2Git.exe`, configure the VSS database path and Git output directory, the
 
 ### CLI
 
+The CLI has three commands (verbs):
+
+- **`migrate`** (default) — run a VSS-to-Git migration
+- **`tree`** — display the VSS project hierarchy as a tree, useful for exploring a database before migrating
+- **`verify`** — compare a VSS working directory against Git output to spot differences
+
 ```bash
 # Basic migration
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --email-domain "company.com"
@@ -96,9 +102,16 @@ Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --from-dat
 # Migrate a subproject with encoding and exclusions
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" \
   --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1252
+
+# Browse a VSS database before migrating
+Vss2Git.Cli tree --vss-dir "C:\VSS\MyProject"
+Vss2Git.Cli tree --vss-dir "C:\VSS\MyProject" --vss-project "$/SubFolder" --files
+
+# Compare migration results
+Vss2Git.Cli verify -s "C:\VSS\WorkingDir" -t "C:\Git\MyProject" -x ".vs;.git"
 ```
 
-Key options: `--git-backend` (Process/LibGit2Sharp/FastImport), `--from-date`/`--to-date`, `--vss-project`, `--exclude`, `--ignore-errors`, `--perf`. Run `Vss2Git.Cli --help` for all options.
+See [Vss2Git.Cli/README.md](Vss2Git.Cli/README.md) for the full list of options per command.
 
 ## Goals
 
