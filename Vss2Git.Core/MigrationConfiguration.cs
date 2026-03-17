@@ -41,6 +41,9 @@ namespace Hpdi.Vss2Git
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
 
+        // Path mapping (selective export with renaming)
+        public Dictionary<string, string> PathMappings { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         // Diagnostics
         public bool EnablePerformanceTracking { get; set; } = false;
 
@@ -70,6 +73,30 @@ namespace Hpdi.Vss2Git
 
             if (FromDate.HasValue && ToDate.HasValue && FromDate.Value > ToDate.Value)
                 errors.Add("From date must be earlier than or equal to to date");
+
+            if (PathMappings != null && PathMappings.Count > 0)
+            {
+                if (ExportProjectToGitRoot)
+                    errors.Add("--path-map cannot be combined with --export-to-root");
+
+                var vssPrefix = (VssProject ?? "$").TrimEnd('/');
+                var gitNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in PathMappings)
+                {
+                    if (!kvp.Key.StartsWith(vssPrefix + "/", StringComparison.OrdinalIgnoreCase) &&
+                        !kvp.Key.Equals(vssPrefix, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"Path mapping key '{kvp.Key}' must be under --vss-project '{VssProject}'");
+
+                    if (string.IsNullOrWhiteSpace(kvp.Value))
+                        errors.Add($"Path mapping value for '{kvp.Key}' cannot be empty");
+                    else if (kvp.Value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                        errors.Add($"Path mapping value '{kvp.Value}' contains invalid characters");
+
+                    // Allow duplicate git names — same project may have been moved
+                    // between VSS paths during history
+                    gitNames.Add(kvp.Value);
+                }
+            }
 
             return new ValidationResult(errors.Count == 0, errors);
         }

@@ -127,11 +127,13 @@ namespace Hpdi.Vss2Git
             {
                 if (parentInfo != null)
                 {
-                    return Path.Combine(parentInfo.GetPath(), LogicalName);
+                    var parentPath = parentInfo.GetPath();
+                    // null propagates from tracking-only roots (path-map mode)
+                    return parentPath != null ? Path.Combine(parentPath, LogicalName) : null;
                 }
                 else
                 {
-                    return LogicalName;
+                    return LogicalName; // null for tracking-only roots, real path for export roots
                 }
             }
             return null;
@@ -338,6 +340,18 @@ namespace Hpdi.Vss2Git
         private readonly Dictionary<string, VssProjectInfo> rootInfos = new Dictionary<string, VssProjectInfo>();
         private readonly Dictionary<string, VssFileInfo> fileInfos = new Dictionary<string, VssFileInfo>();
 
+        // path-map support: selective export with renaming
+        private string pathMapWorkingRoot;
+        private Dictionary<string, string> pathMappings; // VSS path → git directory name
+
+        public void SetPathMappings(string workingRoot, Dictionary<string, string> mappings)
+        {
+            pathMapWorkingRoot = workingRoot;
+            pathMappings = new Dictionary<string, string>(mappings, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool HasPathMappings => pathMappings != null && pathMappings.Count > 0;
+
         public bool IsProjectRooted(string project)
         {
             VssProjectInfo projectInfo;
@@ -437,8 +451,18 @@ namespace Hpdi.Vss2Git
             if (name.IsProject)
             {
                 var projectInfo = GetOrCreateProject(name);
+                if (IsPathMapRoot(projectInfo))
+                {
+                    // Already a path-map root — don't re-parent or rename
+                    return projectInfo;
+                }
                 projectInfo.Parent = parentInfo;
                 itemInfo = projectInfo;
+
+                // update name before path-map check so ReconstructVssPath uses the correct name
+                itemInfo.LogicalName = name.LogicalName;
+                TryPromoteToPathMapRoot(projectInfo);
+                return itemInfo;
             }
             else
             {
@@ -460,7 +484,23 @@ namespace Hpdi.Vss2Git
             VssItemInfo itemInfo;
             if (name.IsProject)
             {
-                itemInfo = GetOrCreateProject(name);
+                var projectInfo = GetOrCreateProject(name);
+                if (IsPathMapRoot(projectInfo))
+                {
+                    // Already a path-map root — don't overwrite the mapped git path.
+                    // Update OriginalVssPath to reflect the rename for future resolution.
+                    var oldVssPath = projectInfo.OriginalVssPath;
+                    if (oldVssPath != null)
+                    {
+                        var lastSlash = oldVssPath.LastIndexOf('/');
+                        projectInfo.OriginalVssPath = (lastSlash >= 0 ? oldVssPath.Substring(0, lastSlash + 1) : "") + name.LogicalName;
+                    }
+                    return projectInfo;
+                }
+                projectInfo.LogicalName = name.LogicalName;
+                // after rename, the new name may match a path-map entry
+                TryPromoteToPathMapRoot(projectInfo);
+                return projectInfo;
             }
             else
             {
@@ -500,7 +540,12 @@ namespace Hpdi.Vss2Git
             if (name.IsProject)
             {
                 var projectInfo = GetOrCreateProject(name);
+                if (IsPathMapRoot(projectInfo))
+                {
+                    return projectInfo;
+                }
                 projectInfo.Parent = parentInfo;
+                TryPromoteToPathMapRoot(projectInfo);
                 itemInfo = projectInfo;
             }
             else
@@ -560,10 +605,16 @@ namespace Hpdi.Vss2Git
         {
             Debug.Assert(subproject.IsProject);
 
-            var parentInfo = GetOrCreateProject(project);
             var subprojectInfo = GetOrCreateProject(subproject);
+            if (IsPathMapRoot(subprojectInfo))
+            {
+                // Already a path-map root — don't re-parent or rename
+                return subprojectInfo;
+            }
+            var parentInfo = GetOrCreateProject(project);
             subprojectInfo.LogicalName = subproject.LogicalName;
             subprojectInfo.Parent = parentInfo;
+            TryPromoteToPathMapRoot(subprojectInfo);
             return subprojectInfo;
         }
 
@@ -597,6 +648,79 @@ namespace Hpdi.Vss2Git
         {
             var parentInfo = GetOrCreateProject(project);
             return parentInfo.ContainsLogicalName(name.LogicalName);
+        }
+
+        /// <summary>
+        /// Reconstructs the full VSS path (e.g., "$/Deploy/Speedy/www.speedy.bg - Portal")
+        /// by walking the parent chain up to a root with OriginalVssPath set.
+        /// </summary>
+        internal string ReconstructVssPath(VssProjectInfo projectInfo)
+        {
+            var parts = new Stack<string>();
+            var current = projectInfo;
+            while (current != null)
+            {
+                if (current.OriginalVssPath != null)
+                {
+                    // Reached a known root — prepend its VSS path
+                    parts.Push(current.OriginalVssPath);
+                    return string.Join("/", parts);
+                }
+                parts.Push(current.LogicalName);
+                current = current.Parent;
+            }
+            return null; // disconnected from any known root
+        }
+
+        /// <summary>
+        /// Checks if a project's reconstructed VSS path matches a path-map entry.
+        /// If it does, promotes the project to an export root with the mapped git name.
+        /// </summary>
+        private bool TryPromoteToPathMapRoot(VssProjectInfo projectInfo)
+        {
+            if (pathMappings == null || pathMappings.Count == 0)
+                return false;
+
+            // Already a path-map root — skip
+            if (IsPathMapRoot(projectInfo))
+                return false;
+
+            var vssPath = ReconstructVssPath(projectInfo);
+            if (vssPath != null && pathMappings.TryGetValue(vssPath, out var gitName))
+            {
+                // Promote to export root: detach from parent, assign mapped git path
+                projectInfo.Parent = null;
+                projectInfo.IsRoot = true;
+                projectInfo.LogicalName = Path.Combine(pathMapWorkingRoot, gitName);
+                projectInfo.OriginalVssPath = vssPath;
+                rootInfos[projectInfo.PhysicalName] = projectInfo;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the project is a path-map promoted root (not the scan root).
+        /// </summary>
+        private bool IsPathMapRoot(VssProjectInfo projectInfo)
+        {
+            if (pathMappings == null || pathMappings.Count == 0)
+                return false;
+            return projectInfo.IsRoot && projectInfo.Parent == null
+                && projectInfo.LogicalName != null && projectInfo != GetScanRoot();
+        }
+
+        /// <summary>
+        /// Returns the scan root (tracking-only root with null LogicalName) if in path-map mode.
+        /// </summary>
+        private VssProjectInfo GetScanRoot()
+        {
+            foreach (var root in rootInfos.Values)
+            {
+                if (root.LogicalName == null)
+                    return root;
+            }
+            return null;
         }
 
         private VssProjectInfo GetOrCreateProject(VssItemName name)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CommandLine;
 
 namespace Hpdi.Vss2Git.Cli
@@ -55,6 +56,9 @@ namespace Hpdi.Vss2Git.Cli
 
         [Option("export-to-root", Default = false, HelpText = "Export project directly to Git root")]
         public bool ExportProjectToGitRoot { get; set; }
+
+        [Option("path-map", Separator = '|', HelpText = "Map VSS subpaths to git directory names (pipe-separated, format: VSS_PATH=GIT_NAME|VSS_PATH2=GIT_NAME2)")]
+        public IEnumerable<string> PathMappings { get; set; }
 
         [Option("from-date", HelpText = "Export changesets from this date (yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss). Earlier changesets build mapper state only.")]
         public string FromDate { get; set; }

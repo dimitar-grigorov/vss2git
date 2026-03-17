@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 
@@ -486,6 +488,104 @@ namespace Hpdi.Vss2Git.Cli.Tests
 
             resultOptions.FromDate.Should().Be(originalOptions.FromDate);
             resultOptions.ToDate.Should().Be(originalOptions.ToDate);
+        }
+
+        #endregion
+
+        #region Path-Map Tests
+
+        [Fact]
+        public void FromOptions_WithPathMappings_ParsesCorrectly()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                VssProject = "$/Deploy/Speedy",
+                PathMappings = new[]
+                {
+                    "$/Deploy/Speedy/www.speedy.bg - Portal=portal.speedy.bg",
+                    "$/Deploy/Speedy/www.speedy.bg - Inventory=itinventory.speedy.bg"
+                }
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.PathMappings.Should().HaveCount(2);
+            config.PathMappings["$/Deploy/Speedy/www.speedy.bg - Portal"].Should().Be("portal.speedy.bg");
+            config.PathMappings["$/Deploy/Speedy/www.speedy.bg - Inventory"].Should().Be("itinventory.speedy.bg");
+        }
+
+        [Fact]
+        public void FromOptions_WithInvalidPathMapping_ThrowsArgumentException()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                PathMappings = new[] { "no-equals-sign" }
+            };
+
+            Action act = () => CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            act.Should().Throw<ArgumentException>()
+                .WithMessage("*--path-map*no-equals-sign*");
+        }
+
+        [Fact]
+        public void ToOptions_WithPathMappings_SerializesCorrectly()
+        {
+            var config = new MigrationConfiguration
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                PathMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["$/Deploy/Speedy/Portal"] = "portal.speedy.bg"
+                }
+            };
+
+            var options = CliOptionsMapper.ToOptions(config);
+
+            options.PathMappings.Should().ContainSingle()
+                .Which.Should().Be("$/Deploy/Speedy/Portal=portal.speedy.bg");
+        }
+
+        [Fact]
+        public void FromOptions_WithNullPathMappings_LeavesEmpty()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                PathMappings = null
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+
+            config.PathMappings.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void RoundTrip_WithPathMappings_PreservesMappings()
+        {
+            var options = new CliOptions
+            {
+                VssDirectory = @"C:\VSS",
+                GitDirectory = @"C:\Git",
+                PathMappings = new[]
+                {
+                    "$/Deploy/Speedy/Portal=portal.speedy.bg",
+                    "$/Deploy/Speedy/Inventory=itinventory.speedy.bg"
+                }
+            };
+
+            var config = CliOptionsMapper.FromOptions(options, Encoding.UTF8);
+            var result = CliOptionsMapper.ToOptions(config);
+
+            result.PathMappings.Should().HaveCount(2);
+            result.PathMappings.Should().Contain("$/Deploy/Speedy/Portal=portal.speedy.bg");
+            result.PathMappings.Should().Contain("$/Deploy/Speedy/Inventory=itinventory.speedy.bg");
         }
 
         #endregion

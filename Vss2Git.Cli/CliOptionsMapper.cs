@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Hpdi.Vss2Git.Cli
@@ -34,6 +36,22 @@ namespace Hpdi.Vss2Git.Cli
                 GitBackend = options.GitBackend,
                 VssEncoding = encoding,
             };
+
+            if (options.PathMappings != null)
+            {
+                foreach (var mapping in options.PathMappings)
+                {
+                    if (string.IsNullOrWhiteSpace(mapping))
+                        continue;
+                    var eqIndex = mapping.IndexOf('=');
+                    if (eqIndex <= 0 || eqIndex == mapping.Length - 1)
+                        throw new ArgumentException(
+                            $"Invalid --path-map format: '{mapping}'. Expected VSS_PATH=GIT_NAME");
+                    var vssPath = mapping.Substring(0, eqIndex).Trim();
+                    var gitName = mapping.Substring(eqIndex + 1).Trim();
+                    config.PathMappings[vssPath] = gitName;
+                }
+            }
 
             if (!string.IsNullOrEmpty(options.FromDate))
             {
@@ -80,6 +98,13 @@ namespace Hpdi.Vss2Git.Cli
                 EnablePerformanceTracking = config.EnablePerformanceTracking,
                 GitBackend = config.GitBackend,
             };
+
+            if (config.PathMappings != null && config.PathMappings.Count > 0)
+            {
+                options.PathMappings = config.PathMappings
+                    .Select(kvp => $"{kvp.Key}={kvp.Value}")
+                    .ToList();
+            }
 
             if (config.VssEncoding != null)
             {

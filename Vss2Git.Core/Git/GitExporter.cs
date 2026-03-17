@@ -96,11 +96,29 @@ namespace Hpdi.Vss2Git
 
                     var pathMapper = new VssPathMapper();
 
-                    // create mappings for root projects
-                    foreach (var rootProject in revisionAnalyzer.RootProjects)
+                    if (config.PathMappings != null && config.PathMappings.Count > 0)
                     {
-                        var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, config.ExportProjectToGitRoot);
-                        pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
+                        // path-map mode: register scan root as tracking-only (null path)
+                        // subprojects matching path-map entries will be promoted during replay
+                        foreach (var rootProject in revisionAnalyzer.RootProjects)
+                        {
+                            pathMapper.SetProjectPath(rootProject.PhysicalName, null, rootProject.Path);
+                        }
+                        pathMapper.SetPathMappings(repoPath, config.PathMappings);
+                        logger.WriteLine("Path-map mode: {0} mapping(s) configured", config.PathMappings.Count);
+                        foreach (var kvp in config.PathMappings)
+                        {
+                            logger.WriteLine("  {0} => {1}", kvp.Key, kvp.Value);
+                        }
+                    }
+                    else
+                    {
+                        // normal mode: register root projects with working paths
+                        foreach (var rootProject in revisionAnalyzer.RootProjects)
+                        {
+                            var rootPath = VssPathMapper.GetWorkingPath(repoPath, rootProject.Path, config.ExportProjectToGitRoot);
+                            pathMapper.SetProjectPath(rootProject.PhysicalName, rootPath, rootProject.Path);
+                        }
                     }
 
                     // replay each changeset
