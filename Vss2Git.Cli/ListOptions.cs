@@ -18,12 +18,16 @@ namespace Hpdi.Vss2Git.Cli
         public int? EncodingCodePage { get; set; }
 
         [Option('t', "type", Default = "all",
-            HelpText = "Item types to list: projects, files, all (default: all)")]
+            HelpText = "Item types to list: projects, files, all")]
         public string Type { get; set; }
 
         [Option('s', "shared", Default = false,
             HelpText = "List only shared files (referenced from multiple projects). Output is grouped by physical file.")]
         public bool SharedOnly { get; set; }
+
+        [Option("include-deleted", Default = false,
+            HelpText = "Include soft-deleted entries (default: hidden, matching VSS GUI). Destroyed items are gone regardless.")]
+        public bool IncludeDeleted { get; set; }
 
         [Option('f', "format", Default = "tree",
             HelpText = "Output format: tree, flat. Ignored when --shared is set (always grouped).")]

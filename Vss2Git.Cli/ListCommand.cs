@@ -74,7 +74,7 @@ namespace Hpdi.Vss2Git.Cli
 
             try { Console.OutputEncoding = Encoding.UTF8; } catch { }
 
-            var tree = VssProjectTree.Build(rootProject, includeFiles,
+            var tree = VssProjectTree.Build(rootProject, includeFiles, options.IncludeDeleted,
                 warning => Console.Error.WriteLine($"  WARNING: {warning}"));
 
             if (sharedMode)
@@ -123,7 +123,7 @@ namespace Hpdi.Vss2Git.Cli
 
                 var child = visible[i];
                 var suffix = child.IsProject ? "/" : "";
-                var marker = !child.IsProject && child.IsShared ? "  [shared]" : "";
+                var marker = BuildMarker(child);
                 Console.WriteLine($"{indent}{connector}{child.Name}{suffix}{marker}");
 
                 if (child.IsProject)
@@ -169,11 +169,7 @@ namespace Hpdi.Vss2Git.Cli
                 else
                 {
                     files++;
-                    if (includeFiles)
-                    {
-                        var marker = child.IsShared ? "  [shared]" : "";
-                        lines.Add(child.Path + marker);
-                    }
+                    if (includeFiles) lines.Add(child.Path + BuildMarker(child));
                 }
             }
         }
@@ -217,10 +213,11 @@ namespace Hpdi.Vss2Git.Cli
             foreach (var entry in multiPath)
             {
                 Console.WriteLine($"[{entry.PhysicalName}] {entry.Name} × {entry.Paths.Count}");
-                entry.Paths.Sort(StringComparer.OrdinalIgnoreCase);
+                entry.Paths.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path));
                 foreach (var p in entry.Paths)
                 {
-                    Console.WriteLine($"  {GetParentPath(p)}");
+                    var del = p.IsDeleted ? "  [deleted]" : "";
+                    Console.WriteLine($"  {GetParentPath(p.Path)}{del}");
                 }
                 Console.WriteLine();
             }
@@ -228,11 +225,12 @@ namespace Hpdi.Vss2Git.Cli
             if (flaggedSinglePath.Count > 0)
             {
                 Console.WriteLine($"Files flagged Shared in VSS but with only one path inside {scope}");
-                Console.WriteLine("(other references exist outside the scan root):");
+                Console.WriteLine("(other references exist outside the scan root, or are soft-deleted — try --include-deleted):");
                 Console.WriteLine();
                 foreach (var entry in flaggedSinglePath)
                 {
-                    Console.WriteLine($"[{entry.PhysicalName}] {entry.Paths[0]}");
+                    var del = entry.Paths[0].IsDeleted ? "  [deleted]" : "";
+                    Console.WriteLine($"[{entry.PhysicalName}] {entry.Paths[0].Path}{del}");
                 }
                 Console.WriteLine();
             }
@@ -273,7 +271,7 @@ namespace Hpdi.Vss2Git.Cli
                     {
                         entry.IsShared = entry.IsShared || child.IsShared;
                     }
-                    entry.Paths.Add(child.Path);
+                    entry.Paths.Add((child.Path, child.IsDeleted));
                 }
             }
         }
@@ -283,7 +281,15 @@ namespace Hpdi.Vss2Git.Cli
             public string Name;
             public string PhysicalName;
             public bool IsShared;
-            public List<string> Paths = new List<string>();
+            public List<(string Path, bool IsDeleted)> Paths = new List<(string, bool)>();
+        }
+
+        private static string BuildMarker(VssTreeNode node)
+        {
+            var parts = new List<string>(2);
+            if (!node.IsProject && node.IsShared) parts.Add("shared");
+            if (node.IsDeleted) parts.Add("deleted");
+            return parts.Count == 0 ? "" : "  [" + string.Join(", ", parts) + "]";
         }
 
         private static bool TryParseType(string raw, out ItemType type)
@@ -292,18 +298,10 @@ namespace Hpdi.Vss2Git.Cli
             {
                 case "":
                 case "projects":
-                case "project":
-                case "dirs":
-                case "dir":
-                case "p":
                     type = ItemType.Projects; return true;
                 case "files":
-                case "file":
-                case "f":
                     type = ItemType.Files; return true;
                 case "all":
-                case "both":
-                case "a":
                     type = ItemType.All; return true;
                 default:
                     type = ItemType.Projects; return false;
@@ -316,11 +314,8 @@ namespace Hpdi.Vss2Git.Cli
             {
                 case "":
                 case "tree":
-                case "t":
                     format = OutputFormat.Tree; return true;
                 case "flat":
-                case "list":
-                case "l":
                     format = OutputFormat.Flat; return true;
                 default:
                     format = OutputFormat.Tree; return false;

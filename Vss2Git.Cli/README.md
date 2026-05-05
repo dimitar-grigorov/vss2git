@@ -52,6 +52,7 @@ Vss2Git.Cli list --vss-dir <path> [options]
 | `--encoding` | `-c` | system default | VSS encoding code page |
 | `--type` | `-t` | `all` | What to list: `projects`, `files`, or `all` |
 | `--shared` | `-s` | `false` | Only shared files (referenced from multiple projects); output is grouped by physical file |
+| `--include-deleted` | | `false` | Include soft-deleted entries (default: hidden, matching VSS GUI). Destroyed items are gone regardless. |
 | `--format` | `-f` | `tree` | Output format: `tree` or `flat`. Ignored when `--shared` is set. |
 
 Example tree output (`--type projects`):
