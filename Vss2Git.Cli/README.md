@@ -52,7 +52,7 @@ Vss2Git.Cli list --vss-dir <path> [options]
 | `--encoding` | `-c` | system default | VSS encoding code page |
 | `--type` | `-t` | `all` | What to list: `projects`, `files`, or `all` |
 | `--shared` | `-s` | `false` | Only shared files (referenced from multiple projects); output is grouped by physical file |
-| `--include-deleted` | | `false` | Include soft-deleted entries (default: hidden, matching VSS GUI). Destroyed items are gone regardless. |
+| `--include-deleted` | | `false` | Include soft-deleted entries (default: hidden, matching VSS GUI). In `--shared` output, also reveals files flagged Shared but with only one live reference (usually noise — sharing across the scan boundary or with a since-deleted twin). Destroyed items are gone regardless. |
 | `--format` | `-f` | `tree` | Output format: `tree` or `flat`. Ignored when `--shared` is set. |
 
 Example tree output (`--type projects`):
@@ -78,14 +78,14 @@ Example shared-files output (`--shared`):
 Shared files in $ — 12 files, 27 references
 ═══════════════════════════════════════════
 
-[OJWCAAAA] libcrypto-1_1.dll × 3
+libcrypto-1_1.dll  [OJWCAAAA]
   $/Packages/libssh2/
   $/MyApp/ServiceA/Exe/
   $/MyApp/ServiceB/Exe/
 ...
 ```
 
-Sorted by fanout (most-shared first), then alphabetically. `[OJWCAAAA]` is the VSS physical id; paths show the directory only — the filename is constant across the group.
+Sorted by fanout (most-shared first), then alphabetically. Filenames are bold in interactive terminals (auto-disabled when output is redirected, or when `NO_COLOR` is set). `[OJWCAAAA]` is the VSS physical id; paths show the directory only — the filename is constant across the group.
 
 ### verify
 

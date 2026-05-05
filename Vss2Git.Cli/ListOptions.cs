@@ -26,7 +26,7 @@ namespace Hpdi.Vss2Git.Cli
         public bool SharedOnly { get; set; }
 
         [Option("include-deleted", Default = false,
-            HelpText = "Include soft-deleted entries (default: hidden, matching VSS GUI). Destroyed items are gone regardless.")]
+            HelpText = "Include soft-deleted entries (default: hidden, matching VSS GUI). In --shared output, also reveals files flagged Shared but with only one live reference. Destroyed items are gone regardless.")]
         public bool IncludeDeleted { get; set; }
 
         [Option('f', "format", Default = "tree",

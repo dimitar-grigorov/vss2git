@@ -11,6 +11,15 @@ namespace Hpdi.Vss2Git.Cli
         private enum ItemType { Projects, Files, All }
         private enum OutputFormat { Tree, Flat }
 
+        // ANSI bold: skipped when stdout is redirected (so `> file.txt` is clean)
+        // or NO_COLOR is set (https://no-color.org).
+        private static readonly bool ansiEnabled =
+            !Console.IsOutputRedirected
+            && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR"));
+
+        private static string Bold(string s) =>
+            ansiEnabled ? $"\x1b[1m{s}\x1b[22m" : s;
+
         public static int Run(ListOptions options)
         {
             if (!TryParseType(options.Type, out var type))
@@ -79,7 +88,7 @@ namespace Hpdi.Vss2Git.Cli
 
             if (sharedMode)
             {
-                return PrintShared(tree);
+                return PrintShared(tree, includeSingleRef: options.IncludeDeleted);
             }
 
             switch (format)
@@ -174,7 +183,7 @@ namespace Hpdi.Vss2Git.Cli
             }
         }
 
-        private static int PrintShared(VssTreeNode root)
+        private static int PrintShared(VssTreeNode root, bool includeSingleRef)
         {
             var byPhysical = new Dictionary<string, SharedEntry>(StringComparer.OrdinalIgnoreCase);
             CollectFiles(root, byPhysical);
@@ -184,7 +193,7 @@ namespace Hpdi.Vss2Git.Cli
             foreach (var entry in byPhysical.Values)
             {
                 if (entry.Paths.Count > 1) multiPath.Add(entry);
-                else if (entry.IsShared) flaggedSinglePath.Add(entry);
+                else if (includeSingleRef && entry.IsShared) flaggedSinglePath.Add(entry);
             }
 
             // Highest fanout first; the long tail of 2-way pairs is rarely interesting.
@@ -212,7 +221,7 @@ namespace Hpdi.Vss2Git.Cli
 
             foreach (var entry in multiPath)
             {
-                Console.WriteLine($"[{entry.PhysicalName}] {entry.Name} × {entry.Paths.Count}");
+                Console.WriteLine($"{Bold(entry.Name)}  [{entry.PhysicalName}]");
                 entry.Paths.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path));
                 foreach (var p in entry.Paths)
                 {
@@ -229,10 +238,12 @@ namespace Hpdi.Vss2Git.Cli
                 Console.WriteLine();
                 foreach (var entry in flaggedSinglePath)
                 {
-                    var del = entry.Paths[0].IsDeleted ? "  [deleted]" : "";
-                    Console.WriteLine($"[{entry.PhysicalName}] {entry.Paths[0].Path}{del}");
+                    var p = entry.Paths[0];
+                    var del = p.IsDeleted ? "  [deleted]" : "";
+                    Console.WriteLine($"{Bold(entry.Name)}  [{entry.PhysicalName}]");
+                    Console.WriteLine($"  {GetParentPath(p.Path)}{del}");
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
             }
 
             Console.WriteLine($"{shared} shared file{(shared == 1 ? "" : "s")}, {totalRefs} reference{(totalRefs == 1 ? "" : "s")}");
