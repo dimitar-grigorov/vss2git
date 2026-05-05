@@ -12,13 +12,18 @@ namespace Hpdi.Vss2Git
         public string Name { get; }
         public string Path { get; }
         public bool IsProject { get; }
+        public string PhysicalName { get; }
+        public bool IsShared { get; }
         public List<VssTreeNode> Children { get; } = new List<VssTreeNode>();
 
-        public VssTreeNode(string name, string path, bool isProject)
+        public VssTreeNode(string name, string path, bool isProject,
+            string physicalName = null, bool isShared = false)
         {
             Name = name;
             Path = path;
             IsProject = isProject;
+            PhysicalName = physicalName;
+            IsShared = isShared;
         }
     }
 
@@ -60,7 +65,8 @@ namespace Hpdi.Vss2Git
         {
             foreach (var sub in SafeEnumerate(project.Projects, onWarning))
             {
-                var child = new VssTreeNode(sub.Name, sub.Path, isProject: true);
+                var child = new VssTreeNode(sub.Name, sub.Path, isProject: true,
+                    physicalName: sub.PhysicalName);
                 node.Children.Add(child);
                 AddChildren(child, sub, includeFiles, onWarning);
             }
@@ -69,7 +75,8 @@ namespace Hpdi.Vss2Git
             {
                 foreach (var file in SafeEnumerate(project.Files, onWarning))
                 {
-                    node.Children.Add(new VssTreeNode(file.Name, file.GetPath(project), isProject: false));
+                    node.Children.Add(new VssTreeNode(file.Name, file.GetPath(project), isProject: false,
+                        physicalName: file.PhysicalName, isShared: file.IsShared));
                 }
             }
         }

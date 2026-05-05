@@ -85,7 +85,7 @@ Run `Vss2Git.exe`, configure the VSS database path and Git output directory, the
 The CLI has three commands (verbs):
 
 - **`migrate`** (default) — run a VSS-to-Git migration
-- **`tree`** — display the VSS project hierarchy as a tree, useful for exploring a database before migrating
+- **`list`** — list items in a VSS database (projects, files, or shared files), useful for exploring a database before migrating
 - **`verify`** — compare a VSS working directory against Git output to spot differences
 
 ```bash
@@ -101,11 +101,17 @@ Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --from-dat
 
 # Migrate a subproject with encoding and exclusions
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" \
-  --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1252
+  --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1251
 
 # Browse a VSS database before migrating
-Vss2Git.Cli tree --vss-dir "C:\VSS\MyProject"
-Vss2Git.Cli tree --vss-dir "C:\VSS\MyProject" --vss-project "$/SubFolder" --files
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject"
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --vss-project "$/SubFolder" --type all
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --type files --format flat
+
+# List shared files (same physical file referenced from multiple projects),
+# grouped by physical name with all paths underneath
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --shared
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --vss-project "$/SubFolder" --shared --encoding 1251
 
 # Compare migration results
 Vss2Git.Cli verify -s "C:\VSS\WorkingDir" -t "C:\Git\MyProject" -x ".vs;.git"

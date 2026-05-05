@@ -37,12 +37,12 @@ Vss2Git.Cli migrate --vss-dir <path> --git-dir <path> [options]
 | `--same-comment-threshold` | | `60` | Max seconds between revisions with the same comment to group them |
 | `--perf` | | `false` | Print performance breakdown at the end |
 
-### tree
+### list
 
-Displays the current VSS project/file hierarchy — handy for exploring a database before deciding what to migrate.
+Lists items in a VSS database — projects, files, or shared files. Handy for exploring a database before deciding what to migrate.
 
 ```
-Vss2Git.Cli tree --vss-dir <path> [options]
+Vss2Git.Cli list --vss-dir <path> [options]
 ```
 
 | Option | Short | Default | Description |
@@ -50,9 +50,11 @@ Vss2Git.Cli tree --vss-dir <path> [options]
 | `--vss-dir` | `-v` | *(required)* | Path to VSS database |
 | `--vss-project` | `-p` | `$` | Starting project (e.g. `$/Libs/Packages`) |
 | `--encoding` | `-c` | system default | VSS encoding code page |
-| `--files` | `-f` | `false` | Show files too (default is projects only) |
+| `--type` | `-t` | `all` | What to list: `projects`, `files`, or `all` |
+| `--shared` | `-s` | `false` | Only shared files (referenced from multiple projects); output is grouped by physical file |
+| `--format` | `-f` | `tree` | Output format: `tree` or `flat`. Ignored when `--shared` is set. |
 
-Example output:
+Example tree output (`--type projects`):
 
 ```
 $/Deploy/Speedy/
@@ -68,6 +70,21 @@ $/Deploy/Speedy/
 
 8 projects, 0 files
 ```
+
+Example shared-files output (`--shared`):
+
+```
+Shared files in $ — 12 files, 27 references
+═══════════════════════════════════════════
+
+[OJWCAAAA] libcrypto-1_1.dll × 3
+  $/Packages/libssh2/
+  $/MyApp/ServiceA/Exe/
+  $/MyApp/ServiceB/Exe/
+...
+```
+
+Sorted by fanout (most-shared first), then alphabetically. `[OJWCAAAA]` is the VSS physical id; paths show the directory only — the filename is constant across the group.
 
 ### verify
 
