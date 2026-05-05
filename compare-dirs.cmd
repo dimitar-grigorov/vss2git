@@ -5,7 +5,7 @@ if "%~1"=="" (
     echo Usage: compare-dirs.cmd "SourceDir" "TargetDir"
     echo.
     echo Example:
-    echo   compare-dirs.cmd "D:\Projects\Packages" "D:\Projects_Deploy\vss-libs-fastimport\packages"
+    echo   compare-dirs.cmd "C:\vss-working-folder" "C:\vss-git-output\subproject"
     exit /b 1
 )
 

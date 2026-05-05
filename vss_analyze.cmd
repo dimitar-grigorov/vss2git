@@ -21,7 +21,7 @@ if "%~1"=="" (
     echo   ^(the folder containing srcsafe.ini^).
     echo.
     echo Example:
-    echo   %~nx0 "D:\Projects_Deploy\VSS_Libs - Copy"
+    echo   %~nx0 "C:\path\to\vss-database"
     echo.
     pause
     exit /b 1

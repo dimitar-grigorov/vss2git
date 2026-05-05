@@ -5,8 +5,8 @@ namespace Hpdi.Vss2Git.TestDbBuilder.Scenarios;
 /// a project that already contains files, and the existing files are deleted
 /// in the same changeset.
 ///
-/// Real-world pattern: OfficeMgr/Source moved into SLDepotSW while
-/// SLDepotSW's root-level files were deleted simultaneously.
+/// Real-world pattern: a subproject was moved into a sibling project while
+/// that sibling's root-level files were deleted in the same second.
 /// The root-level files remained on disk after migration.
 /// </summary>
 public class Scenario13_MoveProjectWithDelete : ITestScenario
