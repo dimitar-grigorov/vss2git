@@ -48,7 +48,7 @@ Vss2Git.Cli list --vss-dir <path> [options]
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
 | `--vss-dir` | `-v` | *(required)* | Path to VSS database |
-| `--vss-project` | `-p` | `$` | Starting project (e.g. `$/Libs/Packages`) |
+| `--vss-project` | `-p` | `$` | Starting project (e.g. `$/MyApp/Server`) |
 | `--encoding` | `-c` | system default | VSS encoding code page |
 | `--type` | `-t` | `all` | What to list: `projects`, `files`, or `all` |
 | `--shared` | `-s` | `false` | Only shared files (referenced from multiple projects); output is grouped by physical file |
@@ -58,16 +58,16 @@ Vss2Git.Cli list --vss-dir <path> [options]
 Example tree output (`--type projects`):
 
 ```
-$/Deploy/Speedy/
-├── DataBase/
-├── OfficeMgr/
-│   └── Upgrade/
-├── PickGen/
-│   └── Upgrade/
-├── SLDepotSW/
-└── web/
-    ├── demo/
-    └── services/
+$/MyApp/
+├── Client/
+├── Common/
+│   └── Utils/
+├── Server/
+│   └── Migrations/
+├── Tools/
+└── Web/
+    ├── api/
+    └── public/
 
 8 projects, 0 files
 ```
@@ -79,7 +79,7 @@ Shared files in $ — 12 files, 27 references
 ═══════════════════════════════════════════
 
 libcrypto-1_1.dll  [OJWCAAAA]
-  $/Packages/libssh2/
+  $/ThirdParty/OpenSSL/
   $/MyApp/ServiceA/Exe/
   $/MyApp/ServiceB/Exe/
 ...
