@@ -4,7 +4,7 @@ REM Builds both CLI and GUI applications for release
 
 setlocal enabledelayedexpansion
 
-set VERSION=1.3.0
+set VERSION=1.3.1
 set OUTPUT_DIR=release
 
 echo ===================================
