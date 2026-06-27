@@ -53,14 +53,10 @@ REM Copy documentation files
 echo.
 echo Copying documentation...
 copy README.md %CLI_DIR%\ >nul 2>&1
-copy LICENSE.md %CLI_DIR%\ >nul 2>&1
-copy ARCHITECTURE.md %CLI_DIR%\ >nul 2>&1
-copy CODE_ANALYSIS.md %CLI_DIR%\ >nul 2>&1
+copy LICENSE.txt %CLI_DIR%\ >nul 2>&1
 
 copy README.md %GUI_DIR%\ >nul 2>&1
-copy LICENSE.md %GUI_DIR%\ >nul 2>&1
-copy ARCHITECTURE.md %GUI_DIR%\ >nul 2>&1
-copy CODE_ANALYSIS.md %GUI_DIR%\ >nul 2>&1
+copy LICENSE.txt %GUI_DIR%\ >nul 2>&1
 
 REM Create ZIP archives using PowerShell
 echo.

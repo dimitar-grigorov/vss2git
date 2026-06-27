@@ -66,16 +66,12 @@ jobs:
     - name: Copy documentation to CLI package
       run: |
         Copy-Item README.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item LICENSE.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item ARCHITECTURE.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item CODE_ANALYSIS.md release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item LICENSE.txt release\Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
 
     - name: Copy documentation to GUI package
       run: |
         Copy-Item README.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item LICENSE.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item ARCHITECTURE.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
-        Copy-Item CODE_ANALYSIS.md release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
+        Copy-Item LICENSE.txt release\Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64\ -ErrorAction SilentlyContinue
 
     - name: Create ZIP archives
       run: |
