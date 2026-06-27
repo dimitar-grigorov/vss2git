@@ -22,7 +22,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     - name: Extract version from tag
       id: get_version
@@ -99,12 +99,12 @@ jobs:
           ## Vss2Git v${{ steps.get_version.outputs.VERSION }}
 
           ### Downloads
-          - **Vss2GitSetup-${{ steps.get_version.outputs.VERSION }}.exe** - Windows installer (GUI + CLI, checks for .NET 8.0)
+          - **Vss2GitSetup-${{ steps.get_version.outputs.VERSION }}.exe** - Windows installer (GUI + CLI, checks for .NET 10.0)
           - **Vss2Git.Cli-${{ steps.get_version.outputs.VERSION }}-win-x64.zip** - Command-line interface (portable ZIP)
           - **Vss2Git-${{ steps.get_version.outputs.VERSION }}-win-x64.zip** - Windows GUI application (portable ZIP)
 
           ### Requirements
-          - [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (Windows x64)
+          - [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (Windows x64)
           - Git must be in PATH (for Process backend)
 
           ### Installation

@@ -2,7 +2,7 @@
 ; Per-user install (no admin required), supports GUI and CLI component selection
 
 !define PRODUCT_NAME "Vss2Git"
-!define PRODUCT_VERSION "1.3.2"
+!define PRODUCT_VERSION "1.4.0"
 !define PRODUCT_PUBLISHER "Dimitar Grigorov"
 !define PRODUCT_WEB_SITE "https://github.com/dimitar-grigorov/vss2git"
 !define PRODUCT_REGISTRY_KEY "Software\Vss2Git"
@@ -10,8 +10,8 @@
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 
 ; Build output directories
-!define GUI_BUILD_DIR "Vss2Git\bin\Release\net8.0-windows"
-!define CLI_BUILD_DIR "Vss2Git.Cli\bin\Release\net8.0"
+!define GUI_BUILD_DIR "Vss2Git\bin\Release\net10.0-windows"
+!define CLI_BUILD_DIR "Vss2Git.Cli\bin\Release\net10.0"
 
 ; No admin required
 RequestExecutionLevel user
@@ -64,29 +64,29 @@ ShowUnInstDetails show
 Function .onInit
   StrCpy $guiInstalled "0"
 
-  ; Check for .NET 8.0 Desktop Runtime via registry
+  ; Check for .NET 10.0 Desktop Runtime via registry
   ; Keys are in WOW6432Node — NSIS (32-bit) reads them natively without SetRegView 64
   StrCpy $0 0
   dotnet_loop:
     EnumRegValue $1 HKLM "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App" $0
     StrCmp $1 "" dotnet_notfound
     StrCpy $2 $1 2
-    StrCmp $2 "8." dotnet_found
+    StrCmp $2 "10" dotnet_found
     IntOp $0 $0 + 1
     Goto dotnet_loop
   dotnet_found:
     Goto dotnet_done
   dotnet_notfound:
     MessageBox MB_YESNO|MB_ICONQUESTION \
-      "Microsoft .NET 8.0 Desktop Runtime is required but was not detected.$\n$\n\
+      "Microsoft .NET 10.0 Desktop Runtime is required but was not detected.$\n$\n\
       Click Yes to open the download page in your browser.$\n\
       Click No to continue installation anyway." \
       IDYES dotnet_download
     Goto dotnet_done
   dotnet_download:
-    ExecShell "open" "https://dotnet.microsoft.com/download/dotnet/8.0"
+    ExecShell "open" "https://dotnet.microsoft.com/download/dotnet/10.0"
     MessageBox MB_YESNO|MB_ICONINFORMATION \
-      "After installing .NET 8.0 Desktop Runtime, you can re-run this installer.$\n$\n\
+      "After installing .NET 10.0 Desktop Runtime, you can re-run this installer.$\n$\n\
       Continue installation anyway?" \
       IDYES dotnet_done
     Abort
@@ -105,21 +105,16 @@ Section "-Common Libraries" SEC_COMMON
   File "${CLI_BUILD_DIR}\Hpdi.VssPhysicalLib.dll"
   File "${CLI_BUILD_DIR}\Hpdi.HashLib.dll"
   File "${CLI_BUILD_DIR}\LibGit2Sharp.dll"
-  File "${CLI_BUILD_DIR}\System.Text.Encoding.CodePages.dll"
 
   ; Native runtimes for LibGit2Sharp (Windows platforms only)
   SetOutPath "$INSTDIR\runtimes\win-x64\native"
-  File "${CLI_BUILD_DIR}\runtimes\win-x64\native\git2-a418d9d.dll"
+  File "${CLI_BUILD_DIR}\runtimes\win-x64\native\git2-3f4182d.dll"
 
   SetOutPath "$INSTDIR\runtimes\win-x86\native"
-  File "${CLI_BUILD_DIR}\runtimes\win-x86\native\git2-a418d9d.dll"
+  File "${CLI_BUILD_DIR}\runtimes\win-x86\native\git2-3f4182d.dll"
 
   SetOutPath "$INSTDIR\runtimes\win-arm64\native"
-  File "${CLI_BUILD_DIR}\runtimes\win-arm64\native\git2-a418d9d.dll"
-
-  ; Runtime-specific managed library
-  SetOutPath "$INSTDIR\runtimes\win\lib\net8.0"
-  File "${CLI_BUILD_DIR}\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll"
+  File "${CLI_BUILD_DIR}\runtimes\win-arm64\native\git2-3f4182d.dll"
 SectionEnd
 
 Section "GUI Application" SEC_GUI
@@ -255,25 +250,19 @@ Section Uninstall
   Delete "$INSTDIR\Hpdi.VssPhysicalLib.dll"
   Delete "$INSTDIR\Hpdi.HashLib.dll"
   Delete "$INSTDIR\LibGit2Sharp.dll"
-  Delete "$INSTDIR\System.Text.Encoding.CodePages.dll"
 
   ; Native runtimes
-  Delete "$INSTDIR\runtimes\win-x64\native\git2-a418d9d.dll"
+  Delete "$INSTDIR\runtimes\win-x64\native\git2-3f4182d.dll"
   RMDir "$INSTDIR\runtimes\win-x64\native"
   RMDir "$INSTDIR\runtimes\win-x64"
 
-  Delete "$INSTDIR\runtimes\win-x86\native\git2-a418d9d.dll"
+  Delete "$INSTDIR\runtimes\win-x86\native\git2-3f4182d.dll"
   RMDir "$INSTDIR\runtimes\win-x86\native"
   RMDir "$INSTDIR\runtimes\win-x86"
 
-  Delete "$INSTDIR\runtimes\win-arm64\native\git2-a418d9d.dll"
+  Delete "$INSTDIR\runtimes\win-arm64\native\git2-3f4182d.dll"
   RMDir "$INSTDIR\runtimes\win-arm64\native"
   RMDir "$INSTDIR\runtimes\win-arm64"
-
-  Delete "$INSTDIR\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll"
-  RMDir "$INSTDIR\runtimes\win\lib\net8.0"
-  RMDir "$INSTDIR\runtimes\win\lib"
-  RMDir "$INSTDIR\runtimes\win"
 
   RMDir "$INSTDIR\runtimes"
 

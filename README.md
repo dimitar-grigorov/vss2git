@@ -1,7 +1,7 @@
 # Vss2Git
 
 [![Latest Release](https://img.shields.io/github/v/release/dimitar-grigorov/vss2git)](https://github.com/dimitar-grigorov/vss2git/releases/latest)
-[![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![License](https://img.shields.io/github/license/dimitar-grigorov/vss2git)](LICENSE.txt)
 
 Vss2Git exports a [Visual SourceSafe 6.0](https://en.wikipedia.org/wiki/Visual_SourceSafe) database to [Git](https://git-scm.com/). Instead of dumping the latest version of every file, it replays the whole VSS history from the beginning and rebuilds it as a series of Git commits — so the resulting repository looks as though the project had been kept in Git all along, with renames, moves, deletes and labels intact.
@@ -15,7 +15,7 @@ Vss2Git exports a [Visual SourceSafe 6.0](https://en.wikipedia.org/wiki/Visual_S
 The [original vss2git](https://github.com/trevorr/vss2git) stopped at .NET Framework 4.5.2 with a single, slow Git backend. This fork is a substantial rework — over 100 commits of new features, two much faster backends, and a long list of correctness fixes.
 
 ### Platform
-- **Targets .NET 8.0** (up from .NET Framework 4.5.2).
+- **Targets .NET 10.0** (up from .NET Framework 4.5.2).
 - **Migration engine extracted** into `Vss2Git.Core`, decoupled from WinForms so the CLI — and anything else — can drive it.
 - **Windows installer** (`Vss2GitSetup.exe`) with GUI/CLI component selection and a per-user install that needs no admin rights.
 
@@ -56,13 +56,13 @@ See the [commit history](https://github.com/dimitar-grigorov/vss2git/commits/mas
 | **VssLogicalLib / VssPhysicalLib / HashLib** | Libraries that read the raw VSS database format |
 | **VssDump** | Diagnostic tool for inspecting a VSS database |
 
-The applications and tests target **.NET 8.0**; the three VSS-reading libraries target **.NET Standard 2.0**.
+The applications and tests target **.NET 10.0**; the three VSS-reading libraries target **.NET Standard 2.0**.
 
 ## Installation
 
 **Installer** — download `Vss2GitSetup-x.x.x.exe` from the [Releases](https://github.com/dimitar-grigorov/vss2git/releases) page and pick the GUI, the CLI, or both. It's a per-user install (no admin rights needed) and will point you at the runtime download if it's missing.
 
-**Portable ZIP** — extract and run. The GUI needs the [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0); the CLI needs the [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0). Git must be on `PATH` for the default backend (not required for the other two).
+**Portable ZIP** — extract and run. The GUI needs the [.NET 10.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); the CLI needs the [.NET 10.0 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0). Git must be on `PATH` for the default backend (not required for the other two).
 
 ## Usage
 
@@ -156,7 +156,7 @@ All three backends produce identical output (same commits, tags, and byte-for-by
 
 ## Building
 
-You'll need the [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+You'll need the [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ```powershell
 dotnet build Vss2Git.sln --configuration Debug

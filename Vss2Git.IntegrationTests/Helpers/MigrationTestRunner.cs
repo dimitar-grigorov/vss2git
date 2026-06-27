@@ -115,7 +115,7 @@ public class MigrationTestRunner : IDisposable
 
     private static string GetTestDataPath(string scenarioName)
     {
-        // Walk up from bin/Debug/net8.0 to project directory
+        // Walk up from bin/Debug/net10.0 to project directory
         var assemblyDir = AppContext.BaseDirectory;
         var projectDir = Path.GetFullPath(Path.Combine(assemblyDir, "..", "..", ".."));
         return Path.Combine(projectDir, "TestData", scenarioName, "vss_db");
