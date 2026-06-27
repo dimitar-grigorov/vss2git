@@ -39,7 +39,7 @@ Vss2Git.Cli migrate --vss-dir <path> --git-dir <path> [options]
 
 ### list
 
-Lists items in a VSS database — projects, files, or shared files. Handy for exploring a database before deciding what to migrate.
+Lists items in a VSS database — projects, files, shared files, currently checked-out files, or aggregate statistics. Handy for exploring a database before deciding what to migrate.
 
 ```
 Vss2Git.Cli list --vss-dir <path> [options]
@@ -52,8 +52,12 @@ Vss2Git.Cli list --vss-dir <path> [options]
 | `--encoding` | `-c` | system default | VSS encoding code page |
 | `--type` | `-t` | `all` | What to list: `projects`, `files`, or `all` |
 | `--shared` | `-s` | `false` | Only shared files (referenced from multiple projects); output is grouped by physical file |
+| `--stats` | | `false` | Aggregate database statistics: counts, date range, top contributors, most-revised files, label count. Walks all revisions — slower than other modes. |
+| `--checkouts` | | `false` | Currently checked-out files across the entire database (like `ss Status` but global), grouped by user. |
 | `--include-deleted` | | `false` | Include soft-deleted entries (default: hidden, matching VSS GUI). In `--shared` output, also reveals files flagged Shared but with only one live reference (usually noise — sharing across the scan boundary or with a since-deleted twin). Destroyed items are gone regardless. |
-| `--format` | `-f` | `tree` | Output format: `tree` or `flat`. Ignored when `--shared` is set. |
+| `--format` | `-f` | `tree` | Output format: `tree` or `flat`. Ignored when `--shared`, `--stats`, or `--checkouts` is set. |
+
+`--shared`, `--stats`, and `--checkouts` are mutually exclusive output modes.
 
 Example tree output (`--type projects`):
 
@@ -86,6 +90,45 @@ libcrypto-1_1.dll  [OJWCAAAA]
 ```
 
 Sorted by fanout (most-shared first), then alphabetically. Filenames are bold in interactive terminals (auto-disabled when output is redirected, or when `NO_COLOR` is set). `[OJWCAAAA]` is the VSS physical id; paths show the directory only — the filename is constant across the group.
+
+Example stats output (`--stats`):
+
+```
+Database statistics for $
+═════════════════════════
+
+  Projects:       412
+  Files:          19358  (shared: 271, checked out: 3, soft-deleted refs: 84)
+  Revisions:      148260
+  Labels:         312
+  Authors:        17
+  First activity: 1999-04-12
+  Last activity:  2024-09-30
+
+Top contributors (by revision count):
+  alice    47213
+  bob      31098
+  ...
+
+Most-revised files:
+  812  $/MyApp/Server/CoreService.pas
+  ...
+```
+
+Example checkouts output (`--checkouts`):
+
+```
+Checked-out files in $ — 2 files
+════════════════════════════════
+
+alice
+  $/MyApp/Server/CoreService.pas  2024-09-28 14:32  (DEV-WORKSTATION-1)  [exclusive]
+
+bob
+  $/MyApp/Client/MainForm.pas  2024-09-30 09:15  (LAPTOP-7)
+```
+
+Grouped by user. The user / timestamp / machine come from the file's most recent checkout record.
 
 ### verify
 

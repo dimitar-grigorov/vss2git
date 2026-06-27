@@ -80,6 +80,17 @@ namespace Hpdi.VssLogicalLib
             return (VssFileRevision)base.GetRevision(version);
         }
 
+        // Reads the most recent checkout record when IsCheckedOut is set; null otherwise.
+        public CheckoutRecord GetCurrentCheckout()
+        {
+            if (!IsCheckedOut) return null;
+            int offset = Header.LastCheckoutOffset;
+            if (offset <= 0) return null;
+            var record = new CheckoutRecord();
+            ItemFile.ReadRecord(record, offset);
+            return record;
+        }
+
         internal FileHeaderRecord Header
         {
             get { return (FileHeaderRecord)ItemFile.Header; }

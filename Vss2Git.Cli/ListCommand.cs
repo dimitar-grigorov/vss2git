@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Hpdi.VssLogicalLib;
+using Hpdi.VssPhysicalLib;
 
 namespace Hpdi.Vss2Git.Cli
 {
@@ -22,6 +23,13 @@ namespace Hpdi.Vss2Git.Cli
 
         public static int Run(ListOptions options)
         {
+            int modeCount = (options.SharedOnly ? 1 : 0) + (options.Stats ? 1 : 0) + (options.Checkouts ? 1 : 0);
+            if (modeCount > 1)
+            {
+                Console.Error.WriteLine("ERROR: --shared, --stats, and --checkouts are mutually exclusive.");
+                return 1;
+            }
+
             if (!TryParseType(options.Type, out var type))
             {
                 Console.Error.WriteLine($"ERROR: Invalid --type '{options.Type}'. Expected: projects, files, all.");
@@ -34,10 +42,10 @@ namespace Hpdi.Vss2Git.Cli
                 return 1;
             }
 
-            // --shared implies files-only
+            // --shared and --checkouts imply files-only; --stats walks both regardless of --type.
             bool sharedMode = options.SharedOnly;
-            bool includeFiles = sharedMode || type != ItemType.Projects;
-            bool includeProjects = !sharedMode && type != ItemType.Files;
+            bool includeFiles = sharedMode || options.Checkouts || options.Stats || type != ItemType.Projects;
+            bool includeProjects = !sharedMode && !options.Checkouts && type != ItemType.Files;
 
             Encoding encoding;
             try
@@ -82,6 +90,16 @@ namespace Hpdi.Vss2Git.Cli
             }
 
             try { Console.OutputEncoding = Encoding.UTF8; } catch { }
+
+            if (options.Stats)
+            {
+                return PrintStats(rootProject, options.IncludeDeleted);
+            }
+
+            if (options.Checkouts)
+            {
+                return PrintCheckouts(rootProject, options.IncludeDeleted);
+            }
 
             var tree = VssProjectTree.Build(rootProject, includeFiles, options.IncludeDeleted,
                 warning => Console.Error.WriteLine($"  WARNING: {warning}"));
@@ -248,6 +266,231 @@ namespace Hpdi.Vss2Git.Cli
 
             Console.WriteLine($"{shared} shared file{(shared == 1 ? "" : "s")}, {totalRefs} reference{(totalRefs == 1 ? "" : "s")}");
             return 0;
+        }
+
+        private static int PrintCheckouts(VssProject root, bool includeDeleted)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var rows = new List<CheckoutRow>();
+            WalkProjects(root, includeDeleted, project =>
+            {
+                foreach (var entry in SafeFileEntries(project))
+                {
+                    if (entry.IsDeleted && !includeDeleted) continue;
+                    var file = entry.File;
+                    if (!seen.Add(file.PhysicalName)) continue;
+                    if (!file.IsCheckedOut) continue;
+
+                    var checkout = TryGetCheckout(file);
+                    rows.Add(new CheckoutRow
+                    {
+                        Path = file.GetPath(project),
+                        PhysicalName = file.PhysicalName,
+                        User = checkout?.User ?? "",
+                        DateTime = checkout?.DateTime ?? default,
+                        Machine = checkout?.Machine ?? "",
+                        Exclusive = checkout?.Exclusive ?? false,
+                    });
+                }
+            });
+
+            rows.Sort((a, b) =>
+            {
+                int byUser = string.Compare(a.User, b.User, StringComparison.OrdinalIgnoreCase);
+                return byUser != 0 ? byUser : string.Compare(a.Path, b.Path, StringComparison.OrdinalIgnoreCase);
+            });
+
+            string scope = root.Path;
+            string title = rows.Count == 0
+                ? $"No checked-out files found in {scope}"
+                : $"Checked-out files in {scope} — {rows.Count} file{(rows.Count == 1 ? "" : "s")}";
+            Console.WriteLine(title);
+            Console.WriteLine(new string('═', Math.Min(title.Length, 78)));
+            Console.WriteLine();
+
+            if (rows.Count == 0) return 0;
+
+            string lastUser = null;
+            foreach (var row in rows)
+            {
+                if (!string.Equals(row.User, lastUser, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (lastUser != null) Console.WriteLine();
+                    Console.WriteLine($"{Bold(string.IsNullOrEmpty(row.User) ? "(unknown user)" : row.User)}");
+                    lastUser = row.User;
+                }
+                var when = row.DateTime == default ? "" : $"  {row.DateTime:yyyy-MM-dd HH:mm}";
+                var machine = string.IsNullOrEmpty(row.Machine) ? "" : $"  ({row.Machine})";
+                var excl = row.Exclusive ? "  [exclusive]" : "";
+                Console.WriteLine($"  {row.Path}{when}{machine}{excl}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"{rows.Count} checked-out file{(rows.Count == 1 ? "" : "s")}");
+            return 0;
+        }
+
+        private static int PrintStats(VssProject root, bool includeDeleted)
+        {
+            int projectCount = 0;
+            int fileCount = 0;
+            int sharedCount = 0;
+            int deletedFileEntries = 0;
+            int checkedOut = 0;
+            long totalRevisions = 0;
+            int labelCount = 0;
+            DateTime minDate = DateTime.MaxValue;
+            DateTime maxDate = DateTime.MinValue;
+            var authors = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var authorRevisions = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var topRevised = new List<(string Path, int Count)>();
+            var seenFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            Console.Write("Walking database");
+            int dot = 0;
+
+            WalkProjects(root, includeDeleted, project =>
+            {
+                projectCount++;
+                foreach (var entry in SafeFileEntries(project))
+                {
+                    if (entry.IsDeleted) deletedFileEntries++;
+                    if (entry.IsDeleted && !includeDeleted) continue;
+                    var file = entry.File;
+                    if (!seenFiles.Add(file.PhysicalName)) continue;
+
+                    fileCount++;
+                    if (file.IsShared) sharedCount++;
+                    if (file.IsCheckedOut) checkedOut++;
+
+                    int revs = 0;
+                    try
+                    {
+                        foreach (var rev in file.Revisions)
+                        {
+                            revs++;
+                            totalRevisions++;
+                            if (rev.DateTime < minDate) minDate = rev.DateTime;
+                            if (rev.DateTime > maxDate) maxDate = rev.DateTime;
+                            if (!string.IsNullOrEmpty(rev.User))
+                            {
+                                authors.Add(rev.User);
+                                authorRevisions.TryGetValue(rev.User, out var prior);
+                                authorRevisions[rev.User] = prior + 1;
+                            }
+                            if (rev.Action is VssLabelAction) labelCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"  WARNING: failed reading revisions for {file.PhysicalName}: {ex.Message}");
+                    }
+
+                    topRevised.Add((file.GetPath(project), revs));
+
+                    if (++dot % 200 == 0) Console.Write(".");
+                }
+            });
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            string scope = root.Path;
+            string title = $"Database statistics for {scope}";
+            Console.WriteLine(title);
+            Console.WriteLine(new string('═', Math.Min(title.Length, 78)));
+            Console.WriteLine();
+
+            Console.WriteLine($"  Projects:       {projectCount}");
+            Console.WriteLine($"  Files:          {fileCount}  (shared: {sharedCount}, checked out: {checkedOut}, soft-deleted refs: {deletedFileEntries})");
+            Console.WriteLine($"  Revisions:      {totalRevisions}");
+            Console.WriteLine($"  Labels:         {labelCount}");
+            Console.WriteLine($"  Authors:        {authors.Count}");
+            if (minDate != DateTime.MaxValue)
+            {
+                Console.WriteLine($"  First activity: {minDate:yyyy-MM-dd}");
+                Console.WriteLine($"  Last activity:  {maxDate:yyyy-MM-dd}");
+            }
+            Console.WriteLine();
+
+            var topAuthors = authorRevisions
+                .OrderByDescending(kv => kv.Value)
+                .ThenBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                .Take(10)
+                .ToList();
+            if (topAuthors.Count > 0)
+            {
+                Console.WriteLine($"Top contributors (by revision count):");
+                int maxNameLen = topAuthors.Max(kv => kv.Key.Length);
+                foreach (var kv in topAuthors)
+                {
+                    Console.WriteLine($"  {kv.Key.PadRight(maxNameLen)}  {kv.Value}");
+                }
+                Console.WriteLine();
+            }
+
+            var topFiles = topRevised
+                .OrderByDescending(t => t.Count)
+                .ThenBy(t => t.Path, StringComparer.OrdinalIgnoreCase)
+                .Take(10)
+                .ToList();
+            if (topFiles.Count > 0)
+            {
+                Console.WriteLine($"Most-revised files:");
+                int maxCountLen = topFiles.Max(t => t.Count.ToString().Length);
+                foreach (var t in topFiles)
+                {
+                    Console.WriteLine($"  {t.Count.ToString().PadLeft(maxCountLen)}  {t.Path}");
+                }
+                Console.WriteLine();
+            }
+
+            return 0;
+        }
+
+        private static void WalkProjects(VssProject project, bool includeDeleted, Action<VssProject> visit)
+        {
+            visit(project);
+            IEnumerable<(VssProject Project, bool IsDeleted)> children;
+            try { children = project.ProjectEntries.ToList(); }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"  WARNING: failed reading {project.Path}: {ex.Message}");
+                return;
+            }
+            foreach (var child in children)
+            {
+                if (child.IsDeleted && !includeDeleted) continue;
+                WalkProjects(child.Project, includeDeleted, visit);
+            }
+        }
+
+        private static IEnumerable<(VssFile File, bool IsDeleted)> SafeFileEntries(VssProject project)
+        {
+            List<(VssFile, bool)> result;
+            try { result = project.FileEntries.ToList(); }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"  WARNING: failed reading files in {project.Path}: {ex.Message}");
+                yield break;
+            }
+            foreach (var entry in result) yield return entry;
+        }
+
+        private static CheckoutRecord TryGetCheckout(VssFile file)
+        {
+            try { return file.GetCurrentCheckout(); }
+            catch { return null; }
+        }
+
+        private struct CheckoutRow
+        {
+            public string Path;
+            public string PhysicalName;
+            public string User;
+            public DateTime DateTime;
+            public string Machine;
+            public bool Exclusive;
         }
 
         private static string GetParentPath(string path)
