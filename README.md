@@ -56,7 +56,7 @@ See the [commit history](https://github.com/dimitar-grigorov/vss2git/commits/mas
 | **VssLogicalLib / VssPhysicalLib / HashLib** | Libraries that read the raw VSS database format |
 | **VssDump** | Diagnostic tool for inspecting a VSS database |
 
-The applications and tests target **.NET 10.0**; the three VSS-reading libraries target **.NET Standard 2.0**.
+Every project — the applications, tests, and the three VSS-reading libraries — targets **.NET 10.0**.
 
 ## Installation
 
@@ -180,3 +180,13 @@ Report bugs and request features on [GitHub Issues](https://github.com/dimitar-g
 ## License
 
 Vss2Git is open-source software under the [Apache License, Version 2.0](LICENSE.txt). **Use it at your own risk, and always back up your VSS database first.**
+
+## If you're reading this
+
+Congratulations — you've inherited a Visual SourceSafe database. Condolences are also appropriate.
+
+Take a breath. Yes, it's still here. Yes, someone committed their `*.exe`, their `*.bak`, and a folder ominously named `! Borland !`. Yes, three files are "exclusively checked out" by a developer who left in 2009 and is not coming back — the lock is yours now.
+
+The good news: this tool will get your history out, and it works. It has even been dragged, kicking and screaming, all the way to .NET 10, so it'll still run long after .NET Framework is fossilized. Run it against a *copy*, though — Visual SourceSafe's notion of "safe" was always more of an aspiration than a guarantee.
+
+Good luck. You'll need slightly less of it than the people who chose VSS in the first place.
