@@ -4,7 +4,7 @@ REM Builds both CLI and GUI applications for release
 
 setlocal enabledelayedexpansion
 
-set VERSION=1.3.1
+set VERSION=1.4.0
 set OUTPUT_DIR=release
 
 echo ===================================
@@ -53,14 +53,10 @@ REM Copy documentation files
 echo.
 echo Copying documentation...
 copy README.md %CLI_DIR%\ >nul 2>&1
-copy LICENSE.md %CLI_DIR%\ >nul 2>&1
-copy ARCHITECTURE.md %CLI_DIR%\ >nul 2>&1
-copy CODE_ANALYSIS.md %CLI_DIR%\ >nul 2>&1
+copy LICENSE.txt %CLI_DIR%\ >nul 2>&1
 
 copy README.md %GUI_DIR%\ >nul 2>&1
-copy LICENSE.md %GUI_DIR%\ >nul 2>&1
-copy ARCHITECTURE.md %GUI_DIR%\ >nul 2>&1
-copy CODE_ANALYSIS.md %GUI_DIR%\ >nul 2>&1
+copy LICENSE.txt %GUI_DIR%\ >nul 2>&1
 
 REM Create ZIP archives using PowerShell
 echo.

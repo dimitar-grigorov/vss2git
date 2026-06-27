@@ -5,7 +5,7 @@
       "name": "Vss2Git",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/Vss2Git/bin/${input:configuration}/net8.0-windows/Vss2Git.exe",
+      "program": "${workspaceFolder}/Vss2Git/bin/${input:configuration}/net10.0-windows/Vss2Git.exe",
       "preLaunchTask": "build",
       "console": "internalConsole"
     },
@@ -13,7 +13,7 @@
       "name": "VssDump",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/VssDump/bin/${input:configuration}/net8.0/VssDump.exe",
+      "program": "${workspaceFolder}/VssDump/bin/${input:configuration}/net10.0/VssDump.exe",
       "preLaunchTask": "build",
       "console": "internalConsole"
     },
@@ -21,7 +21,7 @@
       "name": "HashTest",
       "type": "clr",
       "request": "launch",
-      "program": "${workspaceFolder}/HashTest/bin/${input:configuration}/net8.0/HashTest.exe",
+      "program": "${workspaceFolder}/HashTest/bin/${input:configuration}/net10.0/HashTest.exe",
       "preLaunchTask": "build",
       "console": "internalConsole"
     },
@@ -29,7 +29,7 @@
       "name": "Vss2Git.Cli",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/Vss2Git.Cli/bin/${input:configuration}/net8.0/Vss2Git.Cli.dll",
+      "program": "${workspaceFolder}/Vss2Git.Cli/bin/${input:configuration}/net10.0/Vss2Git.Cli.dll",
       "args": ["--help"],
       "preLaunchTask": "build",
       "console": "integratedTerminal",

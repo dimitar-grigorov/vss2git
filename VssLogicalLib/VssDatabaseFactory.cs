@@ -44,7 +44,7 @@ namespace Hpdi.VssLogicalLib
         }
 
         // In .NET Framework, Encoding.Default returned the system code page.
-        // In .NET 8, it returns UTF-8, breaking VSS filename reading.
+        // In .NET 5 and later, it returns UTF-8, breaking VSS filename reading.
         private static Encoding GetSystemDefaultEncoding()
         {
             int ansiCodePage = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
