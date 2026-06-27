@@ -69,19 +69,19 @@ namespace Hpdi.Vss2Git
         private int projectCount;
         public int ProjectCount
         {
-            get { return Thread.VolatileRead(ref projectCount); }
+            get { return Volatile.Read(ref projectCount); }
         }
 
         private int fileCount;
         public int FileCount
         {
-            get { return Thread.VolatileRead(ref fileCount); }
+            get { return Volatile.Read(ref fileCount); }
         }
 
         private int revisionCount;
         public int RevisionCount
         {
-            get { return Thread.VolatileRead(ref revisionCount); }
+            get { return Volatile.Read(ref revisionCount); }
         }
 
         public RevisionAnalyzer(WorkQueue workQueue, Logger logger, VssDatabase database, IUserInteraction userInteraction)
