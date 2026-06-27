@@ -43,6 +43,39 @@ namespace Hpdi.VssLogicalLib
             get { return new VssFiles(this); }
         }
 
+        // Like Files but also exposes the per-project Deleted flag.
+        public IEnumerable<(VssFile File, bool IsDeleted)> FileEntries
+        {
+            get
+            {
+                var entryFile = new ProjectEntryFile(DataPath, database.Encoding);
+                for (var rec = entryFile.GetFirstEntry(); rec != null; rec = entryFile.GetNextEntry())
+                {
+                    if (rec.ItemType != ItemType.File) continue;
+                    var physical = rec.Physical.ToUpper();
+                    var logical = database.GetFullName(rec.Name);
+                    yield return (database.OpenFile(physical, logical),
+                        (rec.Flags & ProjectEntryFlags.Deleted) != 0);
+                }
+            }
+        }
+
+        public IEnumerable<(VssProject Project, bool IsDeleted)> ProjectEntries
+        {
+            get
+            {
+                var entryFile = new ProjectEntryFile(DataPath, database.Encoding);
+                for (var rec = entryFile.GetFirstEntry(); rec != null; rec = entryFile.GetNextEntry())
+                {
+                    if (rec.ItemType != ItemType.Project) continue;
+                    var physical = rec.Physical.ToUpper();
+                    var logical = database.GetFullName(rec.Name);
+                    yield return (database.OpenProject(this, physical, logical),
+                        (rec.Flags & ProjectEntryFlags.Deleted) != 0);
+                }
+            }
+        }
+
         public new IEnumerable<VssProjectRevision> Revisions
         {
             get { return new VssRevisions<VssProject, VssProjectRevision>(this); }

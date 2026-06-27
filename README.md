@@ -23,6 +23,7 @@ The [original vss2git](https://github.com/trevorr/vss2git) stopped at .NET Frame
 - **Command-line interface** for scripted, unattended migrations.
 - **Two extra Git backends** — `LibGit2Sharp` (~6× faster) and `FastImport` (~19× faster) — producing output identical to the original `Process` backend.
 - **Date-range migration** (`--from-date` / `--to-date`) for incremental or chunked exports.
+- **Database browsing** (`Vss2Git.Cli list`) — print a project's tree, list files, or find shared files before migrating.
 - **Built-in verification** (`Vss2Git.Cli verify`) to diff a migration against a VSS working copy.
 - **Database repair helper** (`vss_analyze.cmd`) wrapping `Analyze.exe` for diagnostic scans and multi-pass repair.
 - **Performance instrumentation** (`--perf`) and VssItem caching for faster reads.
@@ -30,6 +31,7 @@ The [original vss2git](https://github.com/trevorr/vss2git) stopped at .NET Frame
 ### Bug fixes
 - **Project move corruption** — MoveFrom/MoveTo ordering corrupted the source path.
 - **Stale files after a move** — the destination wasn't cleaned up, leaving orphaned files in Git.
+- **Ghost files after rename collisions** — and a false "Destroyed" flag during project moves.
 - **Timestamp collisions** — same-second revisions now apply in causal order (create before edit before delete).
 - **Directory deletion** — projects with staged files are removed correctly.
 - **Comment deduplication** — exact line matching instead of a broken substring check.
@@ -70,10 +72,10 @@ Run `Vss2Git.exe`, set the VSS database path and the Git output directory, and c
 
 ### CLI
 
-The CLI has three verbs. If you don't name one, `migrate` is assumed.
+The CLI has three verbs; if you don't name one, `migrate` is assumed.
 
 - **`migrate`** — run a VSS-to-Git migration
-- **`tree`** — print the VSS project hierarchy, handy for looking around a database before committing to a migration
+- **`list`** — list a database's projects, files, or shared files; handy for exploring before you migrate
 - **`verify`** — compare a VSS working copy against the Git output and report what's missing or extra
 
 ```powershell
@@ -85,58 +87,17 @@ Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" --git-back
 
 # Migrate a subproject, with an encoding and exclusions
 Vss2Git.Cli --vss-dir "C:\VSS\MyProject" --git-dir "C:\Git\MyProject" `
-  --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1252
+  --vss-project "$/SubFolder" --exclude "*.exe;*.dll" --encoding 1251
 
 # Look around before migrating
-Vss2Git.Cli tree --vss-dir "C:\VSS\MyProject" --vss-project "$/SubFolder" --files
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --type all
+Vss2Git.Cli list --vss-dir "C:\VSS\MyProject" --shared      # shared files, grouped by physical file
 
 # Compare results afterwards
 Vss2Git.Cli verify -s "C:\VSS\WorkingDir" -t "C:\Git\MyProject" -x ".vs;.git"
 ```
 
-#### `migrate` options
-
-| Option | Short | Default | Description |
-|--------|-------|---------|-------------|
-| `--vss-dir` | `-v` | *(required)* | VSS database folder (the one with `srcsafe.ini`) |
-| `--git-dir` | `-g` | *(required)* | Output directory for the Git repository |
-| `--vss-project` | `-p` | `$` | VSS project to export (e.g. `$/MyApp/Server`) |
-| `--exclude` | `-e` | | Exclude patterns, semicolon-separated (`*.exe;docs/**`) |
-| `--email-domain` | `-d` | `localhost` | Domain for generated commit emails |
-| `--default-comment` | | *(empty)* | Fallback comment for changesets with no VSS comment |
-| `--encoding` | `-c` | system default | VSS code page (e.g. `1251`, `1252`) |
-| `--log` | `-l` | `Vss2Git.log` | Log file path |
-| `--ignore-errors` | `-i` | `false` | Skip errors instead of aborting |
-| `--force` | `-f` | `false` | Proceed even if the output directory isn't empty |
-| `--interactive` | | `false` | Prompt on errors (Abort/Retry/Ignore) instead of aborting |
-| `--git-backend` | | `Process` | `Process`, `LibGit2Sharp`, or `FastImport` |
-| `--from-date` | | | Start exporting from this date (`yyyy-MM-dd`). Earlier revisions still build internal state. |
-| `--to-date` | | | Stop after the last changeset on or before this date |
-| `--transcode` | `-t` | `true` | Convert comments to UTF-8 (`--transcode=false` keeps the original encoding) |
-| `--force-annotated-tags` | | `true` | Use annotated tags for VSS labels |
-| `--export-to-root` | | `false` | Put project contents at the Git root instead of in a subfolder |
-| `--any-comment-threshold` | | `0` | Max seconds between revisions with *different* comments to still group them |
-| `--same-comment-threshold` | | `60` | Max seconds between revisions with the *same* comment to group them |
-| `--perf` | | `false` | Print a performance breakdown at the end |
-
-#### `tree` options
-
-| Option | Short | Default | Description |
-|--------|-------|---------|-------------|
-| `--vss-dir` | `-v` | *(required)* | VSS database folder |
-| `--vss-project` | `-p` | `$` | Starting project |
-| `--encoding` | `-c` | system default | VSS code page |
-| `--files` | `-f` | `false` | Show files too (projects only by default) |
-
-#### `verify` options
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--source` | `-s` | Source directory (e.g. a VSS working folder) |
-| `--target` | `-t` | Target directory (e.g. the Git output) |
-| `--exclude` | `-x` | Semicolon-separated patterns to ignore (`.vs;.git;bin`) |
-
-The CLI returns `0` on success, `1` for bad arguments or a startup error, and `2` if the migration finished but hit errors.
+See **[Vss2Git.Cli/README.md](Vss2Git.Cli/README.md)** for the full per-command option reference and example output. The CLI returns `0` on success, `1` for bad arguments or a startup error, and `2` if the migration finished but hit errors.
 
 ## How it works
 

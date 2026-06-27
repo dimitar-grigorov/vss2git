@@ -9,17 +9,13 @@ namespace Hpdi.Vss2Git
     /// </summary>
     public class VssTreeNode
     {
-        public string Name { get; }
-        public string Path { get; }
-        public bool IsProject { get; }
+        public string Name { get; init; }
+        public string Path { get; init; }
+        public bool IsProject { get; init; }
+        public string PhysicalName { get; init; }
+        public bool IsShared { get; init; }
+        public bool IsDeleted { get; init; }
         public List<VssTreeNode> Children { get; } = new List<VssTreeNode>();
-
-        public VssTreeNode(string name, string path, bool isProject)
-        {
-            Name = name;
-            Path = path;
-            IsProject = isProject;
-        }
     }
 
     /// <summary>
@@ -27,10 +23,11 @@ namespace Hpdi.Vss2Git
     /// </summary>
     public static class VssProjectTree
     {
-        public static VssTreeNode Build(VssProject root, bool includeFiles = false, Action<string> onWarning = null)
+        public static VssTreeNode Build(VssProject root, bool includeFiles = false,
+            bool includeDeleted = false, Action<string> onWarning = null)
         {
-            var node = new VssTreeNode(root.Name, root.Path, isProject: true);
-            AddChildren(node, root, includeFiles, onWarning);
+            var node = new VssTreeNode { Name = root.Name, Path = root.Path, IsProject = true };
+            AddChildren(node, root, includeFiles, includeDeleted, onWarning);
             return node;
         }
 
@@ -56,20 +53,38 @@ namespace Hpdi.Vss2Git
             }
         }
 
-        private static void AddChildren(VssTreeNode node, VssProject project, bool includeFiles, Action<string> onWarning)
+        private static void AddChildren(VssTreeNode node, VssProject project,
+            bool includeFiles, bool includeDeleted, Action<string> onWarning)
         {
-            foreach (var sub in SafeEnumerate(project.Projects, onWarning))
+            foreach (var entry in SafeEnumerate(project.ProjectEntries, onWarning))
             {
-                var child = new VssTreeNode(sub.Name, sub.Path, isProject: true);
+                if (entry.IsDeleted && !includeDeleted) continue;
+                var child = new VssTreeNode
+                {
+                    Name = entry.Project.Name,
+                    Path = entry.Project.Path,
+                    IsProject = true,
+                    PhysicalName = entry.Project.PhysicalName,
+                    IsDeleted = entry.IsDeleted,
+                };
                 node.Children.Add(child);
-                AddChildren(child, sub, includeFiles, onWarning);
+                AddChildren(child, entry.Project, includeFiles, includeDeleted, onWarning);
             }
 
             if (includeFiles)
             {
-                foreach (var file in SafeEnumerate(project.Files, onWarning))
+                foreach (var entry in SafeEnumerate(project.FileEntries, onWarning))
                 {
-                    node.Children.Add(new VssTreeNode(file.Name, file.GetPath(project), isProject: false));
+                    if (entry.IsDeleted && !includeDeleted) continue;
+                    node.Children.Add(new VssTreeNode
+                    {
+                        Name = entry.File.Name,
+                        Path = entry.File.GetPath(project),
+                        IsProject = false,
+                        PhysicalName = entry.File.PhysicalName,
+                        IsShared = entry.File.IsShared,
+                        IsDeleted = entry.IsDeleted,
+                    });
                 }
             }
         }

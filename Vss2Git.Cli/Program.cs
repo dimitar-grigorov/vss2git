@@ -36,12 +36,12 @@ namespace Hpdi.Vss2Git.Cli
                 args = new[] { "migrate", "--help" };
 
             var parser = new Parser(s => { s.HelpWriter = null; s.MaximumDisplayWidth = width; });
-            var parsed = parser.ParseArguments<CliOptions, VerifyOptions, TreeOptions>(args);
+            var parsed = parser.ParseArguments<CliOptions, VerifyOptions, ListOptions>(args);
 
             return parsed.MapResult(
                 (CliOptions o) => RunMigration(o),
                 (VerifyOptions o) => RunVerify(o),
-                (TreeOptions o) => TreeCommand.Run(o),
+                (ListOptions o) => ListCommand.Run(o),
                 _ =>
                 {
                     Console.Error.WriteLine(HelpText.AutoBuild(parsed, h =>
